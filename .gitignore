@@ -1,0 +1,19 @@
+# binaries
+*.class
+*.jar
+*.war
+*.ear
+*.exe
+*.bin
+*.o
+
+# temporary
+*.swp
+*.swo
+*~
+
+*.svg
+*.dat
+*.log
+*.pdf
+*.hi
