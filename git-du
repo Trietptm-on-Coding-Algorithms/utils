@@ -1,0 +1,22 @@
+#!/bin/bash
+# Prints a nice summary of repository disk usage
+# By default, this script prints the human-readable disk usage of each
+#  top-level directory sorted by size, ascending. It then prints blank-line
+#  separator followed by the .git/ directory disk usage and the total disk
+#  usage of the repository.
+# The script passes any arguments to the file filter used to only show the disk
+#  usage of the top-level directories by default. For example, passing ".gitignore"
+#  to the script would display the disk usage of the top-level directories and the
+#  ".gitignore" file.
+# Example:
+#  24M    directoryA
+#  26M    directoryB
+#  100M   directoryC
+#
+#  250M   .git/
+#  400M   ./
+
+du -hs $(ls -Sr -d */ $@)
+echo
+du -hs .git/
+du -hs ./

@@ -1,0 +1,18 @@
+#!/bin/bash
+NOTEFILE='~/.notes'
+
+if (( $# == 0 )); then
+	[ -f ~/.notes ] && cat -n ~/.notes
+elif [[ $1 == '--clear' ]]; then
+	rm ~/.notes
+elif [[ $1 == '--delete' || $1 == '-d' ]]; then
+	for line in "$@"
+	do
+		sed '$line"d"' ~/.notes
+	done
+	echo deleted $line
+elif [[ $1 == '--help' || $1 == '-h' ]]; then
+	echo "note [-h][-d][--clear]"
+else
+	echo $1 >> ~/.notes
+fi

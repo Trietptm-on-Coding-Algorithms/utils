@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Print the beginning of the document
+echo '\documentclass{article}'
+echo '\begin{document}'
+
+# Read text from stdin and print it with no modifications
+while read line
+do
+	echo $line
+done
+
+# Print the ending of the document
+echo '\end{document}'

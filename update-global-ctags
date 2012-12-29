@@ -1,0 +1,9 @@
+#!/bin/bash
+
+CTAGS=/usr/bin/ctags
+TAG_DIR=~/.ctags
+
+# Java
+$CTAGS -R --language-force=java -f $TAG_DIR/java $JAVA_HOME/src
+# Python
+$CTAGS -R --languages=python -f $TAG_DIR/python /usr/lib/python2.*

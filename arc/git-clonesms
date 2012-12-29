@@ -1,0 +1,6 @@
+#!/bin/bash
+
+while read line
+do
+	git submodule add $line $2/${line##*/}
+done < "$1"

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Check for no delete flag
+if [[ $1 == "-n" || $1 == "--no-delete" ]]; then
+	delete_mode=""
+else
+	delete_mode="--delete-after"
+fi
+
+# Directories
+remote_dir="locserv:"
+dirs="/home/evan/media/books/ /home/evan/media/music/ /home/evan/media/pics/ /home/evan/media/sound/ /home/evan/desk/ro/"
+
+# Backup each directory
+for dir in $dirs ; do
+	echo "Backing up $(basename ""$dir"")..."
+	rsync -avzy --progress $delete_mode -e "ssh" $dir "$remote_dir$dir"
+done
