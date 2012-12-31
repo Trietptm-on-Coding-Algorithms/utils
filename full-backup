@@ -9,7 +9,7 @@ fi
 
 # Directories
 remote_dir="locserv:"
-dirs="/home/evan/media/books/ /home/evan/media/music/ /home/evan/media/pics/ /home/evan/media/sound/ /home/evan/desk/ro/"
+dirs="/home/evan/desk/ro/ /home/evan/media/pics/ /home/evan/media/sound/ /home/evan/media/music/ /home/evan/media/books/"
 
 # Backup each directory
 for dir in $dirs ; do
