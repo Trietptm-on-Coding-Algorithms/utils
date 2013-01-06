@@ -1,0 +1,8 @@
+#!/bin/bash
+# Displays a list of file names and use dates sorted from most recently used to least recently used
+
+if (( $# == 0 )) ; then
+	echo "No files specified."
+	exit 1
+fi
+stat --format="%X %x %n" $@ | sort -rn | cut -d" " -f2,5
