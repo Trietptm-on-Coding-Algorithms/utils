@@ -1,78 +1,25 @@
 #!/bin/bash
-# Quickly enables, disables, and toggles devices using xinput
+# Enables, disables, and toggles touchpad
 
-# Prints command usage
-usage() {
-	echo $0 "[-dpkn] [-edt]"
-}
-
-# Gets device info
-device_info() {
-	xinput list-props "$1"
-}
-
-# Checks to see if device is enabled
-device_is_enabled() {
-	device_info | grep "Device Enabled" == *:*1
-}
-
-# Enables device
-device_enable () {
-	#xinput --set-prop "$device" "Device Enabled" 1 # old way
-	xinput --enable "$1"
-}
-
-# Disables device
-device_disable () {
-	xinput --disable "$1"
-}
-
-# Toggles device
-device_toggle() {
-	if [[ $device_is_enabled ]] ; then
-		device_disable "$1"
+device="AlpsPS/2 ALPS GlidePoint"
+if [[ $1 == "-e" ]] ; then
+	# Enable
+	#xinput --set-prop "$device" "Device Enabled" 1
+	xinput --enable "$device"
+elif [[ $1 == "-d" ]] ; then
+	# Disable
+	#xinput --set-prop "$device" "Device Enabled" 0
+	xinput --disable "$device"
+elif [[ $1 == "-t" ]] ; then
+	# Toggle
+	if [[ $(xinput list-props "$device" |
+		grep "Device Enabled") == *:*1 ]] ; then
+		#xinput --set-prop "$device" "Device Enabled" 0
+		xinput --disable "$device"
 	else
-		device_enable "$1"
+		#xinput --set-prop "$device" "Device Enabled" 1
+		xinput --enable "$device"
 	fi
-}
-
-if [[ $1 == "-p" ]] ; then
-	# All pointers
-	for raw_device in "$(xinput --list --short | grep "pointer")" ; do
-		echo "${raw_device#}"
-		#echo "$raw_device"
-	done
-elif [[ $1 == "-k" ]] ; then
-	# All keyboards
-	devices=$(xinput --list --id-only "$2")
-elif [[ $1 == "-n" ]] ; then
-	# Device by name
-	devices=$(xinput --list --id-only "$2")
-elif [[ $1 == "-i" ]] ; then
-	# Device by id
-	devices=$2
-fi
-
-echo $devices
-#devices="AlpsPS/2 ALPS GlidePoint"
-exit
-
-# Check argument number. Return if not enough.
-if (( $# < 2 )) ; then
-	echo "Not enough arguments. Both device and state change must be specified"
-	usage
-	return 1
-fi
-
-if [[ $2 == "-e" ]] ; then
-	# Enable device
-	device_enable $device
-elif [[ $2 == "-d" ]] ; then
-	# Disable device
-	device_disable $device
-elif [[ $2 == "-t" ]] ; then
-	# Toggle device
-	device_toggle $device
 else
-	usage
+	echo $0 "[-edt]"
 fi
