@@ -8,11 +8,12 @@ else
 fi
 
 # Directories
-remote_dir="locserv:"
-dirs="/home/evan/desk/ro/ /home/evan/media/pics/ /home/evan/media/sound/ /home/evan/media/music/ /home/evan/media/books/"
+remote="locserv:"
+dirs="/home/evan/desk/ro /home/evan/media /home/evan/ela /home/evan/erep"
 
 # Backup each directory
 for dir in $dirs ; do
-	echo "Backing up $(basename ""$dir"")..."
-	rsync -avzy --progress $delete_mode -e "ssh" $dir "$remote_dir$dir"
+	echo "Backing up $(basename ""$dir"")."
+	remote_dir=$dir
+	rsync -avzy --progress $delete_mode -e "ssh" "$dir/" "$remote$remote_dir"
 done
