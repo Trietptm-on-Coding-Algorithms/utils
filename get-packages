@@ -1,0 +1,19 @@
+#!/bin/bash
+# Retrieves packages in a list file from a mirror
+# It's a bit brute, but it works
+url="http://us.mirror.archlinuxarm.org/arm"
+repos="core extra community"
+types="any arm"
+extension="pkg.tar.xz"
+while read package
+do
+	for repo in $repos
+	do
+		for type in $types
+		do
+			location=$url/$repo/$package-$type.$extension
+			echo $location
+			wget $location && break
+		done
+	done
+done
