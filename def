@@ -1,0 +1,13 @@
+#!/bin/bash
+# Gets a word definition from dict.org
+def () {
+	if [[ $1 == "-h" ]] ; then
+		echo "d:word[:dict] for definition"
+		echo "m:word[:dict] for fuzzy matching"
+		echo "show:db for a list of dictionaries"
+		echo "show:strat for more commands"
+	else
+		curl dict://dict.org/$@
+	fi
+}
+

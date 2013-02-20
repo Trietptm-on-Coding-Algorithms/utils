@@ -2,6 +2,7 @@
 
 if (( $# >= 1 )) ; then
 	dir="$1"
+	cd "$dir"
 fi
 
 rm -f *.class *.o *.bin
