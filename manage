@@ -1,0 +1,74 @@
+#!/bin/bash
+
+root="$HOME"
+rs_flags="-avzy --progress -e 'ssh'"
+remote="tixod.com"
+
+dat_dir="dat"
+dat_tar=".dat.tar.gz"
+dat_asc="${dat_tar}.asc"
+
+all=(${root}/ro/ ${root}/media/ ${root}/ela/ ${dat_asc})
+
+transfer_out() {
+	more_flags=${@}
+	for item in ${all[@]} ; do
+		echo "Backing up $(basename ""${item}"")."
+		remote_dir=$item
+		rsync ${rs_flags} ${more_flags} "${item}" "${remote}:${remote_dir}"
+	done
+}
+
+transfer_in() {
+	more_flags=${@}
+	for item in ${all[@]} ; do
+		echo "Backing up $(basename ""${item}"")."
+		remote_dir=$item
+		rsync ${rs_flags} ${more_flags} "${remote}:${remote_dir}" "${item}"
+	done
+}
+
+if [[ $1 == all ]] ; then
+	if [[ $2 == "in" ]] ; then
+		transfer_in
+	elif [[ $2 == "out" ]] ; then
+		transfer_out
+	elif [[ $2 == "out-sync" ]] ; then
+		transfer_out --delete-after
+	elif [[ $2 == "in-sync" ]] ; then
+		transfer_in --delete-after
+	fi
+elif [[ $1 == d* ]] ; then
+	cd ${root}
+
+	if [[ $2 == "e" ]] ; then
+		tar -czf ${dat_tar} ${dat_dir} &&
+			gpg -ea -r evan ${dat_tar} &&
+			srm ${dat_tar}
+		echo
+	elif [[ $2 == "d" ]] ; then
+		gpg ${dat_asc} &&
+			tar -xzf ${dat_tar} &&
+			srm -f ${dat_tar}
+		echo
+	elif [[ $2 == "c" ]] ; then
+		echo "Removing ${dat_dir}/..."
+		srm -rf ${dat_dir}
+		echo "Removing ${dat_tar}..."
+		srm -f ${dat_tar}
+		echo
+	elif [[ $2 == "l" ]] ; then
+		gpg ${dat_asc} &&
+			tar -tzf ${dat_tar} &&
+			srm ${dat_tar}
+		echo
+	fi
+
+	[[ -d ${dat_dir} ]] && echo "Warning: unencrypted data at ${dat_dir}/ exists."
+	[[ -f ${dat_tar} ]] && echo "Warning: unencrypted data at ${dat_tar}/ exists."
+	[[ -f ${dat_asc} ]] && echo "Info: ${dat_asc} exists."
+else
+	echo "Invalid item. Items:"
+	echo "  all"
+	echo "  d[at]"
+fi
