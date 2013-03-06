@@ -4,11 +4,11 @@ root="$HOME"
 rs_flags="-avzy --progress -e 'ssh'"
 remote="tixod.com"
 
-dat_dir="dat"
-dat_tar=".dat.tar.gz"
-dat_asc="${dat_tar}.asc"
+sec_dir="sec"
+sec_tar=".sec.tar.gz"
+sec_asc="${sec_tar}.asc"
 
-all=(${root}/ro/ ${root}/media/ ${root}/ela/ ${dat_asc})
+all=(${root}/ro/ ${root}/med/ ${root}/ela/ ${sec_asc} ${root}/cod/ext/)
 
 transfer_out() {
 	more_flags=${@}
@@ -28,6 +28,7 @@ transfer_in() {
 	done
 }
 
+unset DISPLAY
 if [[ $1 == all ]] ; then
 	if [[ $2 == "in" ]] ; then
 		transfer_in
@@ -38,37 +39,37 @@ if [[ $1 == all ]] ; then
 	elif [[ $2 == "in-sync" ]] ; then
 		transfer_in --delete-after
 	fi
-elif [[ $1 == d* ]] ; then
+elif [[ $1 == sec ]] ; then
 	cd ${root}
 
 	if [[ $2 == "e" ]] ; then
-		tar -czf ${dat_tar} ${dat_dir} &&
-			gpg -ea -r evan ${dat_tar} &&
-			srm ${dat_tar}
+		tar -czf ${sec_tar} ${sec_dir} &&
+			gpg -ea -r evan ${sec_tar} &&
+			srm ${sec_tar}
 		echo
 	elif [[ $2 == "d" ]] ; then
-		gpg ${dat_asc} &&
-			tar -xzf ${dat_tar} &&
-			srm -f ${dat_tar}
+		gpg ${sec_asc} &&
+			tar -xzf ${sec_tar} &&
+			srm ${sec_tar}
 		echo
 	elif [[ $2 == "c" ]] ; then
-		echo "Removing ${dat_dir}/..."
-		srm -rf ${dat_dir}
-		echo "Removing ${dat_tar}..."
-		srm -f ${dat_tar}
+		echo "Removing ${sec_dir}/..."
+		srm -rf ${sec_dir}
+		echo "Removing ${sec_tar}..."
+		srm ${sec_tar}
 		echo
 	elif [[ $2 == "l" ]] ; then
-		gpg ${dat_asc} &&
-			tar -tzf ${dat_tar} &&
-			srm ${dat_tar}
+		gpg ${sec_asc} &&
+			tar -tzf ${sec_tar} &&
+			srm ${sec_tar}
 		echo
 	fi
 
-	[[ -d ${dat_dir} ]] && echo "Warning: unencrypted data at ${dat_dir}/ exists."
-	[[ -f ${dat_tar} ]] && echo "Warning: unencrypted data at ${dat_tar}/ exists."
-	[[ -f ${dat_asc} ]] && echo "Info: ${dat_asc} exists."
+	[[ -d ${sec_dir} ]] && echo "Warning: unencrypted data at ${sec_dir}/ exists."
+	[[ -f ${sec_tar} ]] && echo "Warning: unencrypted data at ${sec_tar}/ exists."
+	[[ -f ${sec_asc} ]] && echo "Info: ${sec_asc} exists."
 else
 	echo "Invalid item. Items:"
 	echo "  all"
-	echo "  d[at]"
+	echo "  sec"
 fi
