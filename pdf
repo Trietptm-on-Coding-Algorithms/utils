@@ -1,19 +1,16 @@
 #!/bin/bash
 # Opens some specified ($1) number of pdfs from ~/ela sorted by modification time.
-pdf () {
-	# Open one pdf by default
-	local num
-	if (( $# >= 1 )) ; then
-		num=$1
-	else
-		num=1
-	fi
+# Open one pdf by default
+num=
+if (( $# >= 1 )) ; then
+	num=$1
+else
+	num=1
+fi
 
-	local files=$(ls -t ~/ela/*.pdf | head -n $num)
-	if (( $(echo $files | wc -w) <= 0 )) ; then
-		echo No pdf files found.
-	else
-		zathura $files;
-	fi
-}
-
+files=$(ls -t ~/ela/*.pdf | head -n $num)
+if (( $(echo $files | wc -w) <= 0 )) ; then
+	echo No pdf files found.
+else
+	zathura --fork $files;
+fi
