@@ -1,0 +1,36 @@
+#!/bin/bash
+
+root="$HOME"
+rs_flags="-avzy --progress -e 'ssh'"
+remote="tixod.com"
+
+all=(${root}/ro/ ${root}/med/ ${root}/ela/ ${sec_asc} ${root}/cod/ext/)
+
+transfer_out() {
+	more_flags=${@}
+	for item in ${all[@]} ; do
+		echo "Backing up $(basename ""${item}"")."
+		remote_dir=$item
+		rsync ${rs_flags} ${more_flags} "${item}" "${remote}:${remote_dir}"
+	done
+}
+
+transfer_in() {
+	more_flags=${@}
+	for item in ${all[@]} ; do
+		echo "Backing up $(basename ""${item}"")."
+		remote_dir=$item
+		rsync ${rs_flags} ${more_flags} "${remote}:${remote_dir}" "${item}"
+	done
+}
+
+if [[ $2 == "in" ]] ; then
+	transfer_in
+elif [[ $2 == "out" ]] ; then
+	transfer_out
+elif [[ $2 == "out-sync" ]] ; then
+	transfer_out --delete-after
+elif [[ $2 == "in-sync" ]] ; then
+	transfer_in --delete-after
+fi
+
