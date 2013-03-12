@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+import sys
+
+if len(sys.argv) == 1:
+	inf = sys.stdin
+else:
+	inf = open(sys.argv[1])
+
+grades = []
+for line in inf:
+	parts = line.split('\t')
+	score = parts.pop(2)
+	parts.extend(score.split('/'))
+	parts = [part.strip() for part in parts]
+	grades.append(dict(zip(['name', 'type', 'date', 'score', 'possible'], parts)))
+
+total=0.0
+possible=0.0
+for grade in grades:
+	total += float(grade['score'])
+	possible += float(grade['possible'])
+
+print(total)
+print(possible)
+print(total/possible)
