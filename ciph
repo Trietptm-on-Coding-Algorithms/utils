@@ -3,36 +3,43 @@
 root="$HOME"
 sec_dir="${2:-sec}"
 sec_tar=".${sec_dir}.tar.gz"
-sec_asc="${sec_tar}.asc"
+sec_gpg="${sec_tar}.gpg"
 
 # force gpg to use the ncurses pinentry
 unset DISPLAY
 
-cd ${root}
+cd "${root}"
+
+rm_tar () {
+	srm "${sec_tar}" &
+}
 
 if [[ $1 == "e" ]] ; then
-	tar -czf ${sec_tar} ${sec_dir} &&
-		gpg -ea -r evan ${sec_tar} &&
-		srm ${sec_tar}
+	tar -czf "${sec_tar}" "${sec_dir}" &&
+		gpg -e -r evan "${sec_tar}" &&
+		srm "${sec_tar}"
 	echo
 elif [[ $1 == "d" ]] ; then
-	gpg ${sec_asc} &&
-		tar -xzf ${sec_tar} &&
-		srm ${sec_tar}
+	gpg "${sec_gpg}" &&
+		tar -xzf "${sec_tar}" &&
+		rm_tar
 	echo
 elif [[ $1 == "c" ]] ; then
-	echo "Removing ${sec_dir}/..."
-	srm -rf ${sec_dir}
-	echo "Removing ${sec_tar}..."
-	srm ${sec_tar}
+	if [[ -d ${sec_dir} ]] ; then
+		echo "Removing ${sec_dir}/..."
+		srm -rf "${sec_dir}"
+	fi
+	if [[ -f ${sec_tar} ]] ; then
+		echo "Removing ${sec_tar}..."
+		srm "${sec_tar}"
+	fi
 	echo
 elif [[ $1 == "l" ]] ; then
-	gpg ${sec_asc} &&
-		tar -tzf ${sec_tar} &&
-		srm ${sec_tar}
-	echo
+	gpg "${sec_gpg}" &&
+		tar -tzf "${sec_tar}" &&
+		rm_tar
+elif [[ $1 == "i" ]] ; then
+	[[ -d ${sec_dir} ]] && echo "Warning: unencrypted data at ${sec_dir}/ exists."
+	[[ -f ${sec_tar} ]] && echo "Warning: unencrypted data at ${sec_tar}/ exists."
+	[[ -f ${sec_gpg} ]] && echo "Info: ${sec_gpg} exists."
 fi
-
-[[ -d ${sec_dir} ]] && echo "Warning: unencrypted data at ${sec_dir}/ exists."
-[[ -f ${sec_tar} ]] && echo "Warning: unencrypted data at ${sec_tar}/ exists."
-[[ -f ${sec_asc} ]] && echo "Info: ${sec_asc} exists."
