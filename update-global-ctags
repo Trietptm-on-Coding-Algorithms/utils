@@ -1,9 +1,13 @@
 #!/bin/bash
 
-CTAGS=/usr/bin/ctags
-TAG_DIR=~/.ctags
+tag_dir=~/.ctags
 
 # Java
-$CTAGS -R --language-force=java -f $TAG_DIR/java $JAVA_HOME/src
+ctags -R --language-force=java -f $tag_dir/java $JAVA_HOME/src
+ctags -R --languages=java -a -f $tag_dir/java /usr/lib/gridworld/framework
 # Python
-$CTAGS -R --languages=python -f $TAG_DIR/python /usr/lib/python2.*
+ctags -R --languages=python -f $tag_dir/python /usr/lib/python2.*
+# C
+ctags -R -f $tag_dir/c /usr/include
+# C++
+ctags -R --languages=c++ -f $tag_dir/cpp /usr/include
