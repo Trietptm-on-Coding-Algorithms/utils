@@ -1,44 +1,128 @@
 #!/bin/bash
 
-root="$HOME"
-rs_flags="-avzy --progress -e 'ssh'"
-remote="locserv"
-
-all=(${root}/ro/ ${root}/med/ ${root}/ela/ ${root}/cod/ext/ ${root}/arc/ ${root}/.sec.tar.gz.gpg)
-
-transfer_out() {
-	more_flags=$@
-	for item in ${all[@]} ; do
-		echo "Backing up $(basename ""${item}"")."
-		remote_dir=$item
-		rsync ${rs_flags} ${more_flags} "${item}" "${remote}:${remote_dir}"
-	done
-}
-
-transfer_in() {
-	more_flags=$@
-	for item in ${all[@]} ; do
-		echo "Backing up $(basename ""${item}"")."
-		remote_dir=$item
-		rsync ${rs_flags} ${more_flags} "${remote}:${remote_dir}" "${item}"
-	done
-}
-
 if (( $# < 1 )) ; then
-	echo "Invalid arguments."
+	echo "Invalid number of arguments." >&2
+	exit 1
 fi
 
-if [[ $1 == "in" ]] ; then
-	transfer_in
-elif [[ $1 == "out" ]] ; then
-	transfer_out
-elif [[ $1 == "out-sync" ]] ; then
-	transfer_out --delete-after
-elif [[ $1 == "in-sync" ]] ; then
-	transfer_in --delete-after
-
-elif [[ $1 == "gpg" ]] ; then
-	gpg --export-secret-keys | ssh ${remote} "gpg --import"
-elif [[ $1 == "etc" ]] ; then
-	pacman -Qii G '^MODIFIED' | cut -d$'\t' -f2 | xargs -I '{}' rsync '{}' ${remote}:${root}/.bu/$(uname -n)/etc
+if [[ "$1" == "-h" ]] ; then
+	echo "$(basename ""$0"") [-h|-l]"
+	exit
+elif [[ "$1" == "-l" ]] ; then
+	echo "Shared: arc, ela, ext (cod), med, ro, sec."
+	echo "Backup: etc"
+	echo "Other: gpg"
+	exit
 fi
+
+local_root="$HOME"
+local_name="$(uname -n)"
+local="${local_name}:${local_root}"
+remote_name="locserv"
+remote_root="${local_root}"
+remote="${remote_name}:${remote_root}"
+remote_bu_dir="${remote_root}/bu/${local_name}"
+remote_bu="${remote_name}:${remote_bu_dir}"
+
+rs_flags="-avzy --progress -e ssh"
+
+# Out or in
+if [[ "$1" == "out" ]] ; then
+	out=true
+elif [[ "$1" == "in" ]] ; then
+	out=false
+else
+	echo "First argument must be the direction (out or in)." >&2
+	exit 1
+fi
+
+# Info
+if $out ; then
+	echo "Syncing outwards."
+	action="Backing up"
+else
+	echo "Syncing inwards."
+	action="Pulling in"
+fi
+echo "Local sync root is '$local'"
+echo "Remote sync root is '$remote'"
+echo "Remote backup directory is '$remote_bu'"
+echo
+
+sync_item() {
+	item="$1"
+	remote_item="$2"
+
+	if $delete ; then
+		delete_flags="--delete-after"
+	else
+		delete_flags=
+	fi
+
+	echo "$action $(basename ""${item}"") (${local_name}:${item}) with ${remote_item}..."
+	if $out ; then
+		rsync $rs_flags $delete_flags "$item" "$remote_item"
+	else
+		rsync $rs_flags $delete_flags "$remote_item" "$item"
+	fi
+}
+
+for arg in "$@" ; do
+	if [[ "$arg" == -* ]] ; then
+		delete=true
+		arg=${arg:1}
+		echo "Warning: deletion set on $arg."
+	else
+		delete=false
+	fi
+
+	if $out ; then
+		:
+	else
+		:
+	fi
+
+	case "$arg" in
+		all|arc) sync_item "${local_root}/arc/" "${remote}/arc/"                       ;;&
+		all|ela) sync_item "${local_root}/ela/" "${remote}/ela/"                       ;;&
+		all|ext) sync_item "${local_root}/cod/ext/" "${remote}/cod/ext/"               ;;&
+		all|med) sync_item "${local_root}/med/" "${remote}/med/"                       ;;&
+		all|ro)  sync_item "${local_root}/ro/" "${remote}/ro/"                         ;;&
+		all|sec) sync_item "${local_root}/.sec.tar.gz.gpg" "${remote}/.sec.tar.gz.gpg" ;;&
+		all|etc)
+			echo "$action etc..."
+
+			cd /
+			if $out ; then
+				if $delete ; then
+					delete_command="rm -rf ${remote_bu_dir}"
+				else
+					delete_command="false"
+				fi
+
+				pacman -Qii | grep '^MODIFIED' | grep -v '^shadow$' | cut -d$'\t' -f2 | sed 's/^.//' |
+				xargs tar -cz | ssh $remote_name "${delete_command}; mkdir -p ${remote_bu_dir}; tar -xz -C ${remote_bu_dir}"
+			else
+				if $delete ; then
+					echo "Deletion is not permitted on etc pulls." >&2
+				fi
+
+				echo "Note: etc pulls pull files into ${local_root}/etc."
+				echo "It is the user's responsibility to copy these files into /etc."
+				mkdir -p ${local_root}/etc && cd ${local_root}/etc &&
+					ssh $remote_name "cd ${remote_bu_dir} && tar -cz *" | tar -xz
+			fi
+			;;&
+		all|gpg)
+			echo "$action gpg private keys..."
+			if $out ; then
+				gpg --export-secret-keys | ssh $remote_name "gpg --import"
+			else
+				ssh $remote_name "gpg --export-secret-keys" | gpg --import
+			fi
+			;;
+		#*)
+		#   echo "Invalid: $arg"
+		#   ;;
+	esac
+done
