@@ -18,12 +18,10 @@ if [[ $1 == "e" ]] ; then
 	tar -czf "${sec_tar}" "${sec_dir}" &&
 		gpg -e -r evan "${sec_tar}" &&
 		srm "${sec_tar}"
-	echo
 elif [[ $1 == "d" ]] ; then
 	gpg "${sec_gpg}" &&
 		tar -xzf "${sec_tar}" &&
 		rm_tar
-	echo
 elif [[ $1 == "c" ]] ; then
 	if [[ -d ${sec_dir} ]] ; then
 		echo "Removing ${sec_dir}/..."
@@ -33,7 +31,6 @@ elif [[ $1 == "c" ]] ; then
 		echo "Removing ${sec_tar}..."
 		srm "${sec_tar}"
 	fi
-	echo
 elif [[ $1 == "l" ]] ; then
 	gpg "${sec_gpg}" &&
 		tar -tzf "${sec_tar}" &&
@@ -42,4 +39,7 @@ elif [[ $1 == "i" ]] ; then
 	[[ -d ${sec_dir} ]] && echo "Warning: unencrypted data at ${sec_dir}/ exists."
 	[[ -f ${sec_tar} ]] && echo "Warning: unencrypted data at ${sec_tar}/ exists."
 	[[ -f ${sec_gpg} ]] && echo "Info: ${sec_gpg} exists."
+else
+	echo "Invalid argument."
+	exit 1
 fi
