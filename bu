@@ -2,12 +2,12 @@
 
 root="$HOME"
 rs_flags="-avzy --progress -e 'ssh'"
-remote="tixod.com"
+remote="locserv"
 
-all=(${root}/ro/ ${root}/med/ ${root}/ela/ ${sec_asc} ${root}/cod/ext/)
+all=(${root}/ro/ ${root}/med/ ${root}/ela/ ${root}/cod/ext/ ${root}/arc/ ${root}/.sec.tar.gz.gpg)
 
 transfer_out() {
-	more_flags=${@}
+	more_flags=$@
 	for item in ${all[@]} ; do
 		echo "Backing up $(basename ""${item}"")."
 		remote_dir=$item
@@ -16,7 +16,7 @@ transfer_out() {
 }
 
 transfer_in() {
-	more_flags=${@}
+	more_flags=$@
 	for item in ${all[@]} ; do
 		echo "Backing up $(basename ""${item}"")."
 		remote_dir=$item
@@ -24,13 +24,21 @@ transfer_in() {
 	done
 }
 
-if [[ $2 == "in" ]] ; then
-	transfer_in
-elif [[ $2 == "out" ]] ; then
-	transfer_out
-elif [[ $2 == "out-sync" ]] ; then
-	transfer_out --delete-after
-elif [[ $2 == "in-sync" ]] ; then
-	transfer_in --delete-after
+if (( $# < 1 )) ; then
+	echo "Invalid arguments."
 fi
 
+if [[ $1 == "in" ]] ; then
+	transfer_in
+elif [[ $1 == "out" ]] ; then
+	transfer_out
+elif [[ $1 == "out-sync" ]] ; then
+	transfer_out --delete-after
+elif [[ $1 == "in-sync" ]] ; then
+	transfer_in --delete-after
+
+elif [[ $1 == "gpg" ]] ; then
+	gpg --export-secret-keys | ssh ${remote} "gpg --import"
+elif [[ $1 == "etc" ]] ; then
+	pacman -Qii G '^MODIFIED' | cut -d$'\t' -f2 | xargs -I '{}' rsync '{}' ${remote}:${root}/.bu/$(uname -n)/etc
+fi
