@@ -1,18 +1,70 @@
 #!/bin/bash
-NOTEFILE='~/.notes'
+note_file="$HOME/.notes"
 
 if (( $# == 0 )); then
-	[ -f ~/.notes ] && cat -n ~/.notes
-elif [[ $1 == '--clear' ]]; then
-	rm ~/.notes
-elif [[ $1 == '--delete' || $1 == '-d' ]]; then
-	for line in "$@"
-	do
-		sed '$line"d"' ~/.notes
-	done
-	echo deleted $line
+	if [[ -f $note_file ]] ; then
+		cat -n "$note_file"
+	else
+		echo "No notes."
+		exit 1
+	fi
 elif [[ $1 == '--help' || $1 == '-h' ]]; then
-	echo "note [-h][-d][--clear]"
+	prog_name=$(basename "$0")
+	echo "$prog_name [[-h]|[-d] [line]|[--clear]]"
+elif [[ $1 == --clear ]]; then
+	# clear all notes
+	if [[ -f $note_file ]] ; then
+		rm "$note_file"
+		echo "Notes cleared."
+	else
+		echo "No notes."
+		exit 1
+	fi
+elif [[ $1 == -d* ]]; then
+	# delete a note
+	length=$(cat "$note_file" | wc -l)
+	if (( $length == 0 )) ; then
+		echo "No notes."
+		exit 1
+	fi
+	if (( $# == 1 )) ; then
+		echo "No line number specified."
+		exit 1
+	fi
+
+	line=$2
+	top=$(head -n $(( $line - 1 )) "$note_file")
+	bottom=$(tail -n $(( $length - $line )) "$note_file")
+	echo -e "${top}\n${bottom}" > $note_file
+
+	echo "Deleted line $line."
+elif [[ $1 == -i* ]]; then
+	# insert a note
+	length=$(cat "$note_file" | wc -l)
+	if (( $length == 0 )) ; then
+		echo "No notes."
+		exit 1
+	fi
+	if (( $# <= 2 )) ; then
+		echo "Invalid number of arguments."
+		exit 1
+	fi
+
+	line=$2
+	text=$3
+	if (( $length < $line )) ; then
+		echo "Line out of range."
+		exit 1
+	fi
+
+	top=$(head -n $(( $line - 1 )) "$note_file")
+	bottom=$(tail -n $(( $length - $line + 1 )) "$note_file")
+	echo -e "${top}\n${text}\n${bottom}" > $note_file
+	echo "inserted '$text' at line $line."
+elif [[ $1 == -* ]] ; then
+	echo "Invalid option."
+	exit 1
 else
-	echo $1 >> ~/.notes
+	# append a note
+	echo "$1" >> $note_file
 fi
