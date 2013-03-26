@@ -19,8 +19,10 @@ for inf in infs:
 		# split scores
 		score = parts.pop(2)
 		if '/' in score:
+			# explicit points
 			parts.extend(score.split('/'))
 		else:
+			# percentages
 			parts.extend([score[:-1], '100'])
 		# strip whitespace
 		parts = [part.strip() for part in parts]
