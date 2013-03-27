@@ -1,0 +1,15 @@
+#!/bin/bash
+# Performs a command within each directory passed
+
+# For the sake of simplicity, the command is read from stdin and the
+#  directories are the arguments
+dirs=("$@")
+read command
+
+for dir in "${dirs[@]}"
+do (
+	cd "$dir"
+	echo "Entering '$dir/$repo'"
+	$command
+	echo
+) done
