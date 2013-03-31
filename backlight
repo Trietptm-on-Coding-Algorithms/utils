@@ -15,7 +15,8 @@ curr_brightness() {
 
 # Sets brightness to value passes
 set_brightness() {
-	echo $1 | tee > /sys/class/backlight/acpi_video0/brightness 2>/dev/null ||
+	# Requires sudo (sorry)
+	echo $1 | sudo tee /sys/class/backlight/acpi_video0/brightness 2> /dev/null ||
 		echo "Could not set brightness."
 }
 
@@ -24,12 +25,12 @@ if [[ $1 == "--max" || $1 == "-m" ]] ; then
 	set_brightness $(max_brightness)
 elif [[ $1 == "--verbose" || $1 == "-v" ]] ; then
 	# Try to set brightness if there's a second argument
-	(($# >=2 )) && set_brightness $2
+	(( $# >=2 )) && set_brightness "$2"
 
 	# Print max and current brightness
 	echo "Max brightness: $(max_brightness)"
 	echo "Current brightness: $(curr_brightness)"
 else
 	# Try to set brightness to first argument if no switches
-	set_brightness $1
+	set_brightness "$1"
 fi
