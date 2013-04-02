@@ -1,23 +1,21 @@
 #!/bin/bash
 # Sequentially renames files with a prefix, suffix, and zero-padded numbers
 
-usage="$(basename $0) <prefix> <suffix> <minimum number of digits> [<files>]"
-
 if (( $# <= 2 )) ; then
-	echo "usage: $usage"
+	echo "usage: $(basename $0) <prefix> <suffix> <minimum number of digits> [<files>]"
 fi
 
-prefix=$1
-suffix=$2
-digits=$3
+prefix="$1"
+suffix="$2"
+digits="$3"
 
-files=${@:4}
-nfiles=$(( $#-3 ))
+files=("${@:4}")
+nfiles=$(( $# - 3 ))
 
 fn=1
-for file in $files
+for file in "${files[@]}"
 do
-	mv $file $prefix$(printf "%0${digits}d" $fn)
+	mv "$file" "$prefix$(printf "%0${digits}d" $fn)"
 	(( fn++ ))
 done
 echo "$nfiles renamed"
