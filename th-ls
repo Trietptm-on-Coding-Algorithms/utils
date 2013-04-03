@@ -1,0 +1,3 @@
+#!/bin/bash
+
+cat -n "$trash_log" 2>/dev/null

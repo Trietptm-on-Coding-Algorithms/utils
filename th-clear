@@ -1,0 +1,10 @@
+#!/bin/bash
+
+echo -n "Clear the trash [y/N]? "
+read
+if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+	return 1
+else
+	rm -vrf "$trash_dir"
+	return 0
+fi

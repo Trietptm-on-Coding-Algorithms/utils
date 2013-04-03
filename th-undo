@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# by default, use the last file trashed
+trash_number=${1:-$(wc -l "$trash_log" | cut -f1 -d" ")}
+trash_entry=$(sed "${trash_number}q;d" "$trash_log")
+trash_file=$(echo $trash_entry | cut -f1 -d"	")
+real_file=$(echo $trash_entry | cut -f2- -d"	")
+echo "restoring $real_file"
+if mv -iv -- "$trash_dir/$trash_file" "$real_file" ; then
+	# remove the file log entry
+	#sed -n -e "${file_number}!p" "$trash_log" > $trash_log
+	:
+fi

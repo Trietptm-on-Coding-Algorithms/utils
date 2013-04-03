@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# check for no arguments
+if [ $# = 0 ] ; then
+	return 1
+fi
+
+# make trash directory
+if [ ! -d "$trash_dir" ] ; then
+	mkdir -pv "$trash_dir"
+fi
+
+# cycle through each file
+for file in "$@"
+do
+	trash_name=$RANDOM$RANDOM$RANDOM
+
+	if [[ $(file -ib "$file") =~ "inode/symlink;*" ]] ; then
+		echo "Unable to trash symlink: $file"
+	else
+		if mv -v -- "$file" "$trash_dir/$trash_name" ; then
+			echo -n "$trash_name	" >> "$trash_log"
+			readlink -f "$file" >> "$trash_log"
+		fi
+	fi
+done
