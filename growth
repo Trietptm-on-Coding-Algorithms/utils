@@ -1,0 +1,41 @@
+#!/bin/bash
+
+if [[ $# = 0 ]] ; then
+	echo "No file given."
+	exit 1
+fi
+
+now() {
+	date '+%s'
+}
+
+size() {
+	du "$@" | awk '{ print $1 }'
+}
+
+file="$1"
+start=$(now)
+start_size=$(size "$file")
+last_size=$(size "$file")
+
+while true ; do
+	size=$(size "$file")
+	human_size=$(size -h "$file")
+	elapsed=$(( $(now) - $start ))
+	growth=$(( $size - $start_size ))
+
+	clear
+
+	echo "Time elapsed: $elapsed"
+	echo "File size: $size ($human_size)"
+	echo "Growth: $growth"
+
+	if [[ $last_size = $size ]] ; then
+		echo "File did not grow on last iteration."
+	else
+		echo "Average speed of growth: $(( $growth / $elapsed )) B/s"
+	fi
+
+	last_size=$size
+	sleep 1
+done
