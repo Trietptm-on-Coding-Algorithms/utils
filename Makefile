@@ -1,0 +1,75 @@
+PREFIX = /usr/local
+
+all:
+
+install:
+	@install update-global-ctags ${DESTDIR}${PREFIX}/bin
+	@install attach-displays ${DESTDIR}${PREFIX}/bin
+	@install backlight ${DESTDIR}${PREFIX}/bin
+	@install bu ${DESTDIR}${PREFIX}/bin
+	@install ciph ${DESTDIR}${PREFIX}/bin
+	@install clean ${DESTDIR}${PREFIX}/bin
+	@install def ${DESTDIR}${PREFIX}/bin
+	@install do-each ${DESTDIR}${PREFIX}/bin
+	@install dyninput ${DESTDIR}${PREFIX}/bin
+	@install extract ${DESTDIR}${PREFIX}/bin
+	@install full-backup ${DESTDIR}${PREFIX}/bin
+	@install get-packages ${DESTDIR}${PREFIX}/bin
+	@install git-author ${DESTDIR}${PREFIX}/bin
+	@install git-du ${DESTDIR}${PREFIX}/bin
+	@install git-perm-rm ${DESTDIR}${PREFIX}/bin
+	@install grade ${DESTDIR}${PREFIX}/bin
+	@install growth ${DESTDIR}${PREFIX}/bin
+	@install last-used ${DESTDIR}${PREFIX}/bin
+	@install latexize ${DESTDIR}${PREFIX}/bin
+	@install low-power ${DESTDIR}${PREFIX}/bin
+	@install nf ${DESTDIR}${PREFIX}/bin
+	@install note ${DESTDIR}${PREFIX}/bin
+	@install pdf ${DESTDIR}${PREFIX}/bin
+	@install rep ${DESTDIR}${PREFIX}/bin
+	@install rot13 ${DESTDIR}${PREFIX}/bin
+	@install rs-parallel ${DESTDIR}${PREFIX}/bin
+	@install run-always ${DESTDIR}${PREFIX}/bin
+	@install run-java.sh ${DESTDIR}${PREFIX}/bin
+	@install seq-rename ${DESTDIR}${PREFIX}/bin
+	@install th ${DESTDIR}${PREFIX}/bin
+	@install th-clear ${DESTDIR}${PREFIX}/bin
+	@install th-ls ${DESTDIR}${PREFIX}/bin
+	@install th-undo ${DESTDIR}${PREFIX}/bin
+	@install translate ${DESTDIR}${PREFIX}/bin
+
+uninstall:
+	@rm -f ${DESTDIR}${PREFIX}/bin/attach-displays
+	@rm -f ${DESTDIR}${PREFIX}/bin/backlight
+	@rm -f ${DESTDIR}${PREFIX}/bin/bu
+	@rm -f ${DESTDIR}${PREFIX}/bin/ciph
+	@rm -f ${DESTDIR}${PREFIX}/bin/clean
+	@rm -f ${DESTDIR}${PREFIX}/bin/def
+	@rm -f ${DESTDIR}${PREFIX}/bin/do-each
+	@rm -f ${DESTDIR}${PREFIX}/bin/dyninput
+	@rm -f ${DESTDIR}${PREFIX}/bin/extract
+	@rm -f ${DESTDIR}${PREFIX}/bin/full-backup
+	@rm -f ${DESTDIR}${PREFIX}/bin/get-packages
+	@rm -f ${DESTDIR}${PREFIX}/bin/git-author
+	@rm -f ${DESTDIR}${PREFIX}/bin/git-du
+	@rm -f ${DESTDIR}${PREFIX}/bin/git-perm-rm
+	@rm -f ${DESTDIR}${PREFIX}/bin/grade
+	@rm -f ${DESTDIR}${PREFIX}/bin/growth
+	@rm -f ${DESTDIR}${PREFIX}/bin/last-used
+	@rm -f ${DESTDIR}${PREFIX}/bin/latexize
+	@rm -f ${DESTDIR}${PREFIX}/bin/low-power
+	@rm -f ${DESTDIR}${PREFIX}/bin/nf
+	@rm -f ${DESTDIR}${PREFIX}/bin/note
+	@rm -f ${DESTDIR}${PREFIX}/bin/pdf
+	@rm -f ${DESTDIR}${PREFIX}/bin/rep
+	@rm -f ${DESTDIR}${PREFIX}/bin/rot13
+	@rm -f ${DESTDIR}${PREFIX}/bin/rs-parallel
+	@rm -f ${DESTDIR}${PREFIX}/bin/run-always
+	@rm -f ${DESTDIR}${PREFIX}/bin/run-java.sh
+	@rm -f ${DESTDIR}${PREFIX}/bin/seq-rename
+	@rm -f ${DESTDIR}${PREFIX}/bin/th
+	@rm -f ${DESTDIR}${PREFIX}/bin/th-clear
+	@rm -f ${DESTDIR}${PREFIX}/bin/th-ls
+	@rm -f ${DESTDIR}${PREFIX}/bin/th-undo
+	@rm -f ${DESTDIR}${PREFIX}/bin/translate
+	@rm -f ${DESTDIR}${PREFIX}/bin/update-global-ctags
