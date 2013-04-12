@@ -1,1 +1,2 @@
-xrandr --output HDMI-0 --primary --left-of LVDS --auto 2>> "$HOME/.xlog" >/dev/null &
+#!/bin/sh
+xrandr --output HDMI-0 --primary --left-of LVDS --auto
