@@ -14,6 +14,7 @@ SCRIPTS=\
 		  get-packages\
 		  git-du\
 		  git-perm-rm\
+		  gits\
 		  grade\
 		  growth\
 		  last-used\
