@@ -5,15 +5,30 @@ url="http://us.mirror.archlinuxarm.org/arm"
 repos="core extra community"
 types="any arm"
 extension="pkg.tar.xz"
-while read package
-do
-	for repo in $repos
-	do
-		for type in $types
-		do
+
+if [ $# == 0 ] ; then
+	echo "No file specified. Reading from stdin." >&2
+	list_file=/dev/stdin
+else
+	list_file="$1"
+fi
+
+while read package ; do
+	for repo in $repos ; do
+		for type in $types ; do
 			location=$url/$repo/$package-$type.$extension
 			echo $location
-			wget $location && break
+			wget "$location" && error=0 && break
+			error=1
 		done
+
+		if [ $error != 0 ] ; then
+			echo "'$package' not found in $repo." >&2
+		else
+			echo "'$package found in $repo."
+			break
+		fi
 	done
-done
+done < "$list_file"
+
+exit $error
