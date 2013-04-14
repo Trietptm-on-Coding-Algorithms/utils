@@ -8,8 +8,8 @@ read command
 
 for dir in "${dirs[@]}"
 do (
-	cd "$dir"
+	cd -- "$dir"
 	echo "Entering '$dir/$repo'"
-	$command
+	eval $command
 	echo
 ) done
