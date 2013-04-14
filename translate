@@ -1,13 +1,14 @@
 #!/bin/bash
 
-DEFAULT_TARGET_LANG=en
-
-usage="$(basename $0) <text> [[<source language>] <target language>]
-   If target is missing, uses '$DEFAULT_TARGET_LANG'
-   If source is missing, uses 'auto'"
+default_target=en
 
 if [[ $1 = -h || $1 = --help ]] ; then
-	echo "$usage"
+cat <<HERE
+$(basename $0) <text> [[<source language>] <target language>]
+   If target is missing, uses '$default_target'
+   If source is missing, uses 'auto'
+HERE
+
 	exit
 elif [[ $1 = -l || $1 = --languages ]] ; then
 	echo "An incomplete list:
@@ -26,7 +27,7 @@ elif [[ $2 ]]; then
 	target="$2"
 else
 	source=auto
-	target="$DEFAULT_TARGET_LANG"
+	target="$default_target"
 fi
 
 result=$(curl -s -i --user-agent "" -d "sl=$source" -d "tl=$target" --data-urlencode "text=$1" http://translate.google.com)
