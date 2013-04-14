@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [ $# == 0 ] ; then
+	files=(*)
+else
+	files=("$@")
+fi
+paste -d$' ' <(du -s ${files[@]}) <(du -hs ${files[@]}) | sort -nr | cut -d$' ' -f2
