@@ -1,0 +1,76 @@
+#!/bin/bash
+# Checks for dirty repositories
+
+if [[ $1 == '-v' ]] ; then
+	verbose=true
+else
+	verbose=false
+fi
+
+repos=("$HOME" "$HOME/fil" "$HOME/ecad/other")
+remotes=(origin locserv github googlecode)
+
+while read repo ; do
+	if $verbose ; then
+		echo "Found: $repo"
+	fi
+	repos+=("$repo/..")
+done < <(unbuffer find "$HOME/cod" -path "$HOME/cod/ext" -prune -o -name '.git' -type d | grep -v "$HOME/cod/ext")
+# This find command is unbuffered for debugging purposes
+# Command substitution is used instead of piping because when the output of a
+#  command is piped to a loop, the loop runs in a subshell, meaning it is
+#  unable to access the repos variable. 
+
+# Print headers
+printf "%-30s%-12s" Name WD
+for remote in ${remotes[@]} ; do
+	# One for each remote
+	printf "%-12s" "$remote"
+done
+printf "untested\n"
+
+for repo in ${repos[@]} ; do (
+	if ! cd "$repo" ; then
+		echo "Could not change to $repo." >&2
+		continue
+	fi
+	reponame=$(basename "$(realpath "$repo")")
+	#reponame="$repo"
+
+	printf "%-30s" "$reponame"
+
+	# Working directory
+	if [[ $(git diff --exit-code 2>/dev/null) != "" ]] ; then
+		# Dirty
+		printf "%-12s" "&"
+	else
+		# Clean
+		printf "%-12s" "^"
+	fi
+
+	# Remotes
+	for remote in ${remotes[@]} ; do
+		if ! git remote | grep -m1 $remote &>/dev/null ; then
+			# Repo doesn't have remote
+			printf "%-12s" "."
+		elif git diff --exit-code ${remote}/master..HEAD &>/dev/null ; then
+			# No unpushed commits
+			printf "%-12s" "^"
+		else
+			# Unpushed commits
+			printf "%-12s" "&"
+		fi
+	done
+
+	# Untested remotes
+	while read remote ; do
+		if [[ ! *${remotes[@]}* =~ ${remote} ]] ; then
+			printf "%-6s" "$remote"
+		fi
+	done < <(git remote)
+
+	printf '\n\n'
+) done
+
+# sh syntax highlighting doesn't support subshells
+# vim: set ft=zsh:
