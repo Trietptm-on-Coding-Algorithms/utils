@@ -1,0 +1,17 @@
+#!/bin/sh
+# Finds all git repositories below a specified directory
+# If no directory is specified, the cwd is used.
+
+if [ $# == 0 ] ; then
+	dir=.
+else
+	dir="$1"
+fi
+
+# In order to print the repositories, as they are found, the find command is
+#  unbuffered.
+unbuffer find "$dir" -name '.git' -type d |
+while read repo ; do
+	# Repo roots are usually the parent directories of their .git directories.
+	echo $(realpath "$repo/..")
+done
