@@ -1,0 +1,14 @@
+#!/bin/sh
+# Encapsulates the windows version of eagle.
+
+eagle='c:\Program Files\eagle\bin\eagle.exe'
+# disown
+suffix='&!'
+
+if [ $1 = '.' ] ; then
+	wine "$eagle" *.sch $suffix
+else
+	wine "$eagle" "$@" $suffix
+fi
+
+exit 0
