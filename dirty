@@ -15,7 +15,7 @@ while read repo ; do
 		echo "Found: $repo"
 	fi
 	repos+=("$repo/..")
-done < <(unbuffer find "$HOME/cod" -path "$HOME/cod/ext" -prune -o -name '.git' -type d | grep -v "$HOME/cod/ext")
+done < <(unbuffer find "$HOME/cod" -path "$HOME/ecod" -prune -o -name '.git' -type d | grep -v "$HOME/ecod")
 # This find command is unbuffered for debugging purposes
 # Command substitution is used instead of piping because when the output of a
 #  command is piped to a loop, the loop runs in a subshell, meaning it is
