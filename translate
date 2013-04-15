@@ -3,11 +3,11 @@
 default_target=en
 
 if [[ $1 = -h || $1 = --help ]] ; then
-cat <<HERE
+	cat <<EOF
 $(basename $0) <text> [[<source language>] <target language>]
    If target is missing, uses '$default_target'
    If source is missing, uses 'auto'
-HERE
+EOF
 
 	exit
 elif [[ $1 = -l || $1 = --languages ]] ; then
