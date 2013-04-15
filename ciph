@@ -38,9 +38,9 @@ elif [[ $1 == "l" ]] ; then
 		tar -tzf "${sec_tar}" &&
 		rm_tar
 elif [[ $1 == "i" ]] ; then
-	[[ -d ${sec_dir} ]] && echo "Warning: unencrypted data at ${sec_dir}/ exists."
-	[[ -f ${sec_tar} ]] && echo "Warning: unencrypted data at ${sec_tar}/ exists."
-	[[ -f ${sec_gpg} ]] && echo "Info: ${sec_gpg} exists."
+	[[ -d "${sec_dir}" ]] && echo "Warning: unencrypted data at ${sec_dir}/ exists."
+	[[ -f "${sec_tar}" ]] && echo "Warning: unencrypted data at ${sec_tar}/ exists."
+	[[ -f "${sec_gpg}" ]] && echo "Info: ${sec_gpg} exists."
 else
 	echo "Invalid argument."
 	exit 1
