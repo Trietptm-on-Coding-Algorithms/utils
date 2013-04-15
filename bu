@@ -85,7 +85,7 @@ for arg in "$@" ; do
 	case "$arg" in
 		all|arc) sync_item "${local_root}/arc/" "${remote}/arc/"                       ;;&
 		all|ela) sync_item "${local_root}/ela/" "${remote}/ela/"                       ;;&
-		all|ext) sync_item "${local_root}/cod/ext/" "${remote}/cod/ext/"               ;;&
+		all|ext) sync_item "${local_root}/ecod/" "${remote}/ecod/"                     ;;&
 		all|med) sync_item "${local_root}/med/" "${remote}/med/"                       ;;&
 		all|ro)  sync_item "${local_root}/ro/" "${remote}/ro/"                         ;;&
 		all|sec) sync_item "${local_root}/.sec.tar.gz.gpg" "${remote}/.sec.tar.gz.gpg" ;;&
