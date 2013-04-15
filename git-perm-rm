@@ -12,7 +12,7 @@ if [[ ! -d .git ]]; then
 fi
 
 # Filter history
-git filter-branch --force --index-filter "git rm -rf --cached --ignore-unmatch ""$@""" --prune-empty -- --all
+git filter-branch --force --index-filter "git rm -rf --cached --ignore-unmatch -- ""$*""" --prune-empty -- --all
 
 # Remove old objects and refs
 rm -rf .git/refs/original/ && git reflog expire --all && git gc --aggressive --prune
