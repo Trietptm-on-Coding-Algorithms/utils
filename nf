@@ -1,11 +1,9 @@
 #!/bin/bash
 # normalizes file names
-if (( $# == 0 )) ; then
+if [ $# == 0 ] ; then
 	echo "No files specified." >&2
 	exit 1
 fi
-
-files=("$@")
 
 # The way this function is treated is a bit awkward (passing a file name,
 # capturing the function's output in a capture shell, and seting the file name
@@ -21,7 +19,12 @@ apply_pattern() {
 	fi
 }
 
-for file in "${files[@]}" ; do
+for file ; do
+	if [ ! -f "$file" ] ; then
+		echo "'$file' does not exist" >&2
+		continue
+	fi
+
 	orig_file="$file"
 	file="$(apply_pattern 's/ /-/g'    "$file")"
 	file="$(apply_pattern 'y/A-Z/a-z/' "$file")"
@@ -37,10 +40,9 @@ for file in "${files[@]}" ; do
 	for (( i=0; i<3; i++ )) ; do
 		file="$(apply_pattern 's/--/-/g' "$file")"
 	done
-	echo -n "Renamed '$orig_file' to '$file'"
 	if [[ "$orig_file" = "$file" ]] ; then
-		echo " (no change)"
+		echo "'$orig_file' not renamed"
 	else
-		echo
+		echo "'$orig_file' renamed to '$file'"
 	fi
 done
