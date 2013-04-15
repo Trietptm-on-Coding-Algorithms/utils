@@ -1,6 +1,8 @@
 #!/bin/bash
 
 root="$HOME"
+user=$(whoami)
+
 sec_dir="${2:-sec}"
 sec_tar=".${sec_dir}.tar.gz"
 sec_gpg="${sec_tar}.gpg"
@@ -16,7 +18,7 @@ rm_tar () {
 
 if [[ $1 == "e" ]] ; then
 	tar -czf "${sec_tar}" "${sec_dir}" &&
-		gpg -e -r evan "${sec_tar}" &&
+		gpg -e -r ${user} "${sec_tar}" &&
 		srm "${sec_tar}"
 elif [[ $1 == "d" ]] ; then
 	gpg "${sec_gpg}" &&
