@@ -1,0 +1,34 @@
+#!/bin/bash
+
+if [[ $# != 0 ]] ; then
+	if [[ $1 == "-h" ]] ; then
+		cat <<EOF
+Help will come soon.	
+EOF
+		exit
+	fi
+
+	args=("$@")
+	for (( narg=0; narg<$#; ++narg )) ; do
+		arg="${args[$narg]}"
+
+		case "$arg" in
+			-d)
+				cd "${args[$((++narg))]}"
+				;;
+			*)
+				commits+="$arg"
+				;;
+		esac
+	done
+fi
+
+echo ${#commits[@]} 
+if [[ ${#commits[@]} = 0 ]] ; then
+	commits=($(git rev-list --all))
+fi
+
+for commit in ${commits[@]} ; do
+	echo -n "$commit"
+	git archive $commit | tar -x -O | wc -lw
+done
