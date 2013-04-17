@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if (( $# >= 1 )) ; then
+if [[ $# != 0 ]] ; then
 	dir="$1"
 	cd "$dir"
 fi
@@ -8,12 +8,9 @@ fi
 rm -f *.class *.o *.bin
 rm -f *.swp *.swo *~
 
-for tex_file in *.tex
-do
+for tex_file in *.tex ; do
 	base=${tex_file/.tex/}
-	for ext in aux log dvi pdf idx out nav snm toc
-	do
-		file="$base.$ext"
-		rm -f "$file"
+	for ext in aux log dvi pdf idx out nav snm toc ; do
+		rm -f "$base.$ext"
 	done
 done

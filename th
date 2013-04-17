@@ -11,8 +11,7 @@ if [ ! -d "$trash_dir" ] ; then
 fi
 
 # cycle through each file
-for file in "$@"
-do
+for file ; do
 	trash_name=$RANDOM$RANDOM$RANDOM
 
 	if [[ $(file -ib "$file") =~ "inode/symlink;*" ]] ; then

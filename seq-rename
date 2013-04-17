@@ -13,8 +13,7 @@ files=("${@:4}")
 nfiles=$(( $# - 3 ))
 
 fn=1
-for file in "${files[@]}"
-do
+for file in "${files[@]}" ; do
 	mv "$file" "$prefix$(printf "%0${digits}d" $fn)"
 	(( fn++ ))
 done

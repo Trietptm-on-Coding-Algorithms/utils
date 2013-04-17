@@ -6,8 +6,7 @@ echo '\begin{document}'
 
 if [[ $1 != "-t" ]] ; then
 	# Read text from stdin and print it with no modifications
-	while read line
-	do
+	while read line ; do
 		echo $line
 	done
 fi

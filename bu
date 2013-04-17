@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if (( $# < 1 )) ; then
+if [ $# = 0 ] ; then
 	echo "Invalid number of arguments." >&2
 	exit 1
 fi
@@ -59,7 +59,7 @@ sync_item() {
 		delete_flags=
 	fi
 
-	echo "$action $(basename ""${item}"") (${local_name}:${item}) with ${remote_item}..."
+	echo "$action $(basename "${item}") (${local_name}:${item}) with ${remote_item}..."
 	if $out ; then
 		rsync $rs_flags $delete_flags "$item" "$remote_item"
 	else
@@ -67,7 +67,7 @@ sync_item() {
 	fi
 }
 
-for arg in "$@" ; do
+for arg ; do
 	if [[ "$arg" == -* ]] ; then
 		delete=true
 		arg=${arg:1}
@@ -101,7 +101,8 @@ for arg in "$@" ; do
 				fi
 
 				pacman -Qii | grep '^MODIFIED' | grep -v '^shadow$' | cut -d$'\t' -f2 | sed 's/^.//' |
-				xargs tar -cz | ssh $remote_name "${delete_command}; mkdir -p ${remote_bu_dir}; tar -xz -C ${remote_bu_dir}"
+				xargs tar -cz |
+				ssh $remote_name "${delete_command}; mkdir -p ${remote_bu_dir}; tar -xz -C ${remote_bu_dir}"
 			else
 				if $delete ; then
 					echo "Deletion is not permitted on etc pulls." >&2

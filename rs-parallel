@@ -1,7 +1,11 @@
 #!/bin/bash
-# runs a separate rsync command for each file being transferred
+# Runs a separate rsync command for each file being transferred.
+
 src="$1"
 server="$2"
 dest="$3"
-find "$src" -type f -size +100000 | parallel -v ssh "$server" mkdir -p "$dest"{//}\;rsync -Havessh -avz {} "$server":"$dest"{}
+
+find "$src" -type f -size +100000 |
+parallel -v ssh "$server" mkdir -p "$dest"{//}\;rsync -Havessh -avz {} "$server":"$dest"{}
+
 rsync -Havessh "$src" "$server":"$dest"
