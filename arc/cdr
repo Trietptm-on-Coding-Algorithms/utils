@@ -4,22 +4,24 @@
 #  if --nopass is not set and a file named .gitpass exists, pass
 #  over that directory and pretend the .git directory does not exist
 
-nopass=false
+cdr () {
+	nopass=false
 
-# Parse arguments
-if [[ $1 == '-h' || $1 == '--help' ]]; then
-	echo "cdr [-h][--nopass|-n]"
-elif [[ $1 == '-n' || $1 == '--nopass' ]]; then
-	nopass=true
-fi
-
-last_directory=""
-while [[ ! -d ".git" || -f ".gitpass" && ! $nopass == true ]]
-do
-	cd ..
-	if [[ $last_directory == $(pwd) ]]; then
-		echo Unable to go back any further.
-		return 1
+	# Parse arguments
+	if [[ $1 == '-h' || $1 == '--help' ]]; then
+		echo "cdr [-h][--nopass|-n]"
+	elif [[ $1 == '-n' || $1 == '--nopass' ]]; then
+		nopass=true
 	fi
-	last_directory="$(pwd)"
-done
+
+	last_directory=""
+	while [[ ! -d ".git" || -f ".gitpass" && ! $nopass == true ]]
+	do
+		cd ..
+		if [[ $last_directory == $(pwd) ]]; then
+			echo Unable to go back any further.
+			return 1
+		fi
+		last_directory="$(pwd)"
+	done
+}
