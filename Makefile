@@ -38,7 +38,9 @@ SCRIPTS=\
 		  dirty\
 		  split-args\
 		  du-sorted\
-		  d
+		  d\
+		  qnmap\
+		  arp-ips
 
 .PHONY: all install uninstall check
 .SILENT: all install uninstall check
