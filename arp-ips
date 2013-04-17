@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Check for root
+if [[ $(whoami) != root ]] ; then
+	echo "You must be root to scan."
+	exit 1
+fi
+
+# Select interface
+if [ $1 ] ; then
+	interface="$1"
+else
+	interface=eth0
+fi
+
+nline=0
+
+# arp-scan's output is a bit annoying to parse
+arp-scan -lqg -I "$interface" |
+cut -d$'\t' -f1 |
+while read ip ; do
+	# Skip the last lines after the blank line
+	if [[ $ip =~ ^$ ]] ; then
+		break
+	fi
+
+	# Skip the first two lines
+	if (( nline >= 2 )) ; then
+		# Just assume these are ips
+		# TODO: Make this more robust
+		echo "$ip"
+	fi
+
+	(( nline++ ))
+done
