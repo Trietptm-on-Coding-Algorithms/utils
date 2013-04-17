@@ -20,7 +20,7 @@ apply_pattern() {
 }
 
 for file ; do
-	if [ ! -f "$file" ] ; then
+	if [ ! -f "$file" -a ! -d "$file" ] ; then
 		echo "'$file' does not exist" >&2
 		continue
 	fi
