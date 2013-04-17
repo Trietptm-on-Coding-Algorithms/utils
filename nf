@@ -1,6 +1,6 @@
 #!/bin/bash
 # normalizes file names
-if [ $# == 0 ] ; then
+if [[ $# = 0 ]] ; then
 	echo "No files specified." >&2
 	exit 1
 fi
@@ -10,7 +10,7 @@ fi
 # variable to the output), but I felt more comfortable writing it like this
 # than having `file` be treated as a global variable.
 apply_pattern() {
-	new_file="$(perl-rename -v "$1" -- "$2" | sed 's/^.*-> //')"
+	new_file=$(perl-rename -v "$1" -- "$2" | sed 's/^.*-> //')
 
 	if [[ "x$new_file" != "x" ]] ; then
 		echo -n "$new_file"
@@ -26,19 +26,19 @@ for file ; do
 	fi
 
 	orig_file="$file"
-	file="$(apply_pattern 's/ /-/g'    "$file")"
-	file="$(apply_pattern 'y/A-Z/a-z/' "$file")"
-	file="$(apply_pattern 's/_/-/g'    "$file")"
-	file="$(apply_pattern "s/'//g"     "$file")"
-	file="$(apply_pattern 's/"//g'     "$file")"
-	file="$(apply_pattern 's/,//g'     "$file")"
-	file="$(apply_pattern 's/&/-/g'    "$file")"
-	file="$(apply_pattern 's/\(//g'    "$file")"
-	file="$(apply_pattern 's/\)//g'    "$file")"
-	file="$(apply_pattern 's/://g'     "$file")"
-	file="$(apply_pattern 's/\.-/-/g'  "$file")"
+	file=$(apply_pattern 's/ /-/g'    "$file")
+	file=$(apply_pattern 'y/A-Z/a-z/' "$file")
+	file=$(apply_pattern 's/_/-/g'    "$file")
+	file=$(apply_pattern "s/'//g"     "$file")
+	file=$(apply_pattern 's/"//g'     "$file")
+	file=$(apply_pattern 's/,//g'     "$file")
+	file=$(apply_pattern 's/&/-/g'    "$file")
+	file=$(apply_pattern 's/\(//g'    "$file")
+	file=$(apply_pattern 's/\)//g'    "$file")
+	file=$(apply_pattern 's/://g'     "$file")
+	file=$(apply_pattern 's/\.-/-/g'  "$file")
 	for (( i=0; i<3; i++ )) ; do
-		file="$(apply_pattern 's/--/-/g' "$file")"
+		file=$(apply_pattern 's/--/-/g' "$file")
 	done
 	if [[ "$orig_file" = "$file" ]] ; then
 		echo "'$orig_file' not renamed"
