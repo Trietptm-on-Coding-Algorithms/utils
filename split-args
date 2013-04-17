@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Splits the arguments passed into lines
 
 for word ; do

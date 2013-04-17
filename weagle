@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Encapsulates the windows version of eagle.
 
 eagle='c:\Program Files\eagle\bin\eagle.exe'
