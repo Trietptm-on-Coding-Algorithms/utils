@@ -23,7 +23,6 @@ EOF
 	done
 fi
 
-echo ${#commits[@]} 
 if [[ ${#commits[@]} = 0 ]] ; then
 	commits=($(git rev-list --all))
 fi
