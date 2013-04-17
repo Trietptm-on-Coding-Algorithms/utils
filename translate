@@ -7,15 +7,14 @@ if [[ $1 = -h || $1 = --help ]] ; then
 $(basename $0) <text> [[<source language>] <target language>]
    If target is missing, uses '$default_target'
    If source is missing, uses 'auto'
-EOF
 
-	exit
-elif [[ $1 = -l || $1 = --languages ]] ; then
-	echo "An incomplete list:
+An incomplete list of supported languages:
    en - english
    es - spanish
    de - german
-   ru - russian"
+   ru - russian
+EOF
+
 	exit
 fi
 
