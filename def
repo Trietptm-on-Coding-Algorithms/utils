@@ -6,5 +6,5 @@ if [[ $1 == "-h" ]] ; then
 	echo "show:db for a list of dictionaries"
 	echo "show:strat for more commands"
 else
-	curl dict://dict.org/$@
+	curl "dict://dict.org/$1"
 fi
