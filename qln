@@ -1,0 +1,47 @@
+#!/bin/bash
+
+link_dir="$HOME/ql"
+force=false
+
+if [[ $1 = clear ]] ; then
+	rm -rf "$link_dir"
+	echo "All links cleared."
+	exit
+elif [[ $1 = ls ]] ; then
+	if [[ ! -d "$link_dir" ]] ; then
+		echo "No links."
+		exit 1
+	fi
+
+	for link in "$link_dir"/* ; do
+		echo "$link -> $(realpath "$link")"
+	done
+	exit
+fi
+
+error=false
+
+for arg ; do
+	if [[ "$arg" = -f ]] ; then
+		force=true
+		continue
+	fi
+
+	arg_link="$link_dir/$arg"
+	if [[ -f "$arg_link" ]] && ! $force ; then
+		echo "$arg_link"
+	else
+		if [[ -f "$arg" || -d "$arg" ]] ; then
+			echo "Creating '$arg_link'"
+			mkdir -p "$link_dir"
+			ln -fs "$(realpath "$arg")" "$arg_link"
+		else
+			echo "'$arg' does not exist."
+			error=true
+		fi
+	fi
+done
+
+if $error ; then
+	exit 1
+fi
