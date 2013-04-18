@@ -1,0 +1,39 @@
+#!/bin/bash
+# Extracts lines and fields from text.
+# Arguments:
+#   -d?  delimiter used to extract fields (default is a tab)
+#   -r?  row number
+#   -f?  field number
+# TODO: trimming
+# TODO: ranges
+
+delim=$'\t'
+
+for arg ; do
+	if [[ $arg = -d* ]] ; then
+		delim=${arg:2}
+	elif [[ $arg = -r* ]] ; then
+		row=${arg:2}
+	elif [[ $arg = -f* ]] ; then
+		field=${arg:2}
+	fi
+done
+
+data=$(cat)
+if [[ $row ]] ; then
+	data=$(sed -n "${row}p" <<DAT
+$data
+DAT
+)
+fi
+
+if [[ $field ]] ; then
+	data=$(awk -F"$delim" "{ print \$$field }" <<DAT
+$data
+DAT
+)
+fi
+
+cat <<DAT
+$data
+DAT
