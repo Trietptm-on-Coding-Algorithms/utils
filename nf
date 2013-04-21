@@ -10,7 +10,11 @@ fi
 # variable to the output), but I felt more comfortable writing it like this
 # than having `file` be treated as a global variable.
 apply_pattern() {
-	new_file=$(perl-rename -v "$1" -- "$2" | sed 's/^.*-> //')
+	if $dry_run ; then
+		new_file=$(perl-rename -vn "$1" -- "$2" | sed 's/^.*-> //')
+	else
+		new_file=$(perl-rename -v "$1" -- "$2" | sed 's/^.*-> //')
+	fi
 
 	if [[ "x$new_file" != "x" ]] ; then
 		echo -n "$new_file"
@@ -19,7 +23,24 @@ apply_pattern() {
 	fi
 }
 
+noargs=false
+spaces_only=false
+dry_run=false
+
 for file ; do
+	if ! $noargs ; then
+		if [ "$file" = -s ] ; then
+			spaces_only=true
+			continue
+		elif [ "$file" = -- ] ; then
+			noargs=true
+			continue
+		elif [ "$file" = -n ] ; then
+			dry_run=true
+			continue
+		fi
+	fi
+
 	if [ ! -f "$file" -a ! -d "$file" ] ; then
 		echo "'$file' does not exist" >&2
 		continue
@@ -27,19 +48,22 @@ for file ; do
 
 	orig_file="$file"
 	file=$(apply_pattern 's/ /-/g'    "$file")
-	file=$(apply_pattern 'y/A-Z/a-z/' "$file")
-	file=$(apply_pattern 's/_/-/g'    "$file")
-	file=$(apply_pattern "s/'//g"     "$file")
-	file=$(apply_pattern 's/"//g'     "$file")
-	file=$(apply_pattern 's/,//g'     "$file")
-	file=$(apply_pattern 's/&/-/g'    "$file")
-	file=$(apply_pattern 's/\(//g'    "$file")
-	file=$(apply_pattern 's/\)//g'    "$file")
-	file=$(apply_pattern 's/://g'     "$file")
-	file=$(apply_pattern 's/\.-/-/g'  "$file")
-	for (( i=0; i<3; i++ )) ; do
+	if ! $spaces_only ; then
+		file=$(apply_pattern 'y/A-Z/a-z/' "$file")
+		file=$(apply_pattern 's/_/-/g'    "$file")
+		file=$(apply_pattern "s/'//g"     "$file")
+		file=$(apply_pattern 's/"//g'     "$file")
+		file=$(apply_pattern 's/,//g'     "$file")
+		file=$(apply_pattern 's/&/-/g'    "$file")
+		file=$(apply_pattern 's/\(//g'    "$file")
+		file=$(apply_pattern 's/\)//g'    "$file")
+		file=$(apply_pattern 's/://g'     "$file")
+		file=$(apply_pattern 's/\.-/-/g'  "$file")
+	fi
+	for i in $(seq 1 3) ; do
 		file=$(apply_pattern 's/--/-/g' "$file")
 	done
+
 	if [[ "$orig_file" = "$file" ]] ; then
 		echo "'$orig_file' not renamed"
 	else
