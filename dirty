@@ -44,8 +44,9 @@ for repo in ${repos[@]} ; do (
 		if ! git remote | grep -m1 $remote &>/dev/null ; then
 			# Repo doesn't have remote
 			printf "%-12s" "."
-		elif git diff --exit-code ${remote}/master..HEAD &>/dev/null ; then
+		elif git diff --exit-code ${remote}/master..master &>/dev/null ; then
 			# No unpushed commits
+			# TODO: make this handle multiple branches
 			printf "%-12s" "^"
 		else
 			# Unpushed commits
