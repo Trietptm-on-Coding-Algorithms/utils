@@ -40,7 +40,10 @@ SCRIPTS=\
 		  du-sorted\
 		  d\
 		  qnmap\
-		  arp-ips
+		  arp-ips\
+		  git-wc\
+		  splitter\
+		  qln
 
 .PHONY: all install uninstall check
 .SILENT: all install uninstall check
