@@ -10,7 +10,7 @@ now() {
 }
 
 size() {
-	du "$@" | awk '{ print $1 }'
+	du -s "$@" | awk '{ print $1 }'
 }
 
 file="$1"
