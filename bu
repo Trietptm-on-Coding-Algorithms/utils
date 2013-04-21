@@ -20,7 +20,7 @@ local_root="$HOME"
 #remote_name="locserv"
 #remote_root="${local_root}"
 remote_name=
-remote_root="/home/evan/test/te"
+remote_root="/mnt/evan"
 
 local="${local_name}:${local_root}"
 if [[ -z ${remote_name} ]] ; then
@@ -103,12 +103,16 @@ for arg ; do
 	fi
 
 	case "$arg" in
-		all|arc) sync_item "arc" "arc"                       ;;&
-		all|ela) sync_item "ela" "ela"                       ;;&
-		all|ext) sync_item "ecod" "ecod"                     ;;&
-		all|med) sync_item "med" "med"                       ;;&
-		all|ro)  sync_item "ro" "ro"                         ;;&
+		all|arc) sync_item "arc" "arc"                         ;;&
+		all|ela) sync_item "ela" "ela"                         ;;&
+		all|ext) sync_item "ecod" "ecod"                       ;;&
+		all|med) sync_item "med" "med"                         ;;&
+		all|ro)  sync_item "ro" "ro"                           ;;&
 		all|sec) sync_item ".sec.tar.gz.gpg" ".sec.tar.gz.gpg" ;;&
+		alt|cod) sync_item "cod" "cod"                         ;;&
+		alt|fil) sync_item "fil" "fil"                         ;;&
+		alt|ecad) sync_item "ecad" "ecad"                      ;;&
+		alt|cad) sync_item "cad" "cad"                         ;;&
 		all|etc)
 			echo "$action etc..."
 
