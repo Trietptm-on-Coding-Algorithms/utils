@@ -15,20 +15,32 @@ elif [[ $1 = -l ]] ; then
 	exit
 fi
 
-local_root="$HOME"
 local_name="$(uname -n)"
+local_root="$HOME"
+#remote_name="locserv"
+#remote_root="${local_root}"
+remote_name=
+remote_root="/home/evan/test/te"
+
 local="${local_name}:${local_root}"
-remote_name="locserv"
-remote_root="${local_root}"
-remote="${remote_name}:${remote_root}"
+if [[ -z ${remote_name} ]] ; then
+	remote="${remote_root}"
+else
+	remote="${remote_name}:${remote_root}"
+fi
 remote_bu_dir="${remote_root}/bu/${local_name}"
-remote_bu="${remote_name}:${remote_bu_dir}"
 
 rs_flags="-avzy --progress -e ssh"
+crypt=false
 
 # Out or in
 if [[ $1 == out ]] ; then
 	out=true
+elif [[ $1 == out-crypt ]] ; then
+	out=true
+	crypt=true
+	# Force gpg to use curses pinentry
+	#unset DISPLAY
 elif [[ $1 == in ]] ; then
 	out=false
 else
@@ -46,24 +58,34 @@ else
 fi
 echo "Local sync root is '$local'"
 echo "Remote sync root is '$remote'"
-echo "Remote backup directory is '$remote_bu'"
+echo "Remote backup directory is '$remote_bu_dir'"
 echo
 
 sync_item() {
-	item="$1"
+	local_item="$1"
 	remote_item="$2"
 
-	if $delete ; then
+	cd "$local_root"
+
+	if $delete && ! $crypt ; then
 		delete_flags="--delete-after"
 	else
 		delete_flags=
 	fi
 
-	echo "$action $(basename "${item}") (${local_name}:${item}) with ${remote_item}..."
+	echo "$action $(basename "${local_item}") (${local_name}:${local_item}) with ${remote_item}..."
 	if $out ; then
-		rsync $rs_flags $delete_flags "$item" "$remote_item"
+		if $crypt ; then
+			if [[ -z $remote_name ]] ; then
+				tar c "$local_item" | gpg -c > "$remote_root/$remote_item.tar.gpg"
+			else
+				tar c "$local_item" | gpg -c | ssh "$remote_name" "cat > $remote_root/$remote_item.tar.gpg"
+			fi
+		else
+			rsync $rs_flags $delete_flags "$local_item/" "$remote/$remote_item"
+		fi
 	else
-		rsync $rs_flags $delete_flags "$remote_item" "$item"
+		rsync $rs_flags $delete_flags "$remote/$remote_item/" "$local_item"
 	fi
 }
 
@@ -71,24 +93,22 @@ for arg ; do
 	if [[ "$arg" == -* ]] ; then
 		delete=true
 		arg=${arg:1}
-		echo "Warning: deletion set on $arg."
+		if $crypt ; then
+			echo "Deletion has no effect on crypt."
+		else
+			echo "Warning: deletion set on $arg."
+		fi
 	else
 		delete=false
 	fi
 
-	if $out ; then
-		:
-	else
-		:
-	fi
-
 	case "$arg" in
-		all|arc) sync_item "${local_root}/arc/" "${remote}/arc/"                       ;;&
-		all|ela) sync_item "${local_root}/ela/" "${remote}/ela/"                       ;;&
-		all|ext) sync_item "${local_root}/ecod/" "${remote}/ecod/"                     ;;&
-		all|med) sync_item "${local_root}/med/" "${remote}/med/"                       ;;&
-		all|ro)  sync_item "${local_root}/ro/" "${remote}/ro/"                         ;;&
-		all|sec) sync_item "${local_root}/.sec.tar.gz.gpg" "${remote}/.sec.tar.gz.gpg" ;;&
+		all|arc) sync_item "arc" "arc"                       ;;&
+		all|ela) sync_item "ela" "ela"                       ;;&
+		all|ext) sync_item "ecod" "ecod"                     ;;&
+		all|med) sync_item "med" "med"                       ;;&
+		all|ro)  sync_item "ro" "ro"                         ;;&
+		all|sec) sync_item ".sec.tar.gz.gpg" ".sec.tar.gz.gpg" ;;&
 		all|etc)
 			echo "$action etc..."
 
@@ -111,7 +131,7 @@ for arg ; do
 				echo "Note: etc pulls pull files into ${local_root}/etc."
 				echo "It is the user's responsibility to copy these files into /etc."
 				mkdir -p ${local_root}/etc && cd ${local_root}/etc &&
-					ssh $remote_name "cd ${remote_bu_dir} && tar -cz *" | tar -xz
+				ssh $remote_name "cd ${remote_bu_dir} && tar -cz *" | tar -xz
 			fi
 			;;&
 		all|gpg)
@@ -123,7 +143,7 @@ for arg ; do
 			fi
 			;;
 		#*)
-		#   echo "Invalid: $arg"
-		#   ;;
+			#   echo "Invalid: $arg"
+			#   ;;
 	esac
 done
