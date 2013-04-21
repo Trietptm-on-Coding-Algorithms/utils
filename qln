@@ -13,11 +13,8 @@
 link_dir="$HOME/ql"
 force=false
 
-if [[ $1 = clear ]] ; then
-	rm -rf "$link_dir"
-	echo "All links cleared."
-	exit
-elif [[ $1 = ls ]] ; then
+if [[ $# = 0 ]] ; then
+	# List links if no arguments
 	if [[ ! -d "$link_dir" ]] ; then
 		echo "No links."
 		exit 1
@@ -27,30 +24,40 @@ elif [[ $1 = ls ]] ; then
 		echo "$link -> $(realpath "$link")"
 	done
 	exit
+elif [[ $1 = --clear ]] ; then
+	# Clear links
+	rm -rf "$link_dir"
+	echo "All links cleared."
+	exit
 fi
 
 error=false
 
-for arg ; do
-	if [[ "$arg" = -f ]] ; then
-		force=true
-		continue
-	fi
+# Force link creation
+if [[ "$arg" = -f ]] ; then
+	force=true
+	continue
+fi
 
-	arg_link="$link_dir/$arg"
-	if [[ -f "$arg_link" ]] && ! $force ; then
-		echo "$arg_link"
+if [[ $2 ]] ; then
+	link="$link_dir/$2"
+else
+	link="$link_dir/$(basename "$arg")"
+fi
+
+if [[ -f "$link" ]] && ! $force ; then
+	echo "'$link' already exists."
+else
+	if [[ -f "$arg" || -d "$arg" ]] ; then
+		echo "Creating '$link'"
+		mkdir -p "$link_dir"
+
+		ln -fs "$(realpath "$arg")" "$link"
 	else
-		if [[ -f "$arg" || -d "$arg" ]] ; then
-			echo "Creating '$arg_link'"
-			mkdir -p "$link_dir"
-			ln -fs "$(realpath "$arg")" "$arg_link"
-		else
-			echo "'$arg' does not exist."
-			error=true
-		fi
+		echo "'$arg' does not exist."
+		error=true
 	fi
-done
+fi
 
 if $error ; then
 	exit 1
