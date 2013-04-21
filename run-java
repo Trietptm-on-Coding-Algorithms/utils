@@ -1,21 +1,21 @@
 #!/bin/bash
-usage="usage: $(basename $0) <flags> [<class_name> [<function_definition>]]"
+# TODO: rewrite this
 
-if (( $# == 0 )) ; then
+usage="usage: $(basename "$0") <flags> [<class_name> [<function_definition>]]"
+
+if [[ $# = 0 ]] ; then
 	echo $usage
 fi
 
-
-
-if (( $# >= 2 )) ; then
+if [[ $2 ]] ; then
 	class_name=$2
 fi
-if (( $# >=3 )) ; then
+if [[ $3 ]] ; then
 	class_name=$3
 fi
 
 # Check for class names or function definitions
-if (( $# >= 1 )) ; then
+if [[ $# != 0 ]] ; then
 	# Specify class name to use or insert
 	if [[ $1 == "-c" || $1 == "-i" ]] ; then
 		class_name=$2
@@ -54,20 +54,15 @@ touch "$code_file"
 
 # Add class and function specifiers
 if [[ ! -z $insert_class_name ]] ; then
-	echo "class $class_name"" {" >> "$code_file"
+	echo "class $class_name {" >> "$code_file"
 fi
 if [[ ! -z $func_def ]] ; then
-	echo "$func_def"" {" >> "$code_file"
+	echo "$func_def {" >> "$code_file"
 fi
 
 # Read each line from stdin and put it in the temp code
-while read line
-do
-	if [[ $line == "q" ]] ; then
-		break
-	else
-		echo $line >> "$code_file"
-	fi
+while read line ; do
+	echo $line >> "$code_file"
 done
 
 # Close the class and function specifiers
@@ -79,9 +74,9 @@ if [[ ! -z $func_def ]] ; then
 fi
 
 # Compile, run, and cleanup
-if [[ $mode == "r*" ]] ; then
+if [[ $mode == r* ]] ; then
 	javac -d . "$code_file" && java "$class_file"
-elif [[ $mode == "s*" ]] ; then
+elif [[ $mode == s* ]] ; then
 	less $code_file
 fi
 # Cleanup

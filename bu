@@ -1,14 +1,14 @@
 #!/bin/bash
 
-if [ $# = 0 ] ; then
+if [[ $# = 0 ]] ; then
 	echo "Invalid number of arguments." >&2
 	exit 1
 fi
 
-if [[ "$1" == "-h" ]] ; then
-	echo "$(basename ""$0"") [-h|-l]"
+if [[ $1 = -h ]] ; then
+	echo "$(basename "$0") [-h|-l]"
 	exit
-elif [[ "$1" == "-l" ]] ; then
+elif [[ $1 = -l ]] ; then
 	echo "Shared: arc, ela, ext (cod), med, ro, sec."
 	echo "Backup: etc"
 	echo "Other: gpg"
@@ -27,9 +27,9 @@ remote_bu="${remote_name}:${remote_bu_dir}"
 rs_flags="-avzy --progress -e ssh"
 
 # Out or in
-if [[ "$1" == "out" ]] ; then
+if [[ $1 == out ]] ; then
 	out=true
-elif [[ "$1" == "in" ]] ; then
+elif [[ $1 == in ]] ; then
 	out=false
 else
 	echo "First argument must be the direction (out or in)." >&2

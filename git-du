@@ -16,9 +16,8 @@
 #  250M   .git/
 #  400M   ./
 
-files=(*/)
-files+=("$@")
-paste -d$' ' <(du -s ${files[@]}) <(du -hs ${files[@]}) | sort -n | cut -d$' ' -f2
+files=(*/ "$@")
+paste -d' ' <(du -s ${files[@]}) <(du -hs ${files[@]}) | sort -n | cut -d' ' -f2
 echo
 du -hs .git
 du -hs .
