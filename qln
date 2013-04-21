@@ -1,4 +1,14 @@
 #!/bin/bash
+# Manages a centralized link system.
+#
+# Adding links is quick. All you have to do is use 'qln' like so: `qln
+# file`. That will create a new link named "file" to $(realpath "file") in
+# `qln`'s managed directory ($HOME/ql by default).
+#
+# If a link named "file" already exists, `qln file` will print the full
+# path of the file that the "file" link points to. If the "-f" flag is
+# passed to `qln`, all of the links after it will be created regardless
+# of whether or not they already exist.
 
 link_dir="$HOME/ql"
 force=false
