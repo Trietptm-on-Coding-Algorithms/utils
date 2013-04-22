@@ -22,6 +22,9 @@ local_root="$HOME"
 remote_name=
 remote_root="/mnt/evan"
 
+rs_flags="-avzy --progress -e ssh"
+crypt=false
+
 local="${local_name}:${local_root}"
 if [[ -z ${remote_name} ]] ; then
 	remote="${remote_root}"
@@ -30,9 +33,6 @@ else
 fi
 remote_bu_dir="${remote_root}/bu/${local_name}"
 
-rs_flags="-avzy --progress -e ssh"
-crypt=false
-
 # Out or in
 if [[ $1 == out ]] ; then
 	out=true
@@ -40,7 +40,24 @@ elif [[ $1 == out-crypt ]] ; then
 	out=true
 	crypt=true
 	# Force gpg to use curses pinentry
-	#unset DISPLAY
+	unset DISPLAY
+	export GPG_TTY=$(tty)
+	# TODO: make this more secure
+	echo -n "Encryption passphrase (blank to use gpg interactively): " 
+	read -s crypt_passphrase
+	echo
+	if [[ -z "$crypt_passphrase" ]] ; then
+		gpg_flags=
+	else
+		echo -n "Enter passphrase again: " 
+		read -s crypt_passphrase_conf
+		echo
+		if [[ "$crypt_passphrase_conf" != "$crypt_passphrase" ]] ; then
+			echo "Passphrases do not match"
+			exit 1
+		fi
+		gpg_flags="--yes --batch --passphrase $crypt_passphrase"
+	fi
 elif [[ $1 == in ]] ; then
 	out=false
 else
@@ -77,9 +94,9 @@ sync_item() {
 	if $out ; then
 		if $crypt ; then
 			if [[ -z $remote_name ]] ; then
-				tar c "$local_item" | gpg -c > "$remote_root/$remote_item.tar.gpg"
+				tar c "$local_item" | gpg $gpg_flags -o - -c > "$remote_root/$remote_item.tar.gpg"
 			else
-				tar c "$local_item" | gpg -c | ssh "$remote_name" "cat > $remote_root/$remote_item.tar.gpg"
+				tar c "$local_item" | gpg $gpg_flags -o - -c | ssh "$remote_name" "cat > $remote_root/$remote_item.tar.gpg"
 			fi
 		else
 			rsync $rs_flags $delete_flags "$local_item/" "$remote/$remote_item"
@@ -113,6 +130,7 @@ for arg ; do
 		alt|fil) sync_item "fil" "fil"                         ;;&
 		alt|ecad) sync_item "ecad" "ecad"                      ;;&
 		alt|cad) sync_item "cad" "cad"                         ;;&
+		alt|jnt) sync_item "jnt" "jnt"                         ;;&
 		all|etc)
 			echo "$action etc..."
 
