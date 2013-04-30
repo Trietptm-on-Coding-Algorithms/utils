@@ -6,21 +6,35 @@ if [[ $# = 0 ]] ; then
 fi
 
 if [[ $1 = -h ]] ; then
-	echo "$(basename "$0") [-h|-l]"
-	exit
-elif [[ $1 = -l ]] ; then
-	echo "Shared: arc, ela, ext (cod), med, ro, sec."
-	echo "Backup: etc"
-	echo "Other: gpg"
-	exit
+	cat <<EOF
+$(basename "$0") [-h] DIRECTION GROUP/ITEM...
+
+Directions:
+    'out' backs up files
+    'out-crypt' symmetrically encrypts files and backs them up
+    'in' syncs in backups
+
+Group 'all' (normal backup routine) contains these items:
+    arc, ela, ecod, med, ro, sec, etc, gpg
+Group 'alt' (items normally backed up through other means) contains these items:
+    cod, fil, ecad, cad, jnt
+
+Normal items are like aliases for directories. Most items are home
+directory root directories. 'sec' is one exception; it's a single file.
+
+There are two special items:
+    'etc' performs a backup of modified pacman-provided files.
+    'gpg' merges the local machine's private keys with the remote machine.
+EOF
+	exit 1
 fi
 
 local_name="$(uname -n)"
 local_root="$HOME"
-#remote_name="locserv"
-#remote_root="${local_root}"
-remote_name=
-remote_root="/mnt/evan"
+remote_name="locserv"
+remote_root="${local_root}"
+#remote_name=
+#remote_root="/mnt/$(whoami)"
 
 rs_flags="-avzy --progress -e ssh"
 crypt=false
@@ -34,6 +48,7 @@ fi
 remote_bu_dir="${remote_root}/bu/${local_name}"
 
 # Out or in
+# TODO: add out-dryrun
 if [[ $1 == out ]] ; then
 	out=true
 elif [[ $1 == out-crypt ]] ; then
@@ -41,15 +56,19 @@ elif [[ $1 == out-crypt ]] ; then
 	crypt=true
 	# Force gpg to use curses pinentry
 	unset DISPLAY
+	# This allows gpg pinentry to work if gpg is writing to a redirected or
+	#  piped stdout
 	export GPG_TTY=$(tty)
-	# TODO: make this more secure
-	echo -n "Encryption passphrase (blank to use gpg interactively): " 
+	# TODO: try to make this more secure
+	echo -n "Encryption passphrase (blank to use gpg interactively): "
 	read -s crypt_passphrase
 	echo
+
 	if [[ -z "$crypt_passphrase" ]] ; then
+		# gpg interacts with the user by default
 		gpg_flags=
 	else
-		echo -n "Enter passphrase again: " 
+		echo -n "Enter passphrase again: "
 		read -s crypt_passphrase_conf
 		echo
 		if [[ "$crypt_passphrase_conf" != "$crypt_passphrase" ]] ; then
@@ -61,7 +80,7 @@ elif [[ $1 == out-crypt ]] ; then
 elif [[ $1 == in ]] ; then
 	out=false
 else
-	echo "First argument must be the direction (out or in)." >&2
+	echo "First argument must be the direction (out[-crypt] or in)." >&2
 	exit 1
 fi
 
@@ -90,13 +109,18 @@ sync_item() {
 		delete_flags=
 	fi
 
-	echo "$action $(basename "${local_item}") (${local_name}:${local_item}) with ${remote_item}..."
+	echo "$action ${local}/${local_item} with ${remote}/${remote_item}..."
 	if $out ; then
 		if $crypt ; then
 			if [[ -z $remote_name ]] ; then
-				tar c "$local_item" | gpg $gpg_flags -o - -c > "$remote_root/$remote_item.tar.gpg"
+				# Write directly to a location if there's no remote machine
+				tar c "$local_item" |
+				gpg $gpg_flags -o - -c > "$remote_root/$remote_item.tar.gpg"
 			else
-				tar c "$local_item" | gpg $gpg_flags -o - -c | ssh "$remote_name" "cat > $remote_root/$remote_item.tar.gpg"
+				# Pipe through ssh if the location is on a remote machine
+				# TODO: support ftp
+				tar c "$local_item" | gpg $gpg_flags -o - -c |
+				ssh "$remote_name" "cat > $remote_root/$remote_item.tar.gpg"
 			fi
 		else
 			rsync $rs_flags $delete_flags "$local_item/" "$remote/$remote_item"
@@ -106,7 +130,7 @@ sync_item() {
 	fi
 }
 
-for arg ; do
+for arg in "${@:2}" ; do
 	if [[ "$arg" == -* ]] ; then
 		delete=true
 		arg=${arg:1}
@@ -122,9 +146,10 @@ for arg ; do
 	case "$arg" in
 		all|arc) sync_item "arc" "arc"                         ;;&
 		all|ela) sync_item "ela" "ela"                         ;;&
-		all|ext) sync_item "ecod" "ecod"                       ;;&
+		all|ecod) sync_item "ecod" "ecod"                      ;;&
 		all|med) sync_item "med" "med"                         ;;&
 		all|ro)  sync_item "ro" "ro"                           ;;&
+		# TODO: expand sec
 		all|sec) sync_item ".sec.tar.gz.gpg" ".sec.tar.gz.gpg" ;;&
 		alt|cod) sync_item "cod" "cod"                         ;;&
 		alt|fil) sync_item "fil" "fil"                         ;;&
@@ -132,6 +157,7 @@ for arg ; do
 		alt|cad) sync_item "cad" "cad"                         ;;&
 		alt|jnt) sync_item "jnt" "jnt"                         ;;&
 		all|etc)
+			# TODO: make this compatible with locations on the same machine
 			echo "$action etc..."
 
 			cd /
@@ -142,9 +168,11 @@ for arg ; do
 					delete_command="false"
 				fi
 
-				pacman -Qii | grep '^MODIFIED' | grep -v '^shadow$' | cut -d$'\t' -f2 | sed 's/^.//' |
-				xargs tar -cz |
-				ssh $remote_name "${delete_command}; mkdir -p ${remote_bu_dir}; tar -xz -C ${remote_bu_dir}"
+				# TODO: just leave these tarred up
+				pacman -Qii | grep '^MODIFIED' | grep -v '^shadow$' | cut -d$'\t' -f2 |
+				sed 's/^.//' | xargs tar -cz |
+				ssh $remote_name "${delete_command}; mkdir -p ${remote_bu_dir};"\
+				                 "tar -xz -C ${remote_bu_dir}"
 			else
 				if $delete ; then
 					echo "Deletion is not permitted on etc pulls." >&2
@@ -157,6 +185,7 @@ for arg ; do
 			fi
 			;;&
 		all|gpg)
+			# TODO: add an option to backup keys to a file
 			echo "$action gpg private keys..."
 			if $out ; then
 				gpg --export-secret-keys | ssh $remote_name "gpg --import"
@@ -165,7 +194,7 @@ for arg ; do
 			fi
 			;;
 		#*)
-			#   echo "Invalid: $arg"
-			#   ;;
+		#   echo "Invalid: $arg"
+		#   ;;
 	esac
 done
