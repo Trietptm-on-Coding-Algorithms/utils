@@ -1,14 +1,12 @@
 #!/bin/bash
-# repeats a command on a button press
-rep () {
-	if (( $# == 0 )) ; then
-		echo "No command specified."
-		return 1
-	fi
-	while true
-	do
-		$@
-		read reponse
-	done
-}
+# Repeats a command
 
+if [[ $# = 0 ]] ; then
+	echo "No command specified."
+	exit 1
+fi
+
+while true ; do
+	eval "$@"
+	read reponse
+done

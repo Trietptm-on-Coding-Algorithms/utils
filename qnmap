@@ -14,14 +14,14 @@ versioning='-sV --version-intensity 0'
 #ports='-p1-65535'
 ports='' # use defaults
 
-if [ $# = 0 ] ; then
+if [[ $# = 0 ]] ; then
 	echo "No scans specified."
 	exit 1
 fi
 
 case "$1" in
 	real|type)
-		if [ "$1" = type ] ; then
+		if [[ "$1" = type ]] ; then
 			typesearch="${2}."
 			versioning=
 		else

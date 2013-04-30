@@ -29,19 +29,19 @@ dry_run=false
 
 for file ; do
 	if ! $noargs ; then
-		if [ "$file" = -s ] ; then
+		if [[ "$file" = -s ]] ; then
 			spaces_only=true
 			continue
-		elif [ "$file" = -- ] ; then
+		elif [[ "$file" = -- ]] ; then
 			noargs=true
 			continue
-		elif [ "$file" = -n ] ; then
+		elif [[ "$file" = -n ]] ; then
 			dry_run=true
 			continue
 		fi
 	fi
 
-	if [ ! -f "$file" -a ! -d "$file" ] ; then
+	if [[ ! -f "$file" && ! -d "$file" ]] ; then
 		echo "'$file' does not exist" >&2
 		continue
 	fi

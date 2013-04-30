@@ -7,7 +7,7 @@ if [[ $(whoami) != root ]] ; then
 fi
 
 # Select interface
-if [ $1 ] ; then
+if [[ $1 ]] ; then
 	interface="$1"
 else
 	interface=eth0

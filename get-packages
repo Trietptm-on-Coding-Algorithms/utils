@@ -6,7 +6,7 @@ repos="core extra community"
 types="any arm"
 extension="pkg.tar.xz"
 
-if [ $# == 0 ] ; then
+if [[ $# = 0 ]] ; then
 	echo "No file specified. Reading from stdin." >&2
 	list_file=/dev/stdin
 else
@@ -22,7 +22,7 @@ while read package ; do
 			error=1
 		done
 
-		if [ $error != 0 ] ; then
+		if [[ $error != 0 ]] ; then
 			echo "'$package' not found in $repo." >&2
 		else
 			echo "'$package found in $repo."
