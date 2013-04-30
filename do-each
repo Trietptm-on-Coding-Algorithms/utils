@@ -1,15 +1,33 @@
 #!/bin/bash
 # Performs a command within each directory passed
 
-# For the sake of simplicity, the command is read from stdin and the
-#  directories are the arguments
-dirs=("$@")
-read command
+cmd=()
+dir_time=false
+verbose=true
+for arg ; do
+	case "$arg" in
+		-q)
+			# Options must be passed during dir time
+			if $dir_time ; then
+				verbose=false
+				continue
+			fi
+			;;
+		--)
+			dir_time=true
+			continue
+			;;
+	esac
 
-for dir in "${dirs[@]}"
-do (
-	cd -- "$dir"
-	echo "Entering '$dir/$repo'"
-	eval $command
-	echo
-) done
+	if $dir_time ; then (
+		$verbose && echo >&2 "Executing within '$arg'..." || true
+		cd -- "$arg"
+		eval ${cmd[@]}
+		$verbose && echo >&2 || true
+	) else
+		cmd+=("$arg")
+	fi
+done
+
+# Supports subshell syntax highlighting.
+# vim: set ft=zsh:
