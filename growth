@@ -33,7 +33,7 @@ while true ; do
 	if [[ $last_size = $size ]] ; then
 		echo "File did not grow on last iteration."
 	else
-		echo "Average speed of growth: $(( $growth / $elapsed )) B/s"
+		echo "Average speed of growth: $(( $growth / $elapsed )) KB/s"
 	fi
 
 	last_size=$size
