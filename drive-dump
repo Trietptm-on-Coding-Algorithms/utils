@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+dump_dir="$HOME/ela/dump"
+dev=${1:-/dev/sdb1}
+mkdir -p "$dump_dir/$(date +"%T")"
+mount $dev /mnt
+rsync -az /mnt/ "$dump_dir"
+umount /mnt
+dd if=$dev of="$dump_dir/dev.img"
