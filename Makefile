@@ -45,7 +45,8 @@ SCRIPTS=\
         splitter\
         qln\
         drive-dump\
-        dm
+        dm\
+        git-remote-mod-url
 
 .PHONY: all install uninstall check
 .SILENT: all install uninstall check
