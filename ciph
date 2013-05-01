@@ -12,10 +12,6 @@ unset DISPLAY
 
 cd "${root}"
 
-rm_tar () {
-	srm "${sec_tar}" &
-}
-
 if [[ $1 == "e" ]] ; then
 	tar -czf "${sec_tar}" "${sec_dir}" &&
 		gpg -e -r ${user} "${sec_tar}" &&
@@ -23,7 +19,7 @@ if [[ $1 == "e" ]] ; then
 elif [[ $1 == "d" ]] ; then
 	gpg "${sec_gpg}" &&
 		tar -xzf "${sec_tar}" &&
-		rm_tar
+		srm "${sec_tar}" &
 elif [[ $1 == "c" ]] ; then
 	if [[ -d ${sec_dir} ]] ; then
 		echo "Removing ${sec_dir}/..."
@@ -36,7 +32,7 @@ elif [[ $1 == "c" ]] ; then
 elif [[ $1 == "l" ]] ; then
 	gpg "${sec_gpg}" &&
 		tar -tzf "${sec_tar}" &&
-		rm_tar
+		srm "${sec_tar}" &
 elif [[ $1 == "i" ]] ; then
 	[[ -d "${sec_dir}" ]] && echo "Warning: unencrypted data at ${sec_dir}/ exists."
 	[[ -f "${sec_tar}" ]] && echo "Warning: unencrypted data at ${sec_tar}/ exists."
