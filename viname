@@ -1,0 +1,70 @@
+#!/bin/bash
+# Uses an editor to rename or move a file.
+
+if [[ $# = 0 ]] ; then
+	echo >&2 "No filename given."
+	exit 1
+fi
+
+if [[ "$1" = -h ]] ; then
+	echo >&2 "$(basename "$0") [-h] [-f] [FILE]..."
+	exit 1
+fi
+
+use_full_path=false
+dry_run=false
+make_parents=false
+for file ; do
+	case "$file" in
+		-f)
+			use_full_path=true
+			continue
+			;;
+		-n)
+			dry_run=true
+			continue
+			;;
+		-p)
+			make_parents=true
+			continue
+			;;
+	esac
+
+	if [[ ! -f "$file" ]] ; then
+		echo >&2 "'$file' does not exist."
+		continue
+	fi
+
+	basename=$(basename "$file")
+	dirname=$(dirname "$file")
+	editor="${EDITOR-:vi}"
+
+	temp=$(mktemp)
+
+	if $use_full_path ; then
+		echo "$file" > "$temp"
+	else
+		echo "$basename" > "$temp"
+	fi
+
+	$editor "$temp"
+
+	if $use_full_path ; then
+		new_file="$(< "$temp")"
+	else
+		new_file="$dirname/$(< "$temp")"
+	fi
+
+	if ! $dry_run ; then
+		if $make_parents ; then
+			mkdir -p "$(dirname "$new_file")"
+		fi
+		mv "$file" "$new_file"
+	fi
+
+	if [[ $? = 0 ]] ; then
+		echo "$file -> $new_file"
+	fi
+
+	rm "$temp"
+done
