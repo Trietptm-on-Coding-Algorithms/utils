@@ -46,7 +46,8 @@ SCRIPTS=\
         qln\
         drive-dump\
         dm\
-        git-remote-mod-url
+        git-remote-mod-url\
+		  viname\
 
 .PHONY: all install uninstall check
 .SILENT: all install uninstall check
