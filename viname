@@ -24,9 +24,19 @@ if [[ "$1" = -h ]] ; then
 	exit 1
 fi
 
-use_full_path=false
+# Default behavior depends on the command name.
+#  - 'viname' and others work with the file's basename
+#  - 'vimv' works with the file's full path
+echo 0: $0
+if [[ "$(basename "$0")"  = vimv ]] ; then
+	echo "Def full"
+	use_full_path=true
+else
+	use_full_path=false
+fi
 dry_run=false
 make_parents=false
+
 for file ; do
 	case "$file" in
 		-f)
