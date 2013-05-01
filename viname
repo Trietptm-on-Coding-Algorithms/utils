@@ -1,13 +1,26 @@
 #!/bin/bash
 # Uses an editor to rename or move a file.
 
+
+usage() {
+	cat >&2 <<EOF
+Usage: $(basename "$0") [-h] [-f] [-n] [-p] [FILE]...
+Options:
+  -h      Display this help message
+  -f      Work with the file's full path
+  -n      Dry run (don't move the file)
+  -p      Create new directories as necessary
+EOF
+}
+
 if [[ $# = 0 ]] ; then
-	echo >&2 "No filename given."
+	echo >&2 "No arguments."
+	usage
 	exit 1
 fi
 
 if [[ "$1" = -h ]] ; then
-	echo >&2 "$(basename "$0") [-h] [-f] [FILE]..."
+	usage
 	exit 1
 fi
 
