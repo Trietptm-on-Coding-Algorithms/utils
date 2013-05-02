@@ -1,4 +1,7 @@
 #!/bin/bash
+# Prints line, word, and byte counts for commits in log format.
+
+long=false
 
 if [[ $# != 0 ]] ; then
 	if [[ $1 == "-h" ]] ; then
@@ -28,6 +31,13 @@ if [[ ${#commits[@]} = 0 ]] ; then
 fi
 
 for commit in ${commits[@]} ; do
-	echo -n "$commit"
-	git archive $commit | tar -x -O | wc -lw
+
+	if $long ; then
+		git --no-pager log -n1 HEAD
+		echo -n "Word count: "
+	else
+		echo -n "$commit"
+	fi
+
+	git archive $commit | tar -x -O | wc
 done
