@@ -1,25 +1,93 @@
 #!/bin/bash
 
-# check for no arguments
-if [[ $# = 0 ]] ; then
-	return 1
-fi
+# trash
+trash_dir="$HOME/.trash"
+trash_log="$trash_dir/log"
 
-# make trash directory
-if [[ ! -d "$trash_dir" ]] ; then
-	mkdir -pv "$trash_dir"
-fi
+do_usage() {
+	cat >&2 <<USAGE
+$(basename "$0") [ACTION] [OPTION]...
+The action can be one of:
+ ls      list trash
+ cle*    clear trash
+ rm      trash a file
+ un*     undo a trashing
+USAGE
+}
 
-# cycle through each file
-for file ; do
-	trash_name=$RANDOM$RANDOM$RANDOM
-
-	if [[ $(file -ib "$file") =~ "inode/symlink;*" ]] ; then
-		echo "Unable to trash symlink: $file"
-	else
-		if mv -v -- "$file" "$trash_dir/$trash_name" ; then
-			echo -n "$trash_name	" >> "$trash_log"
-			readlink -f "$file" >> "$trash_log"
-		fi
+log_not_readable_die() {
+	if [[ ! -r "$trash_log" ]] ; then
+		echo >&2 "Trash log unreadable."
+		exit 1
 	fi
-done
+}
+
+if [[ $# = 0 ]] ; then
+	do_usage
+	exit 1
+fi
+
+case "$1" in
+	ls*)
+		log_not_readable_die
+
+		cat -n "$trash_log" 2>/dev/null
+		;;
+	cle*)
+		log_not_readable_die
+
+		echo -n "Clear the trash [y/N]? "
+		read conf
+		if [[ ! $conf =~ ^[Yy]$ ]] ; then
+			exit 1
+		else
+			rm -vrf "$trash_dir"
+			exit 0
+		fi
+		;;
+	rm)
+		# Make trash directory
+		if [[ ! -d "$trash_dir" ]] ; then
+			mkdir -p "$trash_dir"
+		fi
+
+		# Cycle through each file
+		for file in "${@:2}" ; do
+			trash_name=$RANDOM$RANDOM$RANDOM
+
+			if [[ $(file -ib "$file") =~ "inode/symlink;*" ]] ; then
+				echo "Unable to trash symlink: $file"
+			else
+				if mv -v -- "$file" "$trash_dir/$trash_name" ; then
+					echo -n "$trash_name	" >> "$trash_log"
+					readlink -f "$file" >> "$trash_log"
+				fi
+			fi
+		done
+		;;
+	un*)
+		log_not_readable_die
+
+		if [[ -n "$2" ]] ; then
+			trash_number=$2
+		else
+			# By default, use the last file trashed
+			trash_number=$(wc -l "$trash_log" | cut -f1 -d" ")
+		fi
+
+		entry=$(sed "${trash_number}q;d" "$trash_log")
+		trash_file=$(echo $entry | cut -f1 -d"	")
+		real_file=$(echo $entry | cut -f2- -d"	")
+		if mv -iv -- "$trash_dir/$trash_file" "$real_file" ; then
+			# Remove the file log entry
+			sed -i "${entry}d"
+			echo "Restored '$real_file'."
+		else
+			echo >&2 "Unable to restore '$real_file'."
+		fi
+		;;
+	*)
+		do_usage
+		exit 1
+		;;
+esac
