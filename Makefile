@@ -48,6 +48,8 @@ SCRIPTS=\
         dm\
         git-remote-mod-url\
 		  viname\
+		  vimv\
+		  sec-check\
 
 .PHONY: all install uninstall check
 .SILENT: all install uninstall check
