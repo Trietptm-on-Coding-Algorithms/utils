@@ -49,6 +49,13 @@ grep -v '^#' cron.deny
 echo "Cron allow"
 grep -v '^#' cron.allow
 
+echo
+echo "Sudo:"
+grep -Ev '^#|^$' /etc/sudoers
+echo
+echo "Sudo NOPASSWD:"
+grep -v '^#' /etc/sudoers | grep 'NOPASSWD'
+
 if $file_checks ; then
 	# TODO: files without ?00 permissions
 
@@ -79,4 +86,3 @@ fi
 
 # TODO: Check cron file permissions
 # TODO: Test for default root passwords
-# TODO: Check sudo
