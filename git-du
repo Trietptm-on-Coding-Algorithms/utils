@@ -1,23 +1,70 @@
 #!/bin/bash
-# Prints a nice summary of repository disk usage
-# By default, this script prints the human-readable disk usage of each
-#  top-level directory sorted by size, ascending. It then prints blank-line
-#  separator followed by the .git/ directory disk usage and the total disk
-#  usage of the repository.
-# The script passes any arguments to the file filter used to only show the disk
-#  usage of the top-level directories by default. For example, passing ".gitignore"
-#  to the script would display the disk usage of the top-level directories and the
-#  ".gitignore" file.
-# Example:
-#  24M    directoryA
-#  26M    directoryB
-#  100M   directoryC
+# Prints repository disk usage in a number of ways.
+# The following actions are supported (their names may be abbreviated):
+#   objects:
+#     308K  .git/objects
+#     8.0K  .git/objects/c1
+#     8.0K  .git/objects/ca
+#     8.0K  .git/objects/f3
+#     ...
+#     8.0K  .git/objects/info
+#     176K  .git/objects/pack
+#   meta:
+#     524K  .git
+#     4.0K  .git/branches
+#     4.0K  .git/COMMIT_EDITMSG
+#     4.0K  .git/config
+#     4.0K  .git/description
+#     4.0K  .git/FETCH_HEAD
+#     4.0K  .git/HEAD
+#     40K   .git/hooks
+#     8.0K  .git/index
+#     12K   .git/info
+#     88K   .git/logs
+#     308K  .git/objects
+#     4.0K  .git/ORIG_HEAD
+#     4.0K  .git/packed-refs
+#     32K   .git/refs
+#   log:
+#   summary (Sorted by size, ascending. Extra files passed as arguments.):
+#     24M   directoryA/
+#     26M   directoryB/
+#     100M  directoryC/
 #
-#  250M   .git/
-#  400M   ./
+#     250M  .git
+#     400M  .
 
-files=(*/ "$@")
-paste -d' ' <(du -s ${files[@]}) <(du -hs ${files[@]}) | sort -n | cut -d' ' -f2
-echo
-du -hs .git
-du -hs .
+if [[ "$1" = -h ]] ; then
+	cat &>2 <<EOF
+$(basename "$0") [-h] [ACTION]
+EOF
+fi
+
+action=${1:-summary}
+
+case "$action" in
+	s*)
+		files=(*/ "${@:2}")
+		paste -d$' ' <(du -s ${files[@]}) <(du -hs ${files[@]}) |
+		sort -n |
+		cut -d$' ' -f2
+		echo
+		du -hs .git
+		du -hs .
+		;;
+	o*)
+		du -hs .git/objects
+		du -hs .git/objects/*
+		;;
+	m*)
+		du -hs .git
+		du -hs .git/*
+		;;
+	l*)
+		git rev-parse --all |
+		while read commit ; do
+			git --no-pager log -n1 $commit
+			echo 
+		done
+		;;
+esac
