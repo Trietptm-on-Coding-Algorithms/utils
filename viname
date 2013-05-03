@@ -55,7 +55,7 @@ for file ; do
 			;;
 	esac
 
-	if [[ ! -f "$file" ]] ; then
+	if [[ ! -f "$file" && ! -d "$file" ]] ; then
 		echo >&2 "'$file' does not exist."
 		continue
 	fi
