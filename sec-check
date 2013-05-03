@@ -1,7 +1,12 @@
 #!/bin/bash
 # Performs common security checks
 
-file_checks=true
+if [[ $(whoami) != root && "$1" != -f ]] ; then
+	echo 2>&1 "You must be root. Use the '-f' flag to override this."
+	exit 1
+fi
+
+file_checks=false
 
 echo "Users with empty passwords:"
 awk -F: '( $2 == "" ) { print $1 }' /etc/shadow
