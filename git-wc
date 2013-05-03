@@ -37,7 +37,7 @@ for commit in ${commits[@]} ; do
 	wc=$(git archive $commit | tar -x -O | wc)
 
 	if $long ; then
-		git --no-pager log -n1 HEAD
+		git --no-pager log -n1 $commit
 		echo
 		echo "Word count: $wc"
 		echo
