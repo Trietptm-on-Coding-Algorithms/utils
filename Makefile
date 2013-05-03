@@ -51,21 +51,26 @@ SCRIPTS=\
 		  vimv\
 		  sec-check\
 
-.PHONY: all install uninstall check
+.PHONY: all install install-quiet uninstall check
 .SILENT: all install uninstall check
 
 all: check
 
 check:
 	for script in ${SCRIPTS} ; do \
-		if ! diff -q "$$script" "${DESTDIR}${PREFIX}/bin/$$script" ; then\
-			echo "$$script has changes." ; \
+		if ! diff -q "$$script" "${DESTDIR}${PREFIX}/bin/$$script" &> /dev/null ; then\
+			echo "'$$script' has changes" ; \
 		fi \
+	done
+
+install-quiet:
+	for script in ${SCRIPTS} ; do \
+		install "$$script" ${DESTDIR}${PREFIX}/bin ; \
 	done
 
 install:
 	for script in ${SCRIPTS} ; do \
-		if ! diff -q "$$script" "${DESTDIR}${PREFIX}/bin/$$script" &>/dev/null ; then\
+		if ! diff -q "$$script" "${DESTDIR}${PREFIX}/bin/$$script" &> /dev/null ; then \
 			if [[ -f "${DESTDIR}${PREFIX}/bin/$$script" ]] ; then \
 				echo "updated '$$script'" ; \
 			else \
