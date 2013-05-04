@@ -15,12 +15,12 @@ Directions:
     'in' syncs in backups
 
 Group 'all' (normal backup routine) contains these items:
-    arc, ela, ecod, med, ro, sec, etc, gpg
+    arc, ela, ecod, med, ro, etc, gpg
 Group 'alt' (items normally backed up through other means) contains these items:
     cod, fil, ecad, cad, jnt
 
 Normal items are like aliases for directories. Most items are home
-directory root directories. 'sec' is one exception; it's a single file.
+directory root directories.
 
 There are two special items:
     'etc' performs a backup of modified pacman-provided files.
@@ -149,8 +149,6 @@ for arg in "${@:2}" ; do
 		all|ecod) sync_item "ecod" "ecod"                      ;;&
 		all|med) sync_item "med" "med"                         ;;&
 		all|ro)  sync_item "ro" "ro"                           ;;&
-		# TODO: expand sec
-		all|sec) sync_item ".sec.tar.gz.gpg" ".sec.tar.gz.gpg" ;;&
 		alt|cod) sync_item "cod" "cod"                         ;;&
 		alt|fil) sync_item "fil" "fil"                         ;;&
 		alt|ecad) sync_item "ecad" "ecad"                      ;;&
