@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [[ $(whoami) != root ]] ; then
+	echo 2>&1 "You must be root."
+	exit 1
+fi
+
 set -e
 dump_dir="$HOME/ela/dump"
 dev=${1:-/dev/sdb1}
