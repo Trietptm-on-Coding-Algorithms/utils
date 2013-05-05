@@ -1,0 +1,166 @@
+#!/bin/bash
+# Gets a list of potential script dependencies
+
+if [[ "$1" = -h ]] ; then
+	cat <<HELP
+usage: $(basename "$0") [-h] [-c] [-b] [-i] [FILE]
+-h   display this help message
+-c   include core utilities
+-b   include shell builtins
+-i   ignore existence (shows everything that looks like a command, but doesn't
+     check to see if they actually exist)
+-1   only use first word
+HELP
+exit
+fi
+
+only_use_first_word=false
+exclude_core=true
+exclude_builtin=true
+ignore_existence=false
+
+# Filter lists {{{
+core=(
+	base64
+	basename
+	cat
+	chcon
+	chgrp
+	chmod
+	chown
+	chroot
+	cksum
+	comm
+	cp
+	csplit
+	cut
+	date
+	dd
+	df
+	dircolors
+	dirname
+	du
+	echo
+	env
+	expand
+	expr
+	factor
+	false
+	fmt
+	fold
+	groups
+	head
+	hostid
+	hostname
+	id
+	install
+	join
+	kill
+	link
+	ln
+	logname
+	ls
+	md5sum
+	mkdir
+	mkfifo
+	mknod
+	mktemp
+	mv
+	nice
+	nl
+	nohup
+	nproc
+	od
+	paste
+	pathchk
+	pinky
+	pr
+	printenv
+	printf
+	ptx
+	pwd
+	readlink
+	realpath
+	rm
+	rmdir
+	runcon
+	seq
+	shred
+	shuf
+	sleep
+	sort
+	split
+	stat
+	stdbuf
+	stty
+	sum
+	sync
+	tac
+	tail
+	tee
+	test
+	timeout
+	touch
+	tr
+	true
+	truncate
+	tsort
+	tty
+	uname
+	unexpand
+	uniq
+	unlink
+	uptime
+	users
+	wc
+	whoami
+	who
+	yes
+)
+#}}}
+
+for arg ; do
+	case "$arg" in
+		-c) exclude_core=false ;;
+		-b) exclude_builtin=false ;;
+		-i) ignore_existence=true ;;
+		-1) only_use_first_word=true ;;
+		*)  file="$arg" ;;
+	esac
+done
+
+file=${file:-/dev/stdin}
+
+# Make a filter
+if $exclude_core ; then
+	for cmd in ${core[@]} ; do
+		filter="$filter\|$cmd"
+	done
+fi
+
+(
+# Strip comments
+grep -Ev '\s*#' "$file" |
+while read line ; do
+	if $only_use_first_word ; then
+		words=$(echo "$line" | awk '{ print $1 }')
+	else
+		words=($line)
+	fi
+
+	for cmd in ${words[@]} ; do
+		type=$(type -- "$cmd" 2>&1)
+		if [[ "$type" = *shell\ builtin ]] && $exclude_builtin ; then
+			continue
+		elif [[ "$type" = *shell\ keyword ]] ; then
+			continue
+		elif [[ "$type" != *not\ found ]] || $ignore_existence ; then
+			echo "$cmd"
+		fi
+	done
+done
+) | sort -u |
+# Apply the filter
+sed "/^\($filter\)$/d"
+
+# vim: ft=zsh:
