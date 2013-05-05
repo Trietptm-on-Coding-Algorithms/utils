@@ -1,11 +1,22 @@
 #!/bin/bash
 
+usage() {
+	cat >&2 <<USAGE
+usage: $(basename "$0") [-h] PATTERN REMOTE...
+USAGE
+}
+
+if (( $# < 2 )) || [[ $1 = -h ]] ; then
+	usage
+	exit 1
+fi
+
 pattern="$1"
 
 for remote in ${@:2} ; do
 	old_url=$(git remote -v |
 	grep "^$remote\s" |
-	cut -d$'	' -f2 |
+	cut -d$'\t' -f2 |
 	cut -d' ' -f1 |
 	sort -u)
 
