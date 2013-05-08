@@ -30,9 +30,6 @@ SCRIPTS=\
         run-java\
         seq-rename\
         th\
-        th-clear\
-        th-ls\
-        th-undo\
         translate\
         weagle\
         dirty\
@@ -50,6 +47,7 @@ SCRIPTS=\
 		  viname\
 		  vimv\
 		  sec-check\
+		  get-script-dependencies\
 
 .PHONY: all install install-quiet uninstall check
 .SILENT: all install uninstall check
