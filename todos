@@ -1,0 +1,5 @@
+#!/bin/bash
+# Finds todo listings in code.
+
+# TODO: expand this script's functionality
+grep -Er '(TODO|FIXME):'
