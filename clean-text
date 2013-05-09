@@ -1,0 +1,4 @@
+#!/bin/bash
+# Squeezes repeat blank lines and strips leading and trailing whitespace.
+
+sed -e 's/^[ \t]*//;s/[ \t]*$//' | cat -s
