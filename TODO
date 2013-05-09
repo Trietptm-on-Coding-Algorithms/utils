@@ -1,2 +1,5 @@
+'count' to count instances of characters or strings
 'bu' add backup firefox
+'bu' add .netrc
 '*' more documentation
+'listify' to deal with arguments and lists
