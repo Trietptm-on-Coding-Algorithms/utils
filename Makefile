@@ -48,6 +48,8 @@ SCRIPTS=\
 		  vimv\
 		  sec-check\
 		  get-script-dependencies\
+		  todos\
+		  clean-text\
 
 .PHONY: all install install-quiet uninstall check
 .SILENT: all install uninstall check
