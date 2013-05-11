@@ -21,7 +21,7 @@ last_size=$(size "$file")
 while true ; do
 	size=$(size "$file")
 	human_size=$(size -h "$file")
-	elapsed=$(( $(now) - $start ))
+	elapsed=$(( $(now) - $start + 1 ))
 	growth=$(( $size - $start_size ))
 
 	clear
