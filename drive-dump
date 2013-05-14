@@ -1,15 +1,38 @@
 #!/bin/bash
 
-if [[ $(whoami) != root ]] ; then
-	echo 2>&1 "You must be root."
+dev=sdc1
+fs=true
+
+if [[ $# != 0 ]] ; then
+	if [[ $(basename $dev) = mem ]] ; then
+		fs=false
+	fi
+	dev=$1
+	if [[ $# != 1 ]] ; then
+		fs=$2
+	fi
+fi
+
+if [[ -z "$(dirname $dev)" ]] ; then
+	dev=/dev/$dev
+fi
+
+if [[ ! -r $dev ]] ; then
+	echo 2>&1 "Unable to read from the device."
 	exit 1
 fi
 
-set -e
-dump_dir="$HOME/ela/dump"
-dev=${1:-/dev/sdb1}
-mkdir -p "$dump_dir/$(date +"%T")"
-mount $dev /mnt
-rsync -az /mnt/ "$dump_dir"
-umount /mnt
+# TODO: change the date format
+dump_dir="dump/$(basename $dev)-$(date +'%T')"
+mkdir -p "$dump_dir" || exit 1
+
+if $fs ; then
+	echo "FS..."
+	if mount -o ro,noexec $dev /mnt ; then
+		rsync -az /mnt/ "$dump_dir"
+		umount $dev
+	fi
+fi
+
+echo "I..."
 dd if=$dev of="$dump_dir/dev.img"
