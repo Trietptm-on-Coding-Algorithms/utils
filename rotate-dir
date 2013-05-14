@@ -1,0 +1,14 @@
+#!/bin/bash
+# Moves the contents of a directory to another directory (default is one
+#  directory back) and deletes the directory.
+
+if [[ $# = 0 ]] ; then
+	echo >&2 "$(basename "$0") SOURCE [DESTINATION]"
+	exit 1
+fi
+
+source="$1"
+dest="${2:-$source/..}"
+
+mv "$source"/{*,.??*} -t "$dest" 2>/dev/null
+rmdir "$source"
