@@ -1,6 +1,7 @@
 #!/bin/bash
-# Moves the contents of a directory to another directory (default is one
-#  directory back) and deletes the directory.
+# Moves files from a source directory to a destination directory and deletes
+#  the source directory. If no destination directory is specified, the directory
+#  one directory back from the source directory is used.
 
 if [[ $# = 0 ]] ; then
 	echo >&2 "$(basename "$0") SOURCE [DESTINATION]"
