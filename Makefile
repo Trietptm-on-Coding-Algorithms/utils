@@ -50,9 +50,12 @@ SCRIPTS=\
 		  get-script-dependencies\
 		  todos\
 		  clean-text\
+		  ext/google-contacts-lookup\
+		  col-manip\
+		  rotate-dir\
 
-.PHONY: all install install-quiet uninstall check
-.SILENT: all install uninstall check
+.PHONY:
+.SILENT:
 
 all: check
 
