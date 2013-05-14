@@ -4,3 +4,6 @@
 '*' more documentation
 'listify' to deal with arguments and lists
 a utility to deal with rows based on columns
+'memory-dump'
+'rotate-dir' to rotate the contents of a directory one directory up and delete
+             the old directory
