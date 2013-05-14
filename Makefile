@@ -5,7 +5,6 @@ SCRIPTS=\
         attach-displays\
         backlight\
         bu\
-        ciph\
         clean\
         def\
         do-each\
