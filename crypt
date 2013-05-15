@@ -1,0 +1,13 @@
+#!/bin/bash
+# Manages encrypted partitions
+
+case $1 in
+	mount)
+		cryptsetup luksOpen /dev/sdb4 dat
+		mount /dev/mapper/dat /dat
+		;;
+	*)
+		umount /dev/mapper/dat
+		cryptsetup luksClose dat
+		;;
+esac
