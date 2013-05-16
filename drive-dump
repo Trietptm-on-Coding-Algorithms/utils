@@ -1,5 +1,10 @@
 #!/bin/bash
 
+trap sigint INT
+sigint() {
+	exit
+}
+
 dev=sdc1
 fs=true
 
