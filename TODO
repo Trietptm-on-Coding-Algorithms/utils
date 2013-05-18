@@ -3,3 +3,4 @@
 'bu' add .netrc and other config files
 '*' more documentation
 'listify' to deal with arguments and lists
+euid = 0 checks
