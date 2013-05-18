@@ -1,7 +1,7 @@
 #!/bin/bash
 # Performs common security checks
 
-if [[ $(whoami) != root && "$1" != -f ]] ; then
+if [[ $EUID != 0 && "$1" != -f ]] ; then
 	echo 2>&1 "You must be root. Use the '-f' flag to override this."
 	exit 1
 fi
@@ -30,7 +30,6 @@ check_flags() {
 	done
 }
 
-# TODO: use xargs
 echo
 echo "Mount flags:"
 mount | grep -E "\stmpfs\s" |
