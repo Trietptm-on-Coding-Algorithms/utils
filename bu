@@ -15,16 +15,15 @@ Directions:
     'in' syncs in backups
 
 Group 'all' (normal backup routine) contains these items:
-    arc, ela, ecod, med, ro, etc, gpg
+    arc, ela, ecod, med, ro, etc
 Group 'alt' (items normally backed up through other means) contains these items:
     cod, fil, ecad, cad, jnt
 
 Normal items are like aliases for directories. Most items are home
 directory root directories.
 
-There are two special items:
+There is one special item:
     'etc' performs a backup of modified pacman-provided files.
-    'gpg' merges the local machine's private keys with the remote machine.
 EOF
 	exit 1
 fi
@@ -182,15 +181,6 @@ for arg in "${@:2}" ; do
 				ssh $remote_name "cd ${remote_bu_dir} && tar -cz *" | tar -xz
 			fi
 			;;&
-		all|gpg)
-			# TODO: add an option to backup keys to a file
-			echo "$action gpg private keys..."
-			if $out ; then
-				gpg --export-secret-keys | ssh $remote_name "gpg --import"
-			else
-				ssh $remote_name "gpg --export-secret-keys" | gpg --import
-			fi
-			;;
 		#*)
 		#   echo "Invalid: $arg"
 		#   ;;
