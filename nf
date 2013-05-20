@@ -1,5 +1,6 @@
 #!/bin/bash
-# normalizes file names
+# Normalizes file names.
+
 if [[ $# = 0 ]] ; then
 	echo "No files specified." >&2
 	exit 1
@@ -9,6 +10,8 @@ fi
 # capturing the function's output in a capture shell, and seting the file name
 # variable to the output), but I felt more comfortable writing it like this
 # than having `file` be treated as a global variable.
+# TODO: turn this whole script into a single call to sed.
+#       (I wrote this a long time ago, before I understood the basics.)
 apply_pattern() {
 	if $dry_run ; then
 		new_file=$(perl-rename -vn "$1" -- "$2" | sed 's/^.*-> //')
@@ -60,7 +63,8 @@ for file ; do
 		file=$(apply_pattern 's/://g'     "$file")
 		file=$(apply_pattern 's/\.-/-/g'  "$file")
 	fi
-	for i in $(seq 1 3) ; do
+	# TODO: make this sane.
+	for i in 1 2 3 ; do
 		file=$(apply_pattern 's/--/-/g' "$file")
 	done
 
