@@ -50,7 +50,6 @@ SCRIPTS=\
 		  todos\
 		  clean-text\
 		  ext/google-contacts-lookup\
-		  col-manip\
 		  rotate-dir\
 		  crypt\
 
@@ -73,8 +72,8 @@ install-quiet:
 
 install:
 	for script in ${SCRIPTS} ; do \
-		if ! diff -q "$$script" "${DESTDIR}${PREFIX}/bin/$$script" &> /dev/null ; then \
-			if [[ -f "${DESTDIR}${PREFIX}/bin/$$script" ]] ; then \
+		if ! diff -q "$$script" "${DESTDIR}${PREFIX}/bin/$$(basename $$script)" &> /dev/null ; then \
+			if [[ -f "${DESTDIR}${PREFIX}/bin/$$(basename $$script)" ]] ; then \
 				echo "updated '$$script'" ; \
 			else \
 				echo "added '$$script'" ; \
