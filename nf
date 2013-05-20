@@ -2,28 +2,36 @@
 # Normalizes file names.
 
 if [[ $# = 0 ]] ; then
-	echo "No files specified." >&2
+	echo >&2 "No files specified."
 	exit 1
 fi
 
-# The way this function is treated is a bit awkward (passing a file name,
-# capturing the function's output in a capture shell, and seting the file name
-# variable to the output), but I felt more comfortable writing it like this
-# than having `file` be treated as a global variable.
-# TODO: turn this whole script into a single call to sed.
-#       (I wrote this a long time ago, before I understood the basics.)
-apply_pattern() {
+command_exists() {
+	command -v $1 &>/dev/null || return 1
+}
+
+do_rename() {
 	if $dry_run ; then
-		new_file=$(perl-rename -vn "$1" -- "$2" | sed 's/^.*-> //')
+		extra_flags="-n"
 	else
-		new_file=$(perl-rename -v "$1" -- "$2" | sed 's/^.*-> //')
+		extra_flags=
 	fi
 
-	if [[ "x$new_file" != "x" ]] ; then
-		echo -n "$new_file"
+	if command_exists perl-rename ; then
+		perl-rename $extra_flags "$@" || rename_failed
+	elif  command_exists rename ; then
+		# Might be perl rename.
+		# TODO: make sure this is perl rename
+		rename $extra_flags "$@" || renamed_failed
 	else
-		echo -n "$2"
+		echo >&2 "Could not find a perl-rename command."
+		exit 1
 	fi
+}
+
+rename_failed() {
+	echo >&2 "Unable to rename a file."
+	exit 1
 }
 
 noargs=false
@@ -32,42 +40,51 @@ dry_run=false
 
 for file ; do
 	if ! $noargs ; then
-		if [[ "$file" = -s ]] ; then
-			spaces_only=true
-			continue
-		elif [[ "$file" = -- ]] ; then
-			noargs=true
-			continue
-		elif [[ "$file" = -n ]] ; then
-			dry_run=true
-			continue
-		fi
+		case "$file" in
+			-s)
+				spaces_only=true
+				continue
+				;;
+			-n)
+				dry_run=true
+				continue
+				;;
+			--)
+				noargs=true
+				continue
+				;;
+		esac
 	fi
 
-	if [[ ! -f "$file" && ! -d "$file" ]] ; then
-		echo "'$file' does not exist" >&2
+	if [[ ! -e "$file" ]] ; then
+		echo >&2 "'$file' does not exist"
 		continue
 	fi
 
-	orig_file="$file"
-	file=$(apply_pattern 's/ /-/g'    "$file")
+	pattern='s/ /-/g'
+
 	if ! $spaces_only ; then
-		file=$(apply_pattern 'y/A-Z/a-z/' "$file")
-		file=$(apply_pattern 's/%20/-/g'  "$file")
-		file=$(apply_pattern 's/_/-/g'    "$file")
-		file=$(apply_pattern "s/'//g"     "$file")
-		file=$(apply_pattern 's/"//g'     "$file")
-		file=$(apply_pattern 's/,//g'     "$file")
-		file=$(apply_pattern 's/&/-/g'    "$file")
-		file=$(apply_pattern 's/\(//g'    "$file")
-		file=$(apply_pattern 's/\)//g'    "$file")
-		file=$(apply_pattern 's/://g'     "$file")
-		file=$(apply_pattern 's/\.-/-/g'  "$file")
+		# Quoting is strange, but it makes each line consistent.
+		# We add each part of the pattern individually to make parts of the patterne easy to comment out.
+		pattern="$pattern;"'y/A-Z/a-z/'
+		pattern="$pattern;"'s/%20/-/g'
+		pattern="$pattern;"'s/_/-/g'
+		pattern="$pattern;""s/'//g"
+		pattern="$pattern;"'s/"//g'
+		pattern="$pattern;"'s/,//g'
+		pattern="$pattern;"'s/&/-/g'
+		pattern="$pattern;"'s/\(//g'
+		pattern="$pattern;"'s/\)//g'
+		pattern="$pattern;"'s/://g'
+		pattern="$pattern;"'s/\.-/-/g'
+
+		# TODO: make this sane.
+		for i in {0..5} ; do
+			pattern="$pattern;"'s/--/-/g'
+		done
 	fi
-	# TODO: make this sane.
-	for i in 1 2 3 ; do
-		file=$(apply_pattern 's/--/-/g' "$file")
-	done
+
+	do_rename "$pattern" -- "$file"
 
 	if [[ "$orig_file" = "$file" ]] ; then
 		echo "'$orig_file' not renamed"
