@@ -53,6 +53,7 @@ for file ; do
 	file=$(apply_pattern 's/ /-/g'    "$file")
 	if ! $spaces_only ; then
 		file=$(apply_pattern 'y/A-Z/a-z/' "$file")
+		file=$(apply_pattern 's/%20/-/g'  "$file")
 		file=$(apply_pattern 's/_/-/g'    "$file")
 		file=$(apply_pattern "s/'//g"     "$file")
 		file=$(apply_pattern 's/"//g'     "$file")
