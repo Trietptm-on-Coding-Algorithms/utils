@@ -72,7 +72,7 @@ for file ; do
 		echo "$basename" > "$temp"
 	fi
 
-	$editor "$temp"
+	eval $editor "$temp"
 
 	if $use_full_path ; then
 		new_file="$(< "$temp")"
