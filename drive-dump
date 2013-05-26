@@ -1,12 +1,8 @@
 #!/bin/bash
 
-trap sigint INT
-sigint() {
-	exit
-}
-
 dev=sdc1
 fs=true
+mount_dir=/dump
 
 if [[ $# != 0 ]] ; then
 	if [[ $(basename $dev) = mem ]] ; then
@@ -18,7 +14,7 @@ if [[ $# != 0 ]] ; then
 	fi
 fi
 
-if [[ -z "$(dirname $dev)" ]] ; then
+if [[ "$(dirname $dev)" = . ]] ; then
 	dev=/dev/$dev
 fi
 
