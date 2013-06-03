@@ -1,10 +1,8 @@
 #!/bin/bash
 
-# Check for root
-if [[ $(whoami) != root ]] ; then
-	echo "You must be root to scan."
-	exit 1
-fi
+. "${UTILS_SHARED:-.}/common.sh"
+
+needs root
 
 # Select interface
 if [[ $1 ]] ; then

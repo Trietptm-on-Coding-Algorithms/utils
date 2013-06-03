@@ -1,11 +1,9 @@
 #!/bin/bash
 # This encapsulates several common nmap scans
 
-# Check for root
-if [[ $(whoami) != root ]] ; then
-	echo "You probably need to be root to scan."
-	#exit 1
-fi
+. "${UTILS_SHARED:-.}/common.sh"
+
+needs root
 
 # TODO: make these arguments
 out='-oG'
