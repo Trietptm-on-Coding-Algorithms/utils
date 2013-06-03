@@ -24,7 +24,6 @@ SCRIPTS=\
         nf\
         note\
         pdf\
-        rep\
         rot13\
         rs-parallel\
         run-always\
