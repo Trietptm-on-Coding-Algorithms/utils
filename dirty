@@ -1,67 +1,100 @@
 #!/bin/bash
 # Checks for dirty working directories or unpushed commits in git repositories
 
-repos=("$HOME" "$HOME/fil" "$HOME/ecad/other")
+# Only checks these remotes
 remotes=(origin locserv github googlecode)
+# Checks these repos
+repos=("$HOME" "$HOME/fil" "$HOME/ecad/other")
+# Searches for repos here
+search=("$HOME/cod")
 
-while read repo ; do
-	repos+=("$repo/..")
-done < <(find "$HOME/cod" -path "$HOME/ecod" -prune -o -name '.git' -type d |
-         grep -v "$HOME/ecod")
-# Command substitution is used instead of piping because when the output of a
-#  command is piped to a loop, the loop runs in a subshell, meaning it is
-#  unable to access the repos variable. 
+only_dirty=false
+extra_newline=true
+
+for arg ; do
+	case "$arg" in
+		-o) only_dirty=true ;;
+		-s) extra_newline=false ;;
+		*) echo "Invalid argument." ;;
+	esac
+done
+
+# Search for repos
+for search_repo in "${search[@]}" ; do
+	while read repo ; do
+		repos+=("$repo/..")
+	done < <(find "$search_repo" -path "$HOME/ecod" -prune -o -name '.git' -type d)
+done
 
 # Print headers
 printf "%-30s%-12s" Name WD
-for remote in ${remotes[@]} ; do
+for remote in "${remotes[@]}" ; do
 	# One for each remote
 	printf "%-12s" "$remote"
 done
 printf "untested\n"
 
-for repo in ${repos[@]} ; do (
+for repo in "${repos[@]}" ; do (
 	if ! cd "$repo" ; then
-		echo "Could not change to $repo." >&2
+		echo >&2 "Could not change to '$repo'."
 		continue
 	fi
-	reponame=$(basename "$(realpath "$repo")")
-	#reponame="$repo"
 
-	printf "%-30s" "$reponame"
+	# Repo name
+	reponame=$(basename "$(realpath "$repo")")
 
 	# Working directory
-	if [[ $(git diff --exit-code 2>/dev/null) != "" ]] ; then
+	if [[ -n $(git diff --exit-code 2>/dev/null) ]] ; then
 		# Dirty
-		printf "%-12s" "&"
+		statuses=("&")
 	else
 		# Clean
-		printf "%-12s" "^"
+		statuses=("^")
 	fi
 
 	# Remotes
-	for remote in ${remotes[@]} ; do
+	for remote in "${remotes[@]}" ; do
 		if ! git remote | grep -m1 $remote &>/dev/null ; then
 			# Repo doesn't have remote
-			printf "%-12s" "."
+			statuses+=(".")
 		elif git diff --exit-code ${remote}/master..master &>/dev/null ; then
 			# No unpushed commits
 			# TODO: make this handle multiple branches
-			printf "%-12s" "^"
+			statuses+=("^")
 		else
 			# Unpushed commits
-			printf "%-12s" "&"
+			statuses+=("&")
 		fi
 	done
 
-	# Untested remotes
+	# Skip clean items if only dirty is set
+	if $only_dirty ; then
+		skip=true
+		for item in "${statuses[@]}" ; do
+			if [[ "$item" == "&" ]] ; then
+				skip=false
+				break
+			fi
+		done
+		$skip && continue
+	fi
+
+	# Print repo name
+	printf "%-30s" "$reponame"
+	# Print statuses
+	for status in "${statuses[@]}" ; do
+		printf "%-12s" "$status"
+	done
+
+	# Print untested remotes
 	while read remote ; do
 		if [[ ! *${remotes[@]}* =~ ${remote} ]] ; then
 			printf "%-6s" "$remote"
 		fi
 	done < <(git remote)
 
-	printf '\n\n'
+	printf '\n'
+	$extra_newline && printf '\n'
 ) done
 
 # sh syntax highlighting doesn't support subshells
