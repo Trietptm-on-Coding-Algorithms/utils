@@ -1,4 +1,6 @@
 PREFIX=/usr/local
+NAME_PREFIX=
+SHARED=/usr/local/share/utils
 
 SCRIPTS=\
         update-global-ctags\
@@ -60,26 +62,17 @@ all: check
 
 check:
 	for script in ${SCRIPTS} ; do \
-		if ! diff -q "$$script" "${DESTDIR}${PREFIX}/bin/$$script" &> /dev/null ; then\
+		if ! diff -q "$$script" "${DESTDIR}${PREFIX}/bin/${NAME_PREFIX}$$script" &> /dev/null ; then\
 			echo "'$$script' has changes" ; \
 		fi \
 	done
 
-install-quiet:
-	for script in ${SCRIPTS} ; do \
-		install "$$script" ${DESTDIR}${PREFIX}/bin ; \
-	done
-
 install:
+	install -D common.sh ${SHARED}/common.sh ; \
 	for script in ${SCRIPTS} ; do \
-		if ! diff -q "$$script" "${DESTDIR}${PREFIX}/bin/$$(basename $$script)" &> /dev/null ; then \
-			if [[ -f "${DESTDIR}${PREFIX}/bin/$$(basename $$script)" ]] ; then \
-				echo "updated '$$script'" ; \
-			else \
-				echo "added '$$script'" ; \
-			fi ; \
-			install "$$script" ${DESTDIR}${PREFIX}/bin ; \
-		fi \
+		install_location="${DESTDIR}${PREFIX}/bin/${NAME_PREFIX}$$(basename $$script)" ; \
+		install "$$script" $$install_location ; \
+		sed -i '/UTILS_SHARED/i\UTILS_SHARED=${SHARED}' $$install_location ; \
 	done
 
 uninstall:
