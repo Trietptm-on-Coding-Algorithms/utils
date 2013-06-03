@@ -23,7 +23,8 @@ done
 for search_repo in "${search[@]}" ; do
 	while read repo ; do
 		repos+=("$repo/..")
-	done < <(find "$search_repo" -path "$HOME/ecod" -prune -o -name '.git' -type d)
+	done < <(find "$search_repo" -path "$HOME/ecod" \
+	         -prune -o -name '.git' -type d)
 done
 
 # Print headers
