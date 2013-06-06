@@ -1,0 +1,85 @@
+#!/bin/bash
+
+do_all() {
+	sed -n -e '/^\t[^\t]/s/^\t//p' "$1" | sed 's/^-//'
+}
+
+do_groups() {
+	grep -v $'\(^\t\|^$\)' "$1"
+}
+
+do_of() {
+	group="$1"
+	in_group=false
+	grep -v $'^\t\t' "$2" |
+	while read line ; do
+		if [[ "$line" == ${group} ]] ; then
+			in_group=true
+			continue
+		fi
+		if $in_group ; then
+			if [[ -z "$line" ]] ; then
+				break
+			fi
+			echo "$line"
+		fi
+	done
+}
+
+do_check() {
+	echo "Only in list   Only on machine"
+	comm -3 <(pacman -Qqe | sort) <(do_all "$1" | sort)
+}
+
+usage() {
+	cat >&2 <<-EOF
+	$(basename "$0") [ACTION] [FILE]
+	ACTION can be one of the following.
+	-a|--all              all packages in the list
+	-c|--check            descrepencies between the package list and the list of packages installed on the machine
+	-g|--groups           all package lists
+	-o GROUP|--of GROUP   all packages in a group
+
+	A package list looks like this:
+	   Group
+	   ^Ipackage
+	   ^Ipackage
+	   ^I^IA note about the package.
+	   Group
+	   ^Ipackage
+	   ...
+
+	EOF
+}
+
+if (( $# < 2 )) ; then
+	usage
+	exit 1
+fi
+
+case "$1" in
+	-a|--all)
+		do_all "$2"
+		;;
+	-c|--check)
+		do_check "$2"
+		;;
+	-g|--groups)
+		do_groups "$2"
+		;;
+	-o|--of)
+		if (( $# < 3 )) ; then
+			usage
+			exit 1
+		fi
+		do_of "$2" "$3"
+		;;
+	*)
+		usage
+		exit 1
+		;;
+esac
+
+#while read line ; do
+#	case 
+#done < "$file"
