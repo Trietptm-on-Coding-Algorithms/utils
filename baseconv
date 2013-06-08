@@ -1,0 +1,10 @@
+#!/bin/bash
+
+local cmd="$1"
+if test "$2" ; then
+	cmd="ibase=$2;$cmd"
+elif test "$3" ; then
+	cmd="obase=$3;$cmd"
+fi
+
+bc <<< "$cmd"
