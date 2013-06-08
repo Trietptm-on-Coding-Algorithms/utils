@@ -53,6 +53,7 @@ SCRIPTS=\
 		  ext/google-contacts-lookup\
 		  rotate-dir\
 		  crypt\
+		  pkglist\
 
 .PHONY:
 .SILENT:
