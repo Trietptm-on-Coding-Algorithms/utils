@@ -54,6 +54,7 @@ SCRIPTS=\
 		  rotate-dir\
 		  crypt\
 		  pkglist\
+		  baseconv\
 
 .PHONY:
 .SILENT:
