@@ -148,6 +148,14 @@ for arg in "${@:2}" ; do
 		all|ecod) sync_item "ecod" "ecod"                      ;;&
 		all|med) sync_item "med" "med"                         ;;&
 		all|ro)  sync_item "ro" "ro"                           ;;&
+		dat)
+			if ! mountpoint -q /dat ; then
+				sudo cryptsetup luksOpen /dev/sdb4 dat
+				sudo mount /dev/mapper/dat /dat
+			fi
+			# TODO: support root directories
+			sync_item "/dat" "../../dat"
+			;;&
 		alt|cod) sync_item "cod" "cod"                         ;;&
 		alt|fil) sync_item "fil" "fil"                         ;;&
 		alt|ecad) sync_item "ecad" "ecad"                      ;;&
@@ -166,6 +174,7 @@ for arg in "${@:2}" ; do
 				fi
 
 				# TODO: just leave these tarred up
+				# TODO: don't bother with pacman
 				pacman -Qii | grep '^MODIFIED' | grep -v '^shadow$' | cut -d$'\t' -f2 |
 				sed 's/^.//' | xargs tar -cz |
 				ssh $remote_name "${delete_command}; mkdir -p ${remote_bu_dir};"\
