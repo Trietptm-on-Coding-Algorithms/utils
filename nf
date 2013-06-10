@@ -1,37 +1,30 @@
 #!/bin/bash
 # Normalizes file names.
 
-if [[ $# = 0 ]] ; then
+if [[ $# == 0 ]] ; then
 	echo >&2 "No files specified."
 	exit 1
 fi
 
-command_exists() {
-	command -v $1 &>/dev/null || return 1
-}
-
-do_rename() {
-	if $dry_run ; then
-		extra_flags="-n"
-	else
-		extra_flags=
-	fi
-
-	if command_exists perl-rename ; then
-		perl-rename $extra_flags "$@" || rename_failed
-	elif  command_exists rename ; then
-		# Might be perl rename.
-		# TODO: make sure this is perl rename
-		rename $extra_flags "$@" || renamed_failed
-	else
-		echo >&2 "Could not find a perl-rename command."
-		exit 1
-	fi
-}
-
 rename_failed() {
 	echo >&2 "Unable to rename a file."
 	exit 1
+}
+
+do_rename() {
+	file="$2"
+	pattern="$1"
+
+	new_name=$(sed "$pattern" <<< "$file")
+
+	if [[ "$file" == "$new_name" ]] ; then
+		echo "'$file' not renamed"
+	else
+		echo "$file -> $new_name"
+	fi
+	if ! $dry_run ; then
+		mv -- "$file" "$new_name"
+	fi
 }
 
 noargs=false
@@ -73,8 +66,8 @@ for file ; do
 		pattern="$pattern;"'s/"//g'
 		pattern="$pattern;"'s/,//g'
 		pattern="$pattern;"'s/&/-/g'
-		pattern="$pattern;"'s/\(//g'
-		pattern="$pattern;"'s/\)//g'
+		pattern="$pattern;"'s/(//g'
+		pattern="$pattern;"'s/)//g'
 		pattern="$pattern;"'s/://g'
 		pattern="$pattern;"'s/\.-/-/g'
 
@@ -84,11 +77,5 @@ for file ; do
 		done
 	fi
 
-	do_rename "$pattern" -- "$file"
-
-	if [[ "$orig_file" = "$file" ]] ; then
-		echo "'$orig_file' not renamed"
-	else
-		echo "'$orig_file' renamed to '$file'"
-	fi
+	do_rename "$pattern" "$file"
 done
