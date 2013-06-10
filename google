@@ -1,0 +1,10 @@
+#!/bin/zsh
+# Opens browser with google link to search term
+
+# Encodes url
+url-encode() {
+	echo "${${(j: :)@}//(#b)(?)/%$[[##16]##${match[1]}]}"
+}
+
+$BROWSER -new-window \
+			"http://www.google.com/search?q=$(url-encode "${(j: :)@}")" &
