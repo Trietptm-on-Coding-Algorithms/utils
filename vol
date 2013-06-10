@@ -1,0 +1,12 @@
+#!/bin/bash
+# A wrapper around alsamixer
+if [[ $# == 0 ]] ; then
+	# use the gui
+	alsamixer
+elif [[ $# == 1 ]] ; then
+	# set master
+	amixer set Master "$1"
+else
+	# set something else
+	amixer set "$@"
+fi
