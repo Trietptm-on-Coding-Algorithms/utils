@@ -1,6 +1,11 @@
 #!/bin/bash
-if [[ $# = 0 ]] ; then
+
+do_rot13() {
 	tr '[a-m][n-z][A-M][N-Z]' '[n-z][a-m][N-Z][A-M]'
+}
+
+if [[ $# == 0 ]] ; then
+	do_rot13
 else
-	echo $@ | tr '[a-m][n-z][A-M][N-Z]' '[n-z][a-m][N-Z][A-M]'
+	do_rot13 <<< "$*"
 fi
