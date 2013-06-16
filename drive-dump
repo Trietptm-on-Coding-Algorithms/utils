@@ -2,7 +2,8 @@
 
 dev=sdc1
 fs=true
-mount_dir=/dump
+mount_dir=/dump/$RANDOM
+mkdir -p $mount_dir
 
 if [[ $# != 0 ]] ; then
 	if [[ $(basename $dev) = mem ]] ; then
@@ -29,8 +30,8 @@ mkdir -p "$dump_dir" || exit 1
 
 if $fs ; then
 	echo "FS..."
-	if mount -o ro,noexec $dev /mnt ; then
-		rsync -az /mnt/ "$dump_dir"
+	if mount -o ro,noexec $dev $mount_dir ; then
+		rsync -az ${mount_dir}/ "$dump_dir"
 		umount $dev
 	fi
 fi
