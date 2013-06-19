@@ -27,7 +27,7 @@ do_of() {
 }
 
 do_check() {
-	echo "Only in list   Only on machine"
+	echo "Only on machine             Only in list"
 	comm -3 <(pacman -Qqe | sort) <(do_all "$1" | sort)
 }
 
