@@ -55,6 +55,7 @@ SCRIPTS=\
 		  crypt\
 		  pkglist\
 		  baseconv\
+		  vol\
 
 .PHONY:
 .SILENT:
