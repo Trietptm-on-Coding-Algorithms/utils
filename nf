@@ -15,15 +15,16 @@ do_rename() {
 	file="$2"
 	pattern="$1"
 
-	new_name=$(sed "$pattern" <<< "$file")
+	old_name=$(basename "$file")
+	new_name=$(sed "$pattern" <<< "$old_name")
 
-	if [[ "$file" == "$new_name" ]] ; then
+	if [[ $old_name = $new_name ]] ; then
 		echo "'$file' not renamed"
 	else
 		echo "$file -> $new_name"
-	fi
-	if ! $dry_run ; then
-		mv -- "$file" "$new_name"
+		if ! $dry_run ; then
+			mv -- "$file" $(dirname "$file")/"$new_name"
+		fi
 	fi
 }
 
@@ -59,7 +60,7 @@ for file ; do
 	if ! $spaces_only ; then
 		# Quoting is strange, but it makes each line consistent.
 		# We add each part of the pattern individually to make parts of the patterne easy to comment out.
-		pattern="$pattern;"'y/A-Z/a-z/'
+		pattern="$pattern;"'s/\(.*\)/\L\1/'
 		pattern="$pattern;"'s/%20/-/g'
 		pattern="$pattern;"'s/_/-/g'
 		pattern="$pattern;""s/'//g"
