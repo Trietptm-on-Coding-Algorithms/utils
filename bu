@@ -161,6 +161,7 @@ for arg in "${@:2}" ; do
 		alt|ecad) sync_item "ecad" "ecad"                      ;;&
 		alt|cad) sync_item "cad" "cad"                         ;;&
 		alt|jnt) sync_item "jnt" "jnt"                         ;;&
+		sites) sync_item "sites" "sites"                         ;;&
 		all|etc)
 			# TODO: make this compatible with locations on the same machine
 			echo "$action etc..."
