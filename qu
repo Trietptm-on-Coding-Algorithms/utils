@@ -1,0 +1,10 @@
+#!/bin/bash
+# Queues files for some action.
+
+queue=/tmp/queue
+item=$1
+mkdir -p "$queue/$item"
+shift
+for arg ; do
+	ln -s "$(realpath "$arg")" "$queue/$item"
+done
