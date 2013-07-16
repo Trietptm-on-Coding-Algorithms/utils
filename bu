@@ -143,25 +143,18 @@ for arg in "${@:2}" ; do
 	fi
 
 	case "$arg" in
-		all|arc) sync_item "arc" "arc"                         ;;&
-		all|ela) sync_item "ela" "ela"                         ;;&
-		all|ecod) sync_item "ecod" "ecod"                      ;;&
-		all|med) sync_item "med" "med"                         ;;&
-		all|ro)  sync_item "ro" "ro"                           ;;&
-		dat)
-			if ! mountpoint -q /dat ; then
-				sudo cryptsetup luksOpen /dev/sdb4 dat
-				sudo mount /dev/mapper/dat /dat
-			fi
-			# TODO: support root directories
-			sync_item "/dat" "../../dat"
-			;;&
-		alt|cod) sync_item "cod" "cod"                         ;;&
-		alt|fil) sync_item "fil" "fil"                         ;;&
-		alt|ecad) sync_item "ecad" "ecad"                      ;;&
-		alt|cad) sync_item "cad" "cad"                         ;;&
-		alt|jnt) sync_item "jnt" "jnt"                         ;;&
-		sites) sync_item "sites" "sites"                         ;;&
+		all|arc) sync_item "arc" "arc"    ;;&
+		all|ela) sync_item "ela" "ela"    ;;&
+		all|ecod) sync_item "ecod" "ecod" ;;&
+		all|med) sync_item "med" "med"    ;;&
+		all|ro)  sync_item "ro" "ro"      ;;&
+		dat) sync_item "/dat" "../../dat" ;;&
+		alt|cod) sync_item "cod" "cod"    ;;&
+		alt|fil) sync_item "fil" "fil"    ;;&
+		alt|ecad) sync_item "ecad" "ecad" ;;&
+		alt|cad) sync_item "cad" "cad"    ;;&
+		alt|jnt) sync_item "jnt" "jnt"    ;;&
+		sites) sync_item "sites" "sites"  ;;&
 		all|etc)
 			# TODO: make this compatible with locations on the same machine
 			echo "$action etc..."
