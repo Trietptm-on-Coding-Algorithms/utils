@@ -1,0 +1,19 @@
+#!/bin/bash
+# This is a wrapper to use the Garmin Colorado with gpsd.
+
+cleanup() {
+	rm -f "$temp"
+}
+
+set -e
+
+. "${UTILS_SHARED:-.}/common.sh"
+needs garminusb2nmea gpsd
+
+dev=${1:-/dev/ttyUSB0}
+
+temp=/tmp/gpsd.$RANDOM
+mkfifo "$temp"
+
+garminusb2nmea "$device" "$temp" &
+gpsd -n "$temp"
