@@ -3,17 +3,20 @@
 
 cleanup() {
 	rm -f "$temp"
+	kill $!
 }
+trap cleanup EXIT
 
 set -e
 
-. "${UTILS_SHARED:-.}/common.sh"
-needs garminusb2nmea gpsd
+if . "${UTILS_SHARED:-.}/common.sh" ; then
+	needs garminusb2nmea gpsd
+fi
 
 dev=${1:-/dev/ttyUSB0}
 
-temp=/tmp/gpsd.$RANDOM
+temp=test
 mkfifo "$temp"
 
-garminusb2nmea "$device" "$temp" &
-gpsd -n "$temp"
+garminusb2nmea "$dev" "$temp" &
+gpsd -D6 -Nn "$temp"
