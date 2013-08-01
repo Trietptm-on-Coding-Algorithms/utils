@@ -2,12 +2,11 @@
 # Opens some specified ($1) number of pdfs from ~/ela sorted by modification time.
 # Opens one pdf by default.
 
-. "${UTILS_SHARED:-.}/common.sh"
-
 dir=$HOME/ela
 pdf_viewer=zathura
 
-needs "$pdf_viewer"
+#. "${UTILS_SHARED:-.}/common.sh"
+#needs "$pdf_viewer"
 
 num=${1:-1}
 
