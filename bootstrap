@@ -1,0 +1,148 @@
+#!/bin/sh
+
+if test $EUID != 0 ; then
+	echo >&2 'must be root.'
+	#exit 7
+fi
+
+# Helper functions {{{
+command_exists() {
+	command -v "$1" > /dev/null 2>&1
+}
+
+get_package_manager() {
+	for manager in pacman apt-get ; do
+		if command_exists $manager ; then
+			printf '%s\n' $manager
+			return
+		fi
+	done
+	return 1
+}
+#}}}
+
+# Arguments {{{
+interactive=false
+interactive_extra=false
+normally_false=false
+for arg ; do
+	case "$arg" in
+		-i)
+			interactive=true
+			;;
+		-e)
+			interactive_extra=true
+			;;
+		-f)
+			normally_false=true
+			;;
+	esac
+done
+#}}}
+
+# Settings
+handle_packages=true
+handle_public_dotfiles=true
+dotfiles_git=auto
+handle_private_dotfiles=true
+
+home=`realpath test`
+
+public_dotfiles='https://github.com/EvanTeitelman/dotfiles/archive/master.tar.gz'
+public_dotfiles_git='https://github.com/EvanTeitelman/dotfiles'
+private_dotfiles='http://tixod.com/dotfiles.tar.gpg'
+
+# Interactive override
+if $interactive ; then
+	for i in handle_packages handle_public_dotfiles handle_private_dotfiles ; do
+		$normally_false && eval $i=false
+		val=`eval "echo \\\$$i"`
+		eval 'printf "%s ['"$val"'] = " "$i"'
+		read $i
+		nval=`eval "echo \\\$$i"`
+		test -z "$nval" && eval $i=$val
+	done
+fi
+
+if $interactive_extra ; then
+	for i in public_dotfiles private_dotfiles ; do
+		$normally_false && eval $i=false
+		val=`eval "echo \\\$$i"`
+		eval 'printf "%s ['"$val"'] = " "$i"'
+		read $i
+		nval=`eval "echo \\\$$i"`
+		test -z "$nval" && eval $i=$val
+	done
+fi
+
+cat <<DEBUG
+hp $handle_packages
+hpubd $handle_public_dotfiles
+hprivd $handle_private_dotfiles
+puburl $public_dotfiles
+privurl $private_dotfiles
+
+DEBUG
+
+# Packages {{{
+# TODO: manually-built packages
+if $handle_packages ; then
+	if ! package_manager=`get_package_manager` ; then
+		echo >&2 'failed to determine package manager'
+	fi
+
+	echo "using $package_manager to install packages..."
+
+	case $package_manager in
+		pacman)
+			col=1
+			installation='xargs pacman --needed --noconfirm -Sy'
+			;;
+		apt-get)
+			col=2
+			installation='( apt-get update && xargs apt-get -y install )'
+			;;
+	esac
+
+	grep -v '^\s*#' <<LIST | awk "{ print \$$col }" | sed '/^null$/d' | eval $installation
+# Pacman   Debian
+base       null
+base-devel null
+LIST
+
+echo
+fi
+#}}}
+
+# Dotfiles {{{
+if test $dotfiles_git = auto ; then
+	if command_exists git ; then
+		dotfiles_git=true
+	else
+		dotfiles_git=false
+	fi
+fi
+
+if $handle_dotfiles ; then
+	if $dotfiles_git ; then
+		mkdir _dotfiles
+		cd _dotfiles
+		git clone "$public_dotfiles_git"
+		mv */{.??*,*} "$home" 2> /dev/null
+		cd ..
+		rm -rf _dotfiles
+		echo 'installing dotfiles with git...'
+	else
+		curl $public_dotfiles | tar tz -C "$home"
+		echo 'installing dotfiles...'
+	fi
+	echo
+fi
+
+$handle_private_dotfiles && curl $private_dotfiles | gpg -d | tar tz -C "$home"
+#}}}
+
+# TODO: grub
+# TODO: xorg
+#  .netrc
+#  .irssi/config
