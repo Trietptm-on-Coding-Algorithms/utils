@@ -5,9 +5,6 @@
 dir=$HOME/ela
 pdf_viewer=zathura
 
-#. "${UTILS_SHARED:-.}/common.sh"
-#needs "$pdf_viewer"
-
 num=${1:-1}
 
 files=($(stat -c $'%Y\t%n' "$dir"/*.pdf 2>/dev/null |
