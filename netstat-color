@@ -1,0 +1,21 @@
+#!/bin/bash
+color_red=$'\e[0;31m'
+color_green=$'\e[0;32m'
+color_yellow=$'\e[0;33m'
+color_blue=$'\e[0;34m'
+color_purple=$'\e[0;35m'
+color_cyan=$'\e[1;36m'
+no_color=$'\e[0m'
+
+sed "s/^.* ESTABLISHED.*$/${color_green}&${no_color}/
+     s/^.* SYN_SENT$/${color_yellow}&${no_color}/
+     s/^.* SYN_RECV$/${color_yellow}&${no_color}/
+     s/^.* FIN_WAIT1$/${color_red}&${no_color}/
+     s/^.* FIN_WAIT2$/${color_red}&${no_color}/
+     s/^.* TIME_WAIT$/${color_red}&${no_color}/
+     s/^.* CLOSE$/${color_red}&${no_color}/
+     s/^.* CLOSE_WAIT$/${color_red}&${no_color}/
+     s/^.* LAST_ACK$/${color_red}&${no_color}/
+     s/^.* LISTEN$/${color_purple}&${no_color}/
+     s/^.* CLOSING$/${color_red}&${no_color}/
+     s/^.* UNKNOWN$/${no_color}&${no_color}/"
