@@ -62,7 +62,8 @@ for file ; do
 
 	basename=$(basename "$file")
 	dirname=$(dirname "$file")
-	editor="${EDITOR-:vi}"
+	#editor="${EDITOR-:vi}"
+	editor=vi
 
 	temp=$(mktemp)
 
