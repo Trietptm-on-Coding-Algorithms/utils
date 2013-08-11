@@ -16,5 +16,5 @@ done < <(stat -c $'%Y\t%n' "$dir"/*.pdf 2>/dev/null |
 if (( ${#files[@]} == 0 )) ; then
 	echo 'No pdf files found.'
 else
-	eval $pdf_viewer --fork "${files[@]}"
+	$pdf_viewer --fork "${files[@]}"
 fi
