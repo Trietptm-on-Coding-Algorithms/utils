@@ -7,9 +7,13 @@ pdf_viewer=zathura
 
 num=${1:-1}
 
-files=($(stat -c $'%Y\t%n' "$dir"/*.pdf 2>/dev/null |
-         sort -rn | cut -d$'\t' -f2 | head -n $num))
-if [[ -z "$files" ]] ; then
+while read f ; do
+	files+=("$f")
+done < <(stat -c $'%Y\t%n' "$dir"/*.pdf 2>/dev/null |
+         sort -rn | cut -d$'\t' -f2 |
+         head -n $num)
+
+if (( ${#files[@]} == 0 )) ; then
 	echo 'No pdf files found.'
 else
 	eval $pdf_viewer --fork "${files[@]}"
