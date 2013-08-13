@@ -1,40 +1,69 @@
 #!/bin/bash
+# Makes a drive or partition dump.
+# Filesystem first. Image second.
+# Also gathers info about the device through udev.
 
+cleanup() {
+	[[ -n "$mount_dir" ]] && rmdir -p "$mount_dir" 2> /dev/null
+}
+trap cleanup EXIT
+
+# Defaults.
 dev=sdc1
 fs=true
-mount_dir=/dump/$RANDOM
-mkdir -p $mount_dir
+bs=8M
 
+# usage: dm [device] [fs? (true or false)]
 if [[ $# != 0 ]] ; then
-	if [[ $(basename $dev) = mem ]] ; then
-		fs=false
-	fi
 	dev=$1
 	if [[ $# != 1 ]] ; then
 		fs=$2
 	fi
 fi
 
-if [[ "$(dirname $dev)" = . ]] ; then
-	dev=/dev/$dev
-fi
+# Strip `/dev/`.
+dev=${dev#/dev/}
 
-if [[ ! -r $dev ]] ; then
+# Check for disk readability.
+if [[ ! -r /dev/$dev ]] ; then
 	echo 2>&1 "Unable to read from the device."
 	exit 1
 fi
 
-# TODO: change the date format
-dump_dir="dump/$(basename $dev)-$(date +'%T')"
+start_time=$(date +%s)
+
+# Mount dir.
+mount_dir=/dump/$dev
+mkdir -p $mount_dir || exit 1
+# Dump dir.
+dump_dir=dump/$dev-$start_time
 mkdir -p "$dump_dir" || exit 1
 
 if $fs ; then
-	echo "FS..."
-	if mount -o ro,noexec $dev $mount_dir ; then
-		rsync -az ${mount_dir}/ "$dump_dir"
-		umount $dev
+	echo F
+	if mount -o ro,noexec /dev/$dev $mount_dir ; then
+		ionice -n1 cp -r --no-preserve=all $mount_dir "$dump_dir/fs" #&> /dev/null
+		umount /dev/$dev
 	fi
 fi
 
-echo "I..."
-dd if=$dev of="$dump_dir/dev.img"
+echo I
+ionice -n1 dd bs=$bs if=/dev/sdc of="$dump_dir/img" #&> /dev/null
+
+echo M
+udevadm info -n $dev >> "$dump_dir/dev"
+
+# Times.
+cat >> "$dump_dir/time" <<EOF
+start=$start_time
+end=$(date +%s)
+EOF
+
+cat >> "$dump_dir/info" <<EOF
+# TODO: fill this out
+location=
+location_fine=
+description=
+EOF
+
+echo '***'
