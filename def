@@ -1,10 +1,12 @@
 #!/bin/bash
 # Gets a word definition from dict.org
 if [[ $1 == "-h" ]] ; then
-	echo "d:word[:dict] for definition"
-	echo "m:word[:dict] for fuzzy matching"
-	echo "show:db for a list of dictionaries"
-	echo "show:strat for more commands"
+	cat <<-EOF
+	d:word[:dict] for definition
+	m:word[:dict] for fuzzy matching
+	show:db for a list of dictionaries
+	show:strat for more commands
+	EOF
 else
 	curl "dict://dict.org/$1"
 fi
