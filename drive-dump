@@ -3,6 +3,8 @@
 # Filesystem first. Image second.
 # Also gathers info about the device through udev.
 
+umask 077
+
 cleanup() {
 	[[ -n "$mount_dir" ]] && rmdir -p "$mount_dir" 2> /dev/null
 }
@@ -39,26 +41,34 @@ mkdir -p $mount_dir || exit 1
 dump_dir=dump/$dev-$start_time
 mkdir -p "$dump_dir" || exit 1
 
+# Device data.
+echo D
+udevadm info -n $dev >> "$dump_dir/dev"
+
+# Start time.
+cat >> "$dump_dir/time" <<EOF
+start=$start_time
+EOF
+
+# Filesystem.
 if $fs ; then
 	echo F
 	if mount -o ro,noexec /dev/$dev $mount_dir ; then
-		ionice -n1 cp -r --no-preserve=all $mount_dir "$dump_dir/fs" #&> /dev/null
+		ionice -c1 -n0 cp -r --no-preserve=all $mount_dir "$dump_dir/fs" &> /dev/null
 		umount /dev/$dev
 	fi
 fi
 
+# Image.
 echo I
-ionice -n1 dd bs=$bs if=/dev/sdc of="$dump_dir/img" #&> /dev/null
+ionice -c1 -n0 dd bs=$bs if=/dev/sdc of="$dump_dir/img" &> /dev/null
 
-echo M
-udevadm info -n $dev >> "$dump_dir/dev"
-
-# Times.
+# End time.
 cat >> "$dump_dir/time" <<EOF
-start=$start_time
 end=$(date +%s)
 EOF
 
+# Info template.
 cat >> "$dump_dir/info" <<EOF
 # TODO: fill this out
 location=
