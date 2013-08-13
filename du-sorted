@@ -5,4 +5,4 @@ if [[ $# = 0 ]] ; then
 else
 	files=("$@")
 fi
-paste -d$' ' <(du -s ${files[@]}) <(du -hs ${files[@]}) | sort -nr | cut -d$' ' -f2
+paste -d' ' <(du -s "${files[@]}") <(du -hs "${files[@]}") | sort -nr | cut -d' ' -f2
