@@ -10,7 +10,7 @@ fi
 
 # In order to print the repositories, as they are found, the find command is
 #  unbuffered.
-unbuffer find "$dir" -name '.git' -type d |
+stdbuf -o0 find "$dir" -name '.git' -type d |
 while read repo ; do
 	# Repo roots are usually the parent directories of their .git directories.
 	echo $(realpath "$repo/..")
