@@ -1,0 +1,76 @@
+#!/bin/bash
+
+for arg ; do
+	case "$arg" in
+		-r)
+			recipients="$recipients, $2"
+			shift
+			;;
+		-s)
+			subject=$2
+			shift
+			;;
+		-b)
+			body=$2
+			shift
+			;;
+		-z)
+			body=' '
+			;;
+		*)
+			# Other words are combined to form the subject.
+			subject="$subject $arg"
+			;;
+	esac
+	shift
+done
+
+# Defaults.
+[ -z "$recipients" ] && recipients='Evan Teitelman <teitelmanevan@gmail.com>'
+[ -z "$subject" ] && subject="alert from `uname -n`"
+
+# A subshell would change the PPID.
+temp=`mktemp`
+trap "rm -f $temp" EXIT
+
+if [ -z "$body" ] ; then
+	# The default body looks like this:
+	#     user: <user>
+	#     parent: [ <parent command> ] <parent arguments>
+	#     friend: [ <friend command> ] <friend arguments>
+	#     ...
+
+	{
+	# User.
+	echo "user: $USER"
+
+	# Parent.
+	ps -o 'parent: [ %c] %a' --no-headers --pid $(ps -o '%P' --no-headers --pid $$)
+
+	# Friends
+	ps -o '%P friend: [ %c] %a %p %r' |
+	# Strip annoying whitespace.
+	sed 's/^\s*//' |
+	# In group.
+	ps -o '%r$' --no-headers --pid $$ | xargs grep |
+	# Remove children.
+	sed "/^$$ /d" |
+	# Strip parent IDs.
+	sed 's/^[0-9]\+ //' |
+	# Strip group IDs.
+	sed 's/\s*[0-9]\+$//' |
+	# Remove this process.
+	sed "/$$\$/d" |
+	# Strip process IDs.
+	sed 's/\s*[0-9]\+$//'
+	} > $temp
+fi
+
+body=`cat $temp`
+
+sendmail "$recipients" <<EOF
+Subject: $subject
+
+$body
+
+EOF
