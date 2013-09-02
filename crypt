@@ -1,13 +1,10 @@
 #!/bin/bash
-# Manages encrypted partitions
+# Useful for quickly transferring data off of encrypted flashdrives.
 
-case $1 in
-	mount)
-		cryptsetup luksOpen /dev/sdb4 dat
-		mount /dev/mapper/dat /dat
-		;;
-	*)
-		umount /dev/mapper/dat
-		cryptsetup luksClose dat
-		;;
-esac
+if [[ $# == 1 ]] ; then
+	cryptsetup open --type=tcrypt "$1" dat
+	mount /dev/mapper/dat /dat
+else
+	umount /dev/mapper/dat
+	cryptsetup close dat
+fi
