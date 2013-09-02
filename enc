@@ -1,0 +1,9 @@
+#!/bin/sh
+# Makes encfs less cumbersome.
+
+rel=$1
+shift
+abs=$(realpath "$rel")
+enc=$(dirname "$abs")/.$rel
+
+encfs "$enc" "$abs" "$@"
