@@ -1,0 +1,12 @@
+#!/bin/sh
+# Tars up a root filesystem.
+# usage: tar-rootfs <file.tar.gz> <rootfs>
+
+# tar
+tar -cvpzf "$2"          \
+    --exclude=proc       \
+    --exclude=lost+found \
+    --exclude=SWAP.swap  \
+    --exclude=media      \
+    --exclude=mnt        \
+    --exclude=sys "$1"
