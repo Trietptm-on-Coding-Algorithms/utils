@@ -1,0 +1,46 @@
+#!/usr/bin/perl
+# Converts mail into LaTeX markup.
+#
+# This script is largely based on:
+# txt2latex -- by Tristan Miller (psychonaut@nothingisreal.com)
+# This program is in the public domain.  It comes with absolutely NO
+# WARRANTY -- use at your own risk.
+
+$count = 0;
+
+# Header.
+print STDOUT "\\documentclass{article}\n\\begin{document}\n";
+
+foreach $line (<>) {
+  $count++;
+
+  # Escape special characters.
+  $line =~ s/\\/{\\textbackslash}/g;
+  $line =~ s/{/\\{/g;
+  $line =~ s/}/\\}/g;
+  $line =~ s/\\{\\textbackslash\\}/{\\textbackslash}/g;
+  $line =~ s/\$/\\\$/g;
+  $line =~ s/%/\\%/g;
+  $line =~ s/_/\\_/g;
+  $line =~ s/&/\\&/g;
+  $line =~ s/\#/\\\#/g;
+
+  # Ellipses.
+  $line =~ s/(^|[^.])\.\.\.([^.])/\1\\ldots\2/g;
+
+  # Fix double quotes.
+  $line =~ s/(^|\s)\"/\1``/g;
+  $line =~ s/\"(\W|$)/''\1/g;
+
+  # Fix single quotes.
+  $line =~ s/(^|\s)'/\1`/g;
+
+  if ($line =~ /\"/) {
+    print STDERR "txt2latex: unfixed quote mark on line $count\n";
+  }
+
+  print STDOUT $line;
+}
+
+# Footer.
+print STDOUT "\\end{document}\n";
