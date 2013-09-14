@@ -1,0 +1,5 @@
+#!/bin/sh
+
+url=$1
+shift
+youtube-dl "$url" -o - | mplayer -af scaletempo "$@" -noconsolecontrols /dev/stdin
