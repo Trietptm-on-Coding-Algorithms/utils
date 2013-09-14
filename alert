@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 for arg ; do
 	case "$arg" in
@@ -45,7 +45,7 @@ if [ -z "$body" ] ; then
 	echo "user: $USER"
 
 	# Parent.
-	ps -o 'parent: [ %c] %a' --no-headers --pid $(ps -o '%P' --no-headers --pid $$)
+	ps -o 'parent: [ %c] %a' --no-headers --pid `ps -o '%P' --no-headers --pid $$`
 
 	# Friends
 	ps -o '%P friend: [ %c] %a %p %r' |
