@@ -1,5 +1,32 @@
 #!/bin/sh
+# usage: youtube <url> <args> -- <mplayer_args>
+#   -f   download entire video
+#   --   begin passing to mplayer(1)
 
 url=$1
 shift
-youtube-dl "$url" -o - | mplayer -af scaletempo "$@" -noconsolecontrols /dev/stdin
+
+full=false
+
+# Handle arguments.
+for arg ; do
+	case "$arg" in
+		-f)
+			full=true
+			shift
+			;;
+		--)
+			shift
+			break
+			;;
+	esac
+done
+
+if $full ; then
+	tmp=/tmp/youtube.$RANDOM$RANDOM
+	trap rm\ "$tmp" EXIT
+	youtube-dl "$url" -o "$tmp"
+	mplayer -af scaletempo "$@" -noconsolecontrols "$tmp"
+else
+	youtube-dl "$url" -o - | mplayer -af scaletempo "$@" -noconsolecontrols /dev/stdin
+fi
