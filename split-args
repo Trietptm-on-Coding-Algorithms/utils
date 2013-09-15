@@ -1,6 +1,4 @@
 #!/bin/bash
 # Splits the arguments passed into lines
 
-for word ; do
-	echo "$word"
-done
+printf '%s\n' "$@"
