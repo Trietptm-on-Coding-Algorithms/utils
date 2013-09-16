@@ -18,4 +18,4 @@ trap cleanup EXIT
 cryptsetup open --type=tcrypt "$dev" "$name"
 mount "/dev/mapper/$name" "$mnt"
 
-rsync -av --progress --fuzzy /home/ "$mnt"
+rsync --delete-after -av --progress --fuzzy /home/ "$mnt"
