@@ -9,7 +9,7 @@ trap cleanup EXIT
 
 set -e
 
-needs garminusb2nmea gpsd
+needs garminusb2nmea gpsd || exit $?
 
 dev=${1:-/dev/ttyUSB0}
 
