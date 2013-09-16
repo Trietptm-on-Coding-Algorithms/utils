@@ -1,15 +1,16 @@
-#!/bin/bash
+#!/bin/sh
 
-if [[ $# != 0 ]] ; then
-	dir="$1"
-	cd "$dir"
+if [ $# != 0 ] ; then
+	cd "$1"
 fi
 
+# This is somewhat dangerous.
 rm -f *.class *.o *.bin
 rm -f *.swp *.swo *~
 
+# This is even more dangerous.
 for tex_file in *.tex ; do
-	base=${tex_file/.tex/}
+	base=$(basename "$tex_file" .tex)
 	for ext in aux log dvi pdf idx out nav snm toc ; do
 		rm -f "$base.$ext"
 	done
