@@ -7,9 +7,10 @@ name=home2
 mnt=/$name
 
 cleanup() {
+	cd /
 	umount "$mnt" &&
 		cryptsetup close "$name" &&
-		rmdir -p "$mnt"
+		rmdir -p "${mnt#/}"
 }
 
 mkdir -p "$mnt"

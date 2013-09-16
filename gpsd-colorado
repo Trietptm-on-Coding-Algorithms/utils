@@ -9,9 +9,7 @@ trap cleanup EXIT
 
 set -e
 
-if . "${UTILS_SHARED:-.}/common.sh" ; then
-	needs garminusb2nmea gpsd
-fi
+needs garminusb2nmea gpsd
 
 dev=${1:-/dev/ttyUSB0}
 

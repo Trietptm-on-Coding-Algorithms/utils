@@ -1,8 +1,6 @@
 #!/bin/bash
 # Performs common security checks
 
-. "${UTILS_SHARED:-.}/common.sh"
-
 [[ "$1" = -f ]] || needs -e "Use the '-f' flag to override this." root
 
 file_checks=false

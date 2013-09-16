@@ -1,7 +1,5 @@
 #!/bin/bash
 
-. "${UTILS_SHARED:-.}/common.sh"
-
 needs root
 
 # Select interface

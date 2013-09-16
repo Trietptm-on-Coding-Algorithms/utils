@@ -1,8 +1,6 @@
 #!/bin/bash
 # This encapsulates several common nmap scans
 
-. "${UTILS_SHARED:-.}/common.sh"
-
 needs root
 
 # TODO: make these arguments

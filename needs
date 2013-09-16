@@ -1,0 +1,15 @@
+#!/bin/sh
+
+die() {
+	echo >&2 "$@"
+	exit 1
+}
+
+while [ -n "$1" ] ; do
+	case "$1" in
+		-e) extra_error="$2" ;  shift ;;
+		root) [ $UID -eq 0 ] || die "Must be root. $extra_error" ;;
+		*) command -v "$1" 2>&1 > /dev/null || die "Needs $1. $extra_error" ;;
+	esac
+	shift
+done
