@@ -1,22 +1,23 @@
 #!/bin/sh
 
-set -e
-
 dev=/dev/sdc
 name=home2
 mnt=/$name
 
 cleanup() {
 	cd /
-	umount "$mnt" &&
-		cryptsetup close "$name" &&
-		rmdir -p "${mnt#/}"
+	umount "$mnt"
+	cryptsetup close "$name"
+	rmdir -p "${mnt#/}"
 }
 
 mkdir -p "$mnt"
 trap cleanup EXIT
 
 cryptsetup open --type=tcrypt "$dev" "$name"
+
+set -e
+
 mount "/dev/mapper/$name" "$mnt"
 
 rsync --delete-after -av --progress --fuzzy /home/ "$mnt"
