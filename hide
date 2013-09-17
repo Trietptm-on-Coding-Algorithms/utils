@@ -1,0 +1,5 @@
+#!/bin/sh
+# Hides a file.
+# TODO: unhide as well
+
+mv "$1" ".$1"
