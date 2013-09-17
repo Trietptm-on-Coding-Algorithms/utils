@@ -1,0 +1,8 @@
+#!/bin/sh
+# Wrapper around mutt to take care of encryption.
+
+if ! mountpoint 2>&1 > /dev/null ~/.mutt/secure ; then
+	encfs ~/.mutt/.secure ~/.mutt/secure || exit $?
+fi
+
+mutt
