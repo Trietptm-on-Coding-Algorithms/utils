@@ -61,7 +61,7 @@ fi
 
 # Image.
 echo I
-ionice -c1 -n0 dd bs=$bs if=/dev/sdc of="$dump_dir/img" &> /dev/null
+ionice -c1 -n0 dd bs=$bs if=/dev/$dev of="$dump_dir/img" &> /dev/null
 
 # End time.
 cat >> "$dump_dir/time" <<EOF
