@@ -1,0 +1,17 @@
+#!/bin/sh
+
+site=$1
+receipients=$2
+
+wait_success=60
+wait_failure=3600
+
+while true ; do
+	if ! curl "$site" > /dev/null ; then
+		printf "Subject: $site is down.\n\nChecking site again in $wait_failure seconds." |
+		  sendmail $receipients
+		sleep $wait_failure
+	else
+		sleep $wait_success
+	fi
+done
