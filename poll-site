@@ -2,7 +2,7 @@
 
 site=$1
 shift
-receipients=($@)
+receipients=("$@")
 
 wait_success=60
 wait_failure=3600
