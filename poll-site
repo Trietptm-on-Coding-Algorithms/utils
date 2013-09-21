@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/bin/sh
 
 site=$1
 shift
-receipients=("$@")
+# The rest of the arguments are the email receipients.
 
 wait_success=60
 wait_failure=3600
@@ -10,7 +10,7 @@ wait_failure=3600
 while true ; do
 	if ! curl "$site" > /dev/null ; then
 		printf "Subject: $site is down.\n\nChecking site again in $wait_failure seconds." |
-		  sendmail "${receipients[@]}"
+		  sendmail "$@"
 		sleep $wait_failure
 	else
 		sleep $wait_success
