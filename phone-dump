@@ -1,0 +1,21 @@
+#!/bin/bash
+
+host=${1:-dark@192.168.1.5}
+mount=$HOME/phone
+dump="$HOME/ela/phone"
+
+# Unmount.
+mountpoint "$mount" &> /dev/null && fusermount -u "$mount"
+
+# Make directories
+mkdir -p "$mount" 2> /dev/null
+mkdir -p "$dump" 2> /dev/null
+
+trap "rmdir '$mount'" EXIT
+
+# Mount.
+# Requires password.
+sshfs -o password_stdin "${host}:/sdcard" -p 2222 "$mount"
+
+# Dump files.
+rsync -av --progress "$mount"/{DCIM,SpyCamera,Download} "$dump"
