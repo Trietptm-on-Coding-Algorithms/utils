@@ -1,0 +1,10 @@
+#!/bin/bash
+
+basedir=$HOME/ecod/gitignore
+
+for gitignore ; do
+	files=("$basedir/$gitignore.gitignore"
+	       "$basedir/Global/$gitignore.gitignore")
+
+	cat "$(printf '%s\n' "${files[@]}" | head -n1)"
+done
