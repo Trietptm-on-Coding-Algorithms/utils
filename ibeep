@@ -1,0 +1,9 @@
+#!/bin/sh
+
+exec > /dev/null
+
+amixer set Beep 5
+amixer set Beep unmute 
+beep "$@"
+amixer set Beep 0
+amixer set Beep mute
