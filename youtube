@@ -1,32 +1,65 @@
-#!/bin/sh
+#!/bin/bash
 # usage: youtube <url> <args> -- <mplayer_args>
+#   -a   only play audio
 #   -f   download entire video
+#   -n   use a named pipe to download the video
 #   --   begin passing to mplayer(1)
 
-url=$1
-shift
-
 full=false
+named_pipe=false
+audio_only=false
 
 # Handle arguments.
 for arg ; do
 	case "$arg" in
+		-a)
+			audio_only=true
+			# The default download mode does not allow for console controls.
+			named_pipe=true
+			shift
+			;;
 		-f)
 			full=true
+			shift
+			;;
+		-n)
+			named_pipe=true
+			shift
+			;;
+		-p)
+			# Using a pipe is the default download mode.
 			shift
 			;;
 		--)
 			shift
 			break
 			;;
+		*)
+			url=$1
+			shift
 	esac
 done
 
+mplayer_flags=(-af scaletempo)
+if $audio_only ; then
+	mplayer_flags+=(-novideo)
+fi
+
 if $full ; then
+	# Full download.
 	tmp=/tmp/youtube.$RANDOM$RANDOM
-	trap rm\ "$tmp" EXIT
+	trap rm\ "${tmp}*" EXIT
 	youtube-dl "$url" -o "$tmp"
-	mplayer -af scaletempo "$@" -noconsolecontrols "$tmp"
+	mplayer "${mplayer_flags[@]}" "$@" "$tmp"
+elif $named_pipe ; then
+	# Named pipe.
+	tmp=/tmp/youtube.$RANDOM$RANDOM
+	mkfifo "$tmp"
+	youtube-dl "$url" -o "$tmp" &
+	mplayer "${mplayer_flags[@]}" "$@" "$tmp"
+	kill $!
 else
-	youtube-dl "$url" -o - | mplayer -af scaletempo "$@" -noconsolecontrols /dev/stdin
+	# Pipe.
+	youtube-dl "$url" -o - |
+	  mplayer "${mplayer_flags[@]}" "$@" -noconsolecontrols /dev/stdin
 fi
