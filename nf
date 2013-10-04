@@ -70,6 +70,8 @@ for file ; do
 		pattern="$pattern;"'s/(//g'
 		pattern="$pattern;"'s/)//g'
 		pattern="$pattern;"'s/://g'
+		pattern="$pattern;"'s/!//g'
+		pattern="$pattern;"'s/\?//g'
 		pattern="$pattern;"'s/\.-/-/g'
 
 		# TODO: make this sane.
