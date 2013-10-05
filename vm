@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# TODO: make this portable
+qemu_defaults() {
+	sudo -g disk qemu-system-x86_64 -enable-kvm -smp \
+	  8,cores=4,threads=2,sockets=1 -m 6G -vga std "$@"
+}
+
+case "$1" in
+	blackarch)
+		qemu_defaults -drive file=/dev/sdb,cache=none,if=virtio \
+		  -net nic -net bridge,br=br0 \
+		  "$HOME/cod/blackarch/iso/arch.iso"
+		;;
+esac
