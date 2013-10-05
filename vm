@@ -1,15 +1,82 @@
-#!/bin/sh
+#!/bin/bash
+# I like to start virtual machines from a central location.
 
-# TODO: make this portable
-qemu_defaults() {
-	sudo -g disk qemu-system-x86_64 -enable-kvm -smp \
-	  8,cores=4,threads=2,sockets=1 -m 6G -vga std "$@"
-}
+# Qemu.
+default_system() { sudo -g disk qemu-system-x86_64 "$@"; }
+default_backend=(-enable-kvm)
+
+# Core hardware.
+default_cpu=(-smp 8,cores=4,threads=2,sockets=1)
+default_memory=(-m 6G)
+
+# VGA.
+default_vga=(-vga std)
+
+# Disks.
+default_sdb=(-drive file=/dev/sdb,cache=none,if=virtio)
+
+# Network.
+default_network=(-netdev bridge,id=bridge,br=br0
+                 -device virtio-net,netdev=bridge)
 
 case "$1" in
-	blackarch)
-		qemu_defaults -drive file=/dev/sdb,cache=none,if=virtio \
-		  -net nic -net bridge,br=br0 \
-		  "$HOME/cod/blackarch/iso/arch.iso"
+	archinstall)
+		# All defaults.
+		default_system \
+		  "${default_backend[@]}" \
+		  "${default_cpu[@]}" \
+		  "${default_memory[@]}" \
+		  "${default_vga[@]}" \
+		  "${default_sdb[@]}" \
+		  "${default_network[@]}" \
+		  "${@:2}" \
+		  "$HOME/vm/archinstall/archinstall.iso"
 		;;
+
+	metasploitable)
+		# No `default_sdb`.
+		#   Not necessary.
+		# No `default_network`.
+		#   Not bridged to any host interfaces for security reasons.
+		tap=metasploitable 
+		sudo ip tuntap add dev $tap mode tap
+		default_system \
+		  "${default_backend[@]}" \
+		  "${default_cpu[@]}" \
+		  "${default_memory[@]}" \
+		  -netdev tap,id=tap,ifname=$tap,script=no,downscript=no \
+                  -device virtio-net,netdev=tap \
+		  "${default_vga[@]}" \
+		  "${default_network[@]}" \
+		  "${@:2}" \
+		  "$HOME/vm/metasploitable/metasploitable.img"
+		sudo ip tuntap del dev $tap mode tap
+		;;
+
+	tails)
+		# All defaults.
+		default_system \
+		  "${default_backend[@]}" \
+		  "${default_cpu[@]}" \
+		  "${default_memory[@]}" \
+		  "${default_vga[@]}" \
+		  "${default_sdb[@]}" \
+		  "${default_network[@]}" \
+		  "${@:2}" \
+		  -no-reboot -no-shutdown \
+		  -boot order=d \
+		  -cdrom "$HOME/vm/tails/tails.iso"
+		  ;;
+
+	*)
+		# All defaults.
+		default_system \
+		  "${default_backend[@]}" \
+		  "${default_cpu[@]}" \
+		  "${default_memory[@]}" \
+		  "${default_vga[@]}" \
+		  "${default_sdb[@]}" \
+		  "${default_network[@]}" \
+		  "$@"
+		  ;;
 esac
