@@ -9,8 +9,8 @@ default_backend=(-enable-kvm)
 default_cpu=(-smp 8,cores=4,threads=2,sockets=1)
 default_memory=(-m 6G)
 
-# VGA.
-default_vga=(-vga std)
+# Display.
+default_display=(-vga std)
 
 # Disks.
 default_sdb=(-drive file=/dev/sdb,cache=none,if=virtio)
@@ -21,12 +21,13 @@ default_network=(-netdev bridge,id=bridge,br=br0
 
 case "$1" in
 	archinstall)
-		# All defaults.
+		# No `default_display`.
+		#   A curses display is used instead.
 		default_system \
 		  "${default_backend[@]}" \
 		  "${default_cpu[@]}" \
 		  "${default_memory[@]}" \
-		  "${default_vga[@]}" \
+		  -display curses \
 		  "${default_sdb[@]}" \
 		  "${default_network[@]}" \
 		  "${@:2}" \
@@ -46,7 +47,7 @@ case "$1" in
 		  "${default_memory[@]}" \
 		  -netdev tap,id=tap,ifname=$tap,script=no,downscript=no \
                   -device virtio-net,netdev=tap \
-		  "${default_vga[@]}" \
+		  "${default_display[@]}" \
 		  "${default_network[@]}" \
 		  "${@:2}" \
 		  "$HOME/vm/metasploitable/metasploitable.img"
@@ -55,11 +56,12 @@ case "$1" in
 
 	tails)
 		# All defaults.
+		# Plus `-no-reboot` and no `-no-shutdown`.
 		default_system \
 		  "${default_backend[@]}" \
 		  "${default_cpu[@]}" \
 		  "${default_memory[@]}" \
-		  "${default_vga[@]}" \
+		  "${default_display[@]}" \
 		  "${default_sdb[@]}" \
 		  "${default_network[@]}" \
 		  "${@:2}" \
@@ -74,7 +76,7 @@ case "$1" in
 		  "${default_backend[@]}" \
 		  "${default_cpu[@]}" \
 		  "${default_memory[@]}" \
-		  "${default_vga[@]}" \
+		  "${default_display[@]}" \
 		  "${default_sdb[@]}" \
 		  "${default_network[@]}" \
 		  "$@"
