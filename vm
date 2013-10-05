@@ -20,21 +20,23 @@ default_network=(-netdev bridge,id=bridge,br=br0
                  -device virtio-net,netdev=bridge)
 
 case "$1" in
-	archinstall)
+	# Arch Install.
+	arch*)
 		# No `default_display`.
 		#   A curses display is used instead.
 		default_system \
 		  "${default_backend[@]}" \
 		  "${default_cpu[@]}" \
 		  "${default_memory[@]}" \
-		  -display curses \
+		  -vga std -display curses \
 		  "${default_sdb[@]}" \
 		  "${default_network[@]}" \
 		  "${@:2}" \
 		  "$HOME/vm/archinstall/archinstall.iso"
 		;;
 
-	metasploitable)
+	# Metasploitable.
+	meta*)
 		# No `default_sdb`.
 		#   Not necessary.
 		# No `default_network`.
@@ -54,7 +56,8 @@ case "$1" in
 		sudo ip tuntap del dev $tap mode tap
 		;;
 
-	tails)
+	# Tails.
+	tail*)
 		# All defaults.
 		# Plus `-no-reboot` and no `-no-shutdown`.
 		default_system \
