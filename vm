@@ -41,19 +41,23 @@ case "$1" in
 		#   Not necessary.
 		# No `default_network`.
 		#   Not bridged to any host interfaces for security reasons.
+		# No `default_display`.
+		#   A curses display is used instead.
 		tap=metasploitable 
 		sudo ip tuntap add dev $tap mode tap
+		sudo ip link set dev $tap up
+		sudo ip route add 192.168.1.117 dev metasploitable
+		trap "sudo ip tuntap del dev $tap mode tap" EXIT
+
 		default_system \
 		  "${default_backend[@]}" \
 		  "${default_cpu[@]}" \
 		  "${default_memory[@]}" \
 		  -netdev tap,id=tap,ifname=$tap,script=no,downscript=no \
                   -device virtio-net,netdev=tap \
-		  "${default_display[@]}" \
-		  "${default_network[@]}" \
+		  -vga std -display curses \
 		  "${@:2}" \
 		  "$HOME/vm/metasploitable/metasploitable.img"
-		sudo ip tuntap del dev $tap mode tap
 		;;
 
 	# Tails.
