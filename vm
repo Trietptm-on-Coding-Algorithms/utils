@@ -76,6 +76,25 @@ case "$1" in
 		  -boot order=d \
 		  -cdrom "$HOME/vm/tails/tails.iso"
 		  ;;
+		#-vga qxl -spice port=5900,addr=127.0.0.1,disable-ticketing \
+
+	# XP.
+	xp-pop)
+		# No `default_cpu`.
+		#   Only one core is used.
+		# No `default_memory`.
+		#   Only 1G is necessary.
+		# No `default_sdb`.
+		#   No need.
+		# No `default_network`.
+		#   No network connection for security reasons.
+		# TODO: test this with SPICE.
+		default_system \
+		  "${default_backend[@]}" \
+		  -m 1G \
+		  "${default_display[@]}" \
+		  "$@"
+		;;
 
 	*)
 		# All defaults.
