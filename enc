@@ -6,4 +6,4 @@ shift
 abs=$(realpath "$rel")
 enc=$(dirname "$abs")/.$rel
 
-encfs "$enc" "$abs" "$@"
+mountpoint -q "$abs" || encfs "$enc" "$abs" "$@"
