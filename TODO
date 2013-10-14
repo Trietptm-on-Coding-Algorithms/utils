@@ -1,7 +1,3 @@
-'count' to count instances of characters or strings
-'bu' add backup firefox
-'bu' add .netrc and other config files
 '*' more documentation
 'listify' to deal with arguments and lists
-euid = 0 checks
 combolist to combine lists
