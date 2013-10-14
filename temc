@@ -29,7 +29,12 @@ case "$1" in
 		EOF
 		;;
 	*)
-		echo >&2 "not supported: $1"
+		cat >&2 <<-EOF
+		Supported templates:
+		  - guard
+		  - main
+		  - stdincl
+		EOF
 		exit 1
 		;;
 esac
