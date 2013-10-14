@@ -9,7 +9,23 @@ case "$1" in
 		cat <<-EOF
 		#ifndef $def
 		#define $def
+
+
+
 		#endif /* $def */
+		EOF
+		;;
+	main)
+		cat <<-EOF
+		int main(int argc, char **argv) {
+		}
+		EOF
+		;;
+	stdincl*)
+		cat <<-EOF
+		#include <stdio.h>
+		#include <stdlib.h>
+		#include <unistd.h>
 		EOF
 		;;
 	*)
