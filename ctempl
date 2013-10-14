@@ -1,0 +1,19 @@
+#!/bin/bash
+
+case "$1" in
+	guard)
+		def=$2
+		if [[ "$def" == *.h ]] ; then
+			def=$(echo "$def" | tr [a-z] [A-Z] | sed 's/\./_/g')
+		fi
+		cat <<-EOF
+		#ifndef $def
+		#define $def
+		#endif /* $def */
+		EOF
+		;;
+	*)
+		echo >&2 "not supported: $1"
+		exit 1
+		;;
+esac
