@@ -26,6 +26,24 @@ entry_exists() {
 #   name username password comment
 # Passwords with spaces and null characters are unsupported.
 case "$1" in
+	g*)
+		name=$2
+		user=$3
+		comment=$4
+
+		if entry_exists "$name" ; then
+			echo >&2 "already exists: $name"
+			exit 1
+		fi
+
+		pass=$(makepasswd --chars 10)
+		if command -v xclip &> /dev/null ; then
+			echo >&2 'password copied to primary selection'
+			echo "$pass" | xclip
+		fi
+
+		echo "$name $user $pass $comment" >> "$file"
+		;;
 	a*)
 		name=$2
 		user=$3
