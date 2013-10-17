@@ -2,6 +2,8 @@
 
 tag_dir=~/.ctags
 
+mkdir -p "$tag_dir"
+
 # Java
 ctags -R --language-force=java -f $tag_dir/java $JAVA_HOME/src
 ctags -R --languages=java -a -f $tag_dir/java /usr/lib/gridworld/framework

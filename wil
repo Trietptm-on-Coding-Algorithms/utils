@@ -1,5 +1,5 @@
 #!/bin/sh
 
-local pattern=$1
+pattern=$1
 shift
 ls "$@" *"$pattern"*
