@@ -1,0 +1,10 @@
+#!/bin/bash
+
+file=${1:-act.log}
+
+while : ; do
+	item=$(vipe < /dev/null)
+	echo -n "$(date +%H:%M:%S) $item" >> "$file"
+	#sleep 1
+	read
+done
