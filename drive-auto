@@ -1,0 +1,33 @@
+#!/bin/bash
+# Probably has to run as root.
+
+sleep=1
+
+drives() {
+	blkid | grep '^/dev/sd[a-z][0-9]\+:' | cut -d: -f1
+}
+
+initial=$(drives)
+
+echo "initial: $(tr '\n' ' ' <<< "$initial")"
+
+found=(aa)
+while sleep $sleep ; do
+	drives=$(drives)
+
+	for drive in $found ; do
+		if [[ "$drives" != *"$drive"* ]] ; then
+			echo "removed: $drive"
+			found=$(grep -v "^${drive}$" <<< "$found")
+		fi
+	done
+
+	for drive in $drives ; do
+		if [[ "$found" != *"$drive"* && "$initial" != *"$drive"* ]] ; then
+			echo "added: $drive"
+			found="$found $drive"
+			echo found: "$found"
+			#( drive-dump "$drive" | tee -a drive-auto.log >&2 ) &
+		fi
+	done
+done
