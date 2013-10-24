@@ -1,0 +1,8 @@
+#!/bin/bash
+
+namcap PKGBUILD
+makepkg -sf "$@"
+sudo pacman -U *.pkg.tar.xz --asdeps --noconfirm
+echo
+echo
+namcap PKGBUILD
