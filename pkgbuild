@@ -1,0 +1,234 @@
+#!/bin/bash
+
+case "$1" in
+	contained)
+		cat <<\PKGBUILD
+pkgname=NAME
+pkgver=VERSION
+pkgrel=1
+epoch=
+pkgdesc=""
+arch=()
+url=''
+# TODO: Check license.
+license=('GPL')
+# TODO: Add to secondary groups.
+groups=(blackarch)
+depends=()
+makedepends=()
+checkdepends=()
+optdepends=()
+provides=()
+conflicts=()
+replaces=()
+backup=()
+options=()
+install=
+changelog=
+source=("NAME-$pkgver.tar.gz")
+noextract=()
+md5sums=()
+
+# TODO: Replace PKGNAME.
+package() {
+	cd "$srcdir/NAME-$pkgver"
+
+	# Base directories.
+	install -dm755 "$pkgdir/usr/bin"
+	install -dm755 "$pkgdir/usr/share/PKGNAME"
+
+	# TODO: Fine tune this.
+	cp -R --no-preserve=ownership * "$pkgdir/usr/share/PKGNAME"
+
+	# Joint script.
+	cat > "$pkgdir/usr/bin/PKGNAME" <<\EOF
+#!/bin/sh
+cd /usr/share/PKGNAME
+./PKGNAME "$@"
+EOF
+	chmod +x "$pkgdir/usr/bin/PKGNAME" 
+
+	# Might need this instead.
+	#ln -s /usr/share/PKGNAME/PKGNAME "$pkgdir/usr/bin/PKGNAME"
+}
+PKGBUILD
+	;;
+
+	haskell)
+		cat <<\PKGBUILD
+_hkgname=NAME
+pkgname=$_hkgname
+pkgver=VERSION
+pkgrel=1
+pkgdesc=""
+arch=()
+# TODO: Replace this variable.
+url='http://hackage.haskell.org/package/HKGNAME'
+# TODO: Check license.
+license=('GPL')
+# TODO: Add to secondary groups.
+groups=(blackarch)
+depends=()
+makedepends=('ghc')
+provides=()
+conflicts=()
+replaces=()
+backup=()
+options=()
+install=$pkgname.install
+source=("http://hackage.haskell.org/packages/archive/$_hkgname/$pkgver/$_hkgname-$pkgver.tar.gz")
+md5sums=()
+
+build() {
+	cd "$srcdir/$_hkgname-$pkgver"
+
+	runhaskell Setup configure -O -p --enable-split-objs --enable-shared \
+		--prefix=/usr --docdir="/usr/share/doc/$pkgname" \
+		--libsubdir=\$compiler/site-local/\$pkgid
+	runhaskell Setup build
+	runhaskell Setup haddock
+	runhaskell Setup register   --gen-script
+	runhaskell Setup unregister --gen-script
+	sed -i -r -e "s|ghc-pkg.*unregister[^ ]* |&'--force' |" unregister.sh
+}
+
+package() {
+	cd "$srcdir/$_hkgname-$pkgver"
+
+	install -D -m744 register.sh   "$pkgdir/usr/share/haskell/$pkgname/register.sh"
+	install	   -m744 unregister.sh "$pkgdir/usr/share/haskell/$pkgname/unregister.sh"
+	install -d -m755 "$pkgdir/usr/share/doc/ghc/html/libraries"
+	ln -s "/usr/share/doc/$pkgname/html" "$pkgdir/usr/share/doc/ghc/html/libraries/$_hkgname"
+	runhaskell Setup copy --destdir="$pkgdir"
+}
+PKGBUILD
+	;;
+
+	make)
+		cat <<\PKGBUILD
+pkgname=NAME
+pkgver=VERSION
+pkgrel=1
+epoch=
+pkgdesc=""
+arch=()
+url=''
+# TODO: Check license.
+license=('GPL')
+# TODO: Add to secondary groups.
+groups=(blackarch)
+depends=()
+makedepends=()
+checkdepends=()
+optdepends=()
+provides=()
+conflicts=()
+replaces=()
+backup=()
+options=()
+install=
+changelog=
+source=("$pkgname-$pkgver.tar.gz")
+noextract=()
+md5sums=()
+
+prepare() {
+	cd "$srcdir/$pkgname-$pkgver"
+	patch -p1 -i "$srcdir/$pkgname-$pkgver.patch"
+}
+
+build() {
+	cd "$srcdir/$pkgname-$pkgver"
+	./configure --prefix=/usr
+	make
+}
+
+check() {
+	cd "$srcdir/$pkgname-$pkgver"
+	make -k check
+}
+
+package() {
+	cd "$srcdir/$pkgname-$pkgver"
+	make DESTDIR="$pkgdir/" install
+}
+PKGBUILD
+	;;
+
+	perl)
+		cat <<\PKGBUILD
+_author=AUTHOR_NAME
+_perlmod=MODNAME
+pkgname=perl-$_perlmod
+pkgver=VERSION
+pkgrel=1
+pkgdesc=""
+arch=()
+# TODO: Substitute the placeholders.
+url='http://search.cpan.org/~AUTHOR/PERLMOD-PKGVER/'
+# TODO: Check license.
+license=('GPL' 'PerlArtistic')
+# TODO: Add to groups.
+groups=(blackarch)
+depends=('perl>=5.10.0')
+makedepends=()
+provides=()
+conflicts=()
+replaces=()
+backup=()
+options=(!emptydirs)
+install=
+source=("http://cpan.perl.org/modules/by-authors/id/$_author/$_perlmod-$pkgver.tar.gz")
+md5sums=()
+
+build() {
+  cd "$srcdir/$_perlmod-$pkgver"
+
+  PERL_MM_USE_DEFAULT=1 perl Makefile.PL INSTALLDIRS=vendor
+  make
+
+  # For packages with Build.PL, do this instead:
+  #perl Build.PL installdirs=vendor destdir="$pkgdir/"
+  #perl Build
+}
+
+package() {
+  cd "$srcdir/$_perlmod-$pkgver"
+  make install DESTDIR="$pkgdir/"
+
+  # For packages with Build.PL, do this instead:
+  #perl Build install
+}
+PKGBUILD
+	;;
+
+	python)
+		cat <<\PKGBUILD
+pkgname=python-NAME
+pkgver=VERSION
+pkgrel=1
+pkgdesc=""
+arch=()
+url=''
+# TODO: Check license.
+license=('GPL')
+# TODO: Add to secondary groups.
+groups=(blackarch)
+depends=('python')
+makedepends=()
+provides=()
+conflicts=()
+replaces=()
+backup=()
+options=(!emptydirs)
+install=
+source=()
+md5sums=()
+
+package() {
+  cd "$srcdir/$pkgname-$pkgver"
+  python setup.py install --root="$pkgdir/" --optimize=1
+}
+PKGBUILD
+	;;
+esac
