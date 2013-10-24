@@ -6,7 +6,6 @@ case "$1" in
 pkgname=NAME
 pkgver=VERSION
 pkgrel=1
-epoch=
 pkgdesc=""
 arch=()
 url=''
@@ -56,8 +55,7 @@ PKGBUILD
 
 	haskell)
 		cat <<\PKGBUILD
-_hkgname=NAME
-pkgname=$_hkgname
+pkgname=NAME
 pkgver=VERSION
 pkgrel=1
 pkgdesc=""
@@ -75,15 +73,14 @@ conflicts=()
 replaces=()
 backup=()
 options=()
-install=$pkgname.install
-source=("http://hackage.haskell.org/packages/archive/$_hkgname/$pkgver/$_hkgname-$pkgver.tar.gz")
+source=("http://hackage.haskell.org/packages/archive/HNAME/$pkgver/HNAME-$pkgver.tar.gz")
 md5sums=()
 
 build() {
-	cd "$srcdir/$_hkgname-$pkgver"
+	cd "$srcdir/HNAME-$pkgver"
 
 	runhaskell Setup configure -O -p --enable-split-objs --enable-shared \
-		--prefix=/usr --docdir="/usr/share/doc/$pkgname" \
+		--prefix=/usr --docdir="/usr/share/doc/NAME" \
 		--libsubdir=\$compiler/site-local/\$pkgid
 	runhaskell Setup build
 	runhaskell Setup haddock
@@ -93,12 +90,12 @@ build() {
 }
 
 package() {
-	cd "$srcdir/$_hkgname-$pkgver"
+	cd "$srcdir/HNAME-$pkgver"
 
-	install -D -m744 register.sh   "$pkgdir/usr/share/haskell/$pkgname/register.sh"
-	install	   -m744 unregister.sh "$pkgdir/usr/share/haskell/$pkgname/unregister.sh"
-	install -d -m755 "$pkgdir/usr/share/doc/ghc/html/libraries"
-	ln -s "/usr/share/doc/$pkgname/html" "$pkgdir/usr/share/doc/ghc/html/libraries/$_hkgname"
+	install -Dm744 register.sh   "$pkgdir/usr/share/haskell/NAME/register.sh"
+	install	   -m744 unregister.sh "$pkgdir/usr/share/haskell/NAME/unregister.sh"
+	install -dm755 "$pkgdir/usr/share/doc/ghc/html/libraries"
+	ln -s "/usr/share/doc/NAME/html" "$pkgdir/usr/share/doc/ghc/html/libraries/HNAME"
 	runhaskell Setup copy --destdir="$pkgdir"
 }
 PKGBUILD
@@ -109,7 +106,6 @@ PKGBUILD
 pkgname=NAME
 pkgver=VERSION
 pkgrel=1
-epoch=
 pkgdesc=""
 arch=()
 url=''
@@ -128,28 +124,28 @@ backup=()
 options=()
 install=
 changelog=
-source=("$pkgname-$pkgver.tar.gz")
+source=("NAME-$pkgver.tar.gz")
 noextract=()
 md5sums=()
 
 prepare() {
-	cd "$srcdir/$pkgname-$pkgver"
-	patch -p1 -i "$srcdir/$pkgname-$pkgver.patch"
+	cd "$srcdir/NAME-$pkgver"
+	patch -p1 -i "$srcdir/NAME-$pkgver.patch"
 }
 
 build() {
-	cd "$srcdir/$pkgname-$pkgver"
+	cd "$srcdir/NAME-$pkgver"
 	./configure --prefix=/usr
 	make
 }
 
 check() {
-	cd "$srcdir/$pkgname-$pkgver"
+	cd "$srcdir/NAME-$pkgver"
 	make -k check
 }
 
 package() {
-	cd "$srcdir/$pkgname-$pkgver"
+	cd "$srcdir/NAME-$pkgver"
 	make DESTDIR="$pkgdir/" install
 }
 PKGBUILD
@@ -226,7 +222,7 @@ source=()
 md5sums=()
 
 package() {
-  cd "$srcdir/$pkgname-$pkgver"
+  cd "$srcdir/python-NAME-$pkgver"
   python setup.py install --root="$pkgdir/" --optimize=1
 }
 PKGBUILD
