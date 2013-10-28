@@ -1,0 +1,11 @@
+#!/bin/bash
+
+file=$1
+person=$2
+if [[ -z "$person" ]] ; then
+	person=$(git config --global user.name)
+fi
+
+if ! git blame "$file" | grep -q "($person " ; then
+	echo "'$person' has not touched '$file'"
+fi
