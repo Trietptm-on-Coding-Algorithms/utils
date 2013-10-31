@@ -10,16 +10,12 @@ cat "$HOME/.irssi/config" > "$tmp"
 i=0
 while grep -q "pass$i=" "$HOME/.irssi/pass" ; do
 	pass=$(grep "pass$i=" "$HOME/.irssi/pass" | cut -d= -f2)
-	sed -i "s/PASS$i/$pass/g" "$tmp"
+	sed -i "s/%PASS$i%/$pass/g" "$tmp"
 	(( i++ ))
 done
 
-while grep -q 'REALNAME' "$tmp" ; do
-	sed -i "0,/REALNAME/s/FULLNAME/$(makepasswd)/g" "$tmp"
-done
-
-while grep -q 'USERNAME' "$tmp" ; do
-	sed -i "0,/USERNAME/s/FULLNAME/$(makepasswd)/g" "$tmp"
+while grep -q '%RANDOM%' "$tmp" ; do
+	sed -i "0,/%RANDOM%/s/%RANDOM%/$(makepasswd --chars 8)/g" "$tmp"
 done
 
 irssi --config=$tmp
