@@ -1,8 +1,0 @@
-#!/usr/bin/env python3
-
-ga = float(input("ga: "))
-fa = float(input("fa: "))
-fb = float(input("fb: "))
-reach = 90.00
-gb = (reach - 0.2 * (fa + fb) - 0.3 * ga) / 0.3
-print("gb must be > ", gb)
