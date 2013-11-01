@@ -14,8 +14,15 @@ while grep -q "pass$i=" "$HOME/.irssi/pass" ; do
 	(( i++ ))
 done
 
+i=0
+while grep -q "nick$i=" "$HOME/.irssi/pass" ; do
+	nick=$(grep "nick$i=" "$HOME/.irssi/pass" | cut -d= -f2)
+	sed -i "s/%NICK$i%/$nick/g" "$tmp"
+	(( i++ ))
+done
+
 while grep -q '%RANDOM%' "$tmp" ; do
-	sed -i "0,/%RANDOM%/s/%RANDOM%/$(makepasswd --chars 8)/g" "$tmp"
+	sed -i "0,/%RANDOM%/s/%RANDOM%/$(makepasswd --chars 8 --string 'abcdefghijklmnopqrstuvwxyz')/g" "$tmp"
 done
 
 irssi --config=$tmp
