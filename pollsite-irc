@@ -1,0 +1,62 @@
+#!/bin/sh
+
+wait_success=60
+wait_failure=3600
+site=blackarch.org
+ignore_initial=true
+
+network=irc.genscripts.net
+port=6667
+#network=localhost
+#port=2222
+nick=thesiteisbroken
+name='Fix It'
+channel='#blackarch'
+message="The site is down. Checking again in $wait_failure seconds."
+join=true
+
+message_delay=2
+
+start_handler() {
+	tail -fn0 "$tmp" | nc $network $port &
+	trap kill_handler EXIT
+}
+
+kill_handler() {
+	kill $!
+}
+
+write() {
+	echo >&2 "$@"
+	echo "$@" > "$tmp"
+	sleep $message_delay
+}
+
+send_alert() {
+	write
+	write "NICK $nick"
+	write "USER $nick 8 * : $name"
+	$join && write "JOIN $channel"
+	write "PRIVMSG $channel :$message"
+	write "QUIT"
+}
+
+tmp=/tmp/irc.$RANDOM$RANDOM
+mkfifo "$tmp"
+chmod 600 "$tmp"
+
+while true ; do
+	if ! curl --connect-timeout 10 "$site" &&
+	   ! $ignore_initial ; then
+		echo >&2 failed
+		start_handler
+		send_alert
+		kill_handler
+		sleep $wait_failure
+	else
+		echo >&2 good
+		sleep $wait_success
+	fi
+
+	ignore_initial=false
+done
