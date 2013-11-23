@@ -1,0 +1,11 @@
+#!/bin/bash
+
+user=root
+host=192.168.1.8
+
+ssh "$user@$host" \
+  'cryptsetup --type=tcrypt open /dev/sda2 home; mount /dev/mapper/home /mnt'
+
+rsync -avz --progress --fuzzy --delete-before \
+  -e 'ssh -p 222' \
+  /home/ "$user@$host/mnt"
