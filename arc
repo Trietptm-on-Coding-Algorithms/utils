@@ -10,6 +10,9 @@ case "$1" in
 	*.tar.xz)
 		tar cJf "$@"
 		;;
+	*.tar.bzip2)
+		tar cjf "$@"
+		;;
 	*.zip)
 		zip -r "$@"
 		;;
