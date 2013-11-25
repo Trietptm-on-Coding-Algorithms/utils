@@ -3,7 +3,7 @@
 wait_success=60
 wait_failure=3600
 site=blackarch.org
-ignore_initial=true
+ignore_initial=false
 
 network=irc.genscripts.net
 port=6667
@@ -13,7 +13,7 @@ nick=thesiteisbroken
 name='Fix It'
 channel='#blackarch'
 message="The site is down. Checking again in $wait_failure seconds."
-join=true
+join=false
 
 message_delay=2
 
