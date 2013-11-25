@@ -11,7 +11,7 @@ initial=$(drives)
 
 echo "initial: $(tr '\n' ' ' <<< "$initial")"
 
-found=(aa)
+found=()
 while sleep $sleep ; do
 	drives=$(drives)
 
