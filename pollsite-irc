@@ -12,8 +12,10 @@ port=6667
 nick=thesiteisbroken
 name='Fix It'
 channel='#blackarch'
-message="The site is down. Checking again in $wait_failure seconds."
 join=false
+message="$site is down. Checking again in $wait_failure seconds."
+portscan=true
+host_info=true
 
 message_delay=2
 
@@ -38,6 +40,14 @@ send_alert() {
 	write "USER $nick 8 * : $name"
 	$join && write "JOIN $channel"
 	write "PRIVMSG $channel :$message"
+	if $portscan ; then
+		local sprunge=$(nmap "$site" |& curl -F sprunge=@- sprunge.us)
+		write "PRIVMSG $channel :Port scan: $sprunge"
+	fi
+	if $host_info ; then
+		local sprunge=$(host "$site" |& curl -F sprunge=@- sprunge.us)
+		write "PRIVMSG $channel :DNS lookup: $sprunge"
+	fi
 	write "QUIT"
 }
 
@@ -47,7 +57,8 @@ chmod 600 "$tmp"
 
 while true ; do
 	if ! curl --connect-timeout 10 "$site" &&
-	   ! $ignore_initial ; then
+	   ! $ignore_initial &&
+	   curl --connect-timeout 10 www.google.com ; then
 		echo >&2 failed
 		start_handler
 		send_alert
