@@ -1,0 +1,14 @@
+#!/bin/sh
+
+url=$1
+
+prot=${url%%.*}
+
+case "$prot" in
+	ftp)
+		st -e ftp "$url"
+		;;
+	*)
+		dwb -n "$url"
+		;;
+esac
