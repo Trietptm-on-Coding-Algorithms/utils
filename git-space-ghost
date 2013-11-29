@@ -1,0 +1,4 @@
+#!/bin/sh
+# Hunts down objects that take up space.
+
+git rev-list --all --objects | awk '{ print $1 }' | git cat-file --batch-check | sort -k3nr
