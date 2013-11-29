@@ -1,0 +1,4 @@
+#!/bin/sh
+# Lists all files that have ever existed.
+
+git log --pretty=format: --name-status | cut -f2- | sort -u
