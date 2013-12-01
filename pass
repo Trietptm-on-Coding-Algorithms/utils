@@ -92,6 +92,11 @@ case "$1" in
 		fi
 		grep "^$2 " "$file"
 		;;
+	x*)
+		shift
+		grep "^$*" "$file" | cut -d' ' -f3 | xclip
+		echo >&2 'password copied to primary selection'
+		;;
 	*)
 		echo >&2 "unsupported: $1"
 		exit 1
