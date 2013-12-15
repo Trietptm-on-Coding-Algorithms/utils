@@ -1,0 +1,33 @@
+#!/bin/bash
+# Adds a dropshadow to the image
+# -background white for .jpgs
+# -background none for others
+# Based on https://github.com/stnly/scripts/blob/master/ardshdw
+
+in=$1
+out=$(echo "$1" | sed -e 's/.\(jpg\|jpeg\|png\|tif\)$//i')-shadow.$(echo "$1" | sed -e 's/.*.\(jpg\|jpeg\|png\|tif\)$/\1/i')
+
+# Uncomment to clobber input file.
+#out=$in
+
+viewer=feh
+
+if [[ ! -r "$in" ]]; then
+	echo "cannot read '$in'"
+elif [[ "$in" == *.jpg ]] || [[ "$in" == *.jpeg ]]; then
+	if [[ ! -z "$2" ]] ; then 
+		convert "$in" -frame "$2" "$out"
+		in=$out
+	fi
+	convert $in \( +clone  -background black  -shadow 150x30+0+0 \) +swap -background white -layers merge +repage "$out"
+	echo "added shadow to: $out"
+	$viewer "$out"
+else
+	if [[ ! -z "$2" ]] ; then 
+		convert "$in" -frame "$2" "$out"
+		in=$out
+	fi
+	convert $in \( +clone  -background black  -shadow 150x30+0+0 \) +swap -background none -layers merge +repage "$out"
+	echo "added shadow to: $out"
+	$viewer "$out"
+fi
