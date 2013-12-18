@@ -6,21 +6,6 @@ trap "rm $tmp" EXIT
 
 cat "$HOME/.irssi/config" > "$tmp"
 
-# I don't care enough about IRC passwords to encrypt this file.
-i=0
-while grep -q "pass$i=" "$HOME/.irssi/pass" ; do
-	pass=$(grep "pass$i=" "$HOME/.irssi/pass" | cut -d= -f2)
-	sed -i "s/%PASS$i%/$pass/g" "$tmp"
-	(( i++ ))
-done
-
-i=0
-while grep -q "nick$i=" "$HOME/.irssi/pass" ; do
-	nick=$(grep "nick$i=" "$HOME/.irssi/pass" | cut -d= -f2)
-	sed -i "s/%NICK$i%/$nick/g" "$tmp"
-	(( i++ ))
-done
-
 while grep -q '%RANDOM%' "$tmp" ; do
 	sed -i "0,/%RANDOM%/s/%RANDOM%/$(makepasswd --chars 8 --string 'abcdefghijklmnopqrstuvwxyz')/g" "$tmp"
 done
