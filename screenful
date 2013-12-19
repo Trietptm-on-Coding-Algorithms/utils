@@ -1,0 +1,30 @@
+#!/bin/bash
+
+tmp=$(mktemp -d)
+trap "rm -rf $tmp" EXIT
+cd $tmp
+
+if [[ $# == 0 ]] ; then
+	echo 'no message?'
+	exit 1
+fi
+
+if [[ "$1" == - ]] ; then
+	msg=$(cat)
+else
+	msg=$*
+fi
+
+echo >&2 "message: $msg"
+
+# TODO: fill screen
+cat > msg.tex <<EOF
+\documentclass{article}
+\Huge
+\begin{document}
+$msg
+\end{document}
+EOF
+
+pdflatex msg.tex
+zathura msg.pdf
