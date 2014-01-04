@@ -33,10 +33,10 @@ pkgver() {
 EOF
 
 case "$1" in
-	git-tag|git)
+	git-tag)
 		echo "  git describe --always | sed 's|-|.|g'"
 		;;
-	git-notag)
+	git-notag|git)
 		echo '  echo $(git rev-list --count HEAD).$(git rev-parse --short HEAD)'
 		;;
 	svn|subversion)
