@@ -10,7 +10,8 @@ default_cpu=(-smp 8,cores=4,threads=2,sockets=1)
 default_memory=(-m 6G)
 
 # Display.
-default_display=(-vga std)
+#default_display=(-vga std)
+default_display=(-vga qxl -spice port=5900,addr=127.0.0.1,disable-ticketing)
 
 # Disks.
 default_sdb=(-drive file=/dev/sdb,cache=none,if=virtio)
@@ -33,6 +34,19 @@ case "$1" in
 		  "${default_network[@]}" \
 		  "${@:2}" \
 		  "$HOME/vm/archinstall/archinstall.iso"
+		;;
+
+	# BlackArch.
+	blackarch)
+		default_system \
+		  "${default_backend[@]}" \
+		  "${default_cpu[@]}" \
+		  "${default_memory[@]}" \
+		  "${default_display[@]}" \
+		  "${default_sdb[@]}" \
+		  "${default_network[@]}" \
+		  "${@:2}" \
+		  "$HOME/vm/blackarch/test.iso"
 		;;
 
 	# Metasploitable.
@@ -76,7 +90,6 @@ case "$1" in
 		  -boot order=d \
 		  -cdrom "$HOME/vm/tails/tails.iso"
 		  ;;
-		#-vga qxl -spice port=5900,addr=127.0.0.1,disable-ticketing \
 
 	# XP.
 	xp-pop)
