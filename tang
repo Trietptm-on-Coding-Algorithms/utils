@@ -1,9 +1,5 @@
 #!/bin/sh
 
 ping "$@" |
-while read l ; do
-	echo tang | festival --tts &
-	echo "$l"
-done |
-sed 's/.*bytes from.*/TANG!/;s/PING/TANG/'
-#awk -F[=\ ] '/me=/{ t=$(NF - 1); f = 3000 - 14 * log(t ^ 20); c="play -q -n synth 1 pl " f; print $0; system(c) }' |
+awk -F[=\ ] '/me=/{ t=$(NF - 1); f = 120 - log(2 ^ t); c="echo tang | espeak 2>/dev/null -s 200 -p " f; print $0; system(c)  }' |
+sed -u 's/.*bytes from /TANG! /'
