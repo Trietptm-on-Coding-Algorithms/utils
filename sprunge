@@ -1,3 +1,3 @@
 #!/bin/sh
 
-curl -qF 'sprunge=<-' http://sprunge.us | tee /dev/stderr | xclip
+curl -sF 'sprunge=<-' http://sprunge.us | tee /dev/stderr | xclip
