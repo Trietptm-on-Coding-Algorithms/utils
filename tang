@@ -6,7 +6,7 @@ case "$1" in
 		;;
 	*)
 		ping "$@" |
-		awk -F[=\ ] '/me=/{ t=$(NF - 1); f = 120 - log(2 ^ t); c="echo ping | espeak 2>/dev/null -s 200 -p " f; print $0; system(c)  }' |
+		awk -F[=\ ] '/me=/{ t=$(NF - 1); f = 120 - log(2 ^ t); c="echo tang | espeak 2>/dev/null -s 200 -p " f; print $0; system(c)  }' |
 		sed -u 's/.*bytes from /TANG! /'
 		;;
 esac
