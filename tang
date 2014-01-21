@@ -1,5 +1,13 @@
 #!/bin/sh
+# freenode/##linux joke.
 
-ping "$@" |
-awk -F[=\ ] '/me=/{ t=$(NF - 1); f = 120 - log(2 ^ t); c="echo tang | espeak 2>/dev/null -s 200 -p " f; print $0; system(c)  }' |
-sed -u 's/.*bytes from /TANG! /'
+case "$1" in
+	tunnel)
+		ssh -L "$2:$3:$4" "$5"
+		;;
+	*)
+		ping "$@" |
+		awk -F[=\ ] '/me=/{ t=$(NF - 1); f = 120 - log(2 ^ t); c="echo tang | espeak 2>/dev/null -s 200 -p " f; print $0; system(c)  }' |
+		sed -u 's/.*bytes from /TANG! /'
+		;;
+esac
