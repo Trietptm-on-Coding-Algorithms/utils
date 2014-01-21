@@ -1,0 +1,57 @@
+#!/bin/sh
+
+usage() {
+	cat >&2 <<EOF
+usage: blogtrottr <url> [schedule]'
+
+Where [schedule] is one of:
+  - realtime
+  - 2
+  - 4
+  - 6
+  - 8
+  - 12
+  - daily
+EOF
+}
+
+if (( $# == 0 || $# > 2 )) ; then
+	usage
+	exit 1
+fi
+
+url=$1
+
+if (( $# == 1 )) ; then
+	schedule=6
+else
+	case "$2" in
+		realtime)
+			schedule=0
+			;;
+		2)
+			schedule=1
+			;;
+		4)
+			schedule=2
+			;;
+		6)
+			schedule=3
+			;;
+		8)
+			schedule=4
+			;;
+		12)
+			schedule=5
+			;;
+		daily)
+			schedule=6
+			;;
+		*)
+			usage
+			exit 1
+			;;
+	esac
+fi
+
+curl -F schedule_type=$schedule -F btr_email=teitelmanevan@gmail.com -F "btr_url=$url"
