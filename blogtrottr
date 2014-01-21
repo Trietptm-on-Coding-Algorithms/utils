@@ -54,4 +54,6 @@ else
 	esac
 fi
 
-curl -F schedule_type=$schedule -F btr_email=teitelmanevan@gmail.com -F "btr_url=$url"
+curl -s -F schedule_type=$schedule -F btr_email=teitelmanevan@gmail.com -F "btr_url=$url" http://blogtrottr.com/ > /dev/null 2>&1
+
+echo done.
