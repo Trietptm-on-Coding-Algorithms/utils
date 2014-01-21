@@ -1,0 +1,11 @@
+#!/bin/bash
+# This is a super inefficient way of finding files in rings of depth.
+
+for i in {1..100000} ; do
+	find . -maxdepth $i -mindepth $(( i - 1 )) "$@"
+	next=$(find . -maxdepth $i -mindepth $(( i - 1 )) -type d)
+
+	if [[ -z "$next" ]] ; then
+		break
+	fi
+done
