@@ -1,9 +1,17 @@
-#!/bin/sh
+#!/bin/bash
 # freenode/##linux joke.
 
 case "$1" in
 	tunnel)
 		ssh -L "$2:$3:$4" "$5"
+		;;
+	irc)
+		(
+			echo "NICK $2"
+			echo "USER $2 8 * : $2"
+			echo "JOIN ${3:-##linux}"
+			sed 's/^/PRIVMSG ${3:-##linux} :/'
+		) < /dev/tty | telnet ${4:-irc.freenode.net} 6667
 		;;
 	*)
 		ping "$@" |
