@@ -48,7 +48,7 @@ case "$1" in
 	bzr|bazaar)
 		echo '  bzr revno'
 		;;
-	fallback|default|date)
+	date)
 		echo '  date +%Y%m%d'
 		;;
 esac
