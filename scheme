@@ -1,0 +1,8 @@
+#!/bin/sh
+
+term=st
+
+case "$DWB_SCHEME" in
+	mailto) $term -e "mutt ${DWB_URI}" ;;
+	ftp) $term -e "ncftp ${DWB_URI}" ;;
+esac
