@@ -1,4 +1,6 @@
 #!/usr/bin/perl
+# I found this on the internet somewhere. I did not write it.
+#
 # Converts mail into LaTeX markup.
 #
 # This script is largely based on:
