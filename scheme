@@ -1,8 +1,21 @@
-#!/bin/sh
+#!/bin/bash
 
 term=st
 
-case "$DWB_SCHEME" in
-	mailto) $term -e "mutt ${DWB_URI}" ;;
-	ftp) $term -e "ncftp ${DWB_URI}" ;;
+if [[ -z "$DWB_SCHEME" ]] ; then
+	scheme=$(sed 's|:.*||' <<< "$1")
+else
+	scheme=$DWB_SCHEME
+fi
+
+if [[ -z "$DWB_URI" ]] ; then
+	uri=$1
+else
+	uri=$DWB_URI
+fi
+
+case "$scheme" in
+	http) dwb -n "$uri" ;;
+	mailto) $term -e "mutt $uri" ;;
+	ftp) $term -e "ncftp $uri" ;;
 esac
