@@ -1,0 +1,25 @@
+#!/bin/sh
+
+usage() {
+	:
+}
+
+case "$1" in
+	friend) sub=you.are.my.friend ;;
+	owned) sub=just.got.owned ;;
+	mighty) sub=you.are.mighty ;;
+	epilepsy) sub=do.you.have.epilepsy ;;
+	defeated) sub=will.be.defeated ;;
+	love) sub=i.love.you ;;
+	arrived) sub=has.arrived ;;
+	sphere) sub=ask.the.sphere ;;
+	anonymous) sub=we.are.anonymous ;;
+	*)
+		usage 1
+		exit
+		;;
+esac
+
+data=$2
+url=`echo "$data" | tr ' ' .`.$sub.aninote.com
+echo "$url"
