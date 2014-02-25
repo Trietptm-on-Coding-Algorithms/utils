@@ -1,1 +1,4 @@
-sudo dhcpcd eth0
+sudo brctl addbr br0
+sudo brctl addif br0 eth0
+sudo ip link set eth0 up
+sudo dhcpcd -4 br0
