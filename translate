@@ -1,4 +1,5 @@
 #!/bin/bash
+# Based one something I found online.
 
 default_target=en
 
