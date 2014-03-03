@@ -2,7 +2,8 @@
 # I like to start virtual machines from a central location.
 
 # Qemu.
-default_system() { sudo -g disk qemu-system-x86_64 "$@"; }
+#default_system() { sudo -g disk qemu-system-x86_64 "$@"; }
+default_system() { sudo qemu-system-x86_64 "$@"; }
 default_backend=(-enable-kvm)
 
 # Core hardware.
@@ -10,8 +11,8 @@ default_cpu=(-smp 8,cores=4,threads=2,sockets=1)
 default_memory=(-m 6G)
 
 # Display.
-#default_display=(-vga std)
-default_display=(-vga qxl -spice port=5900,addr=127.0.0.1,disable-ticketing)
+default_display=(-vga std)
+#default_display=(-vga qxl -spice port=5900,addr=127.0.0.1,disable-ticketing)
 
 # Disks.
 default_sdb=(-drive file=/dev/sdb,cache=none,if=virtio)
@@ -92,7 +93,7 @@ case "$1" in
 		  ;;
 
 	# XP.
-	xp-pop)
+	xp-home-sp1)
 		# No `default_cpu`.
 		#   Only one core is used.
 		# No `default_memory`.
@@ -104,9 +105,13 @@ case "$1" in
 		# TODO: test this with SPICE.
 		default_system \
 		  "${default_backend[@]}" \
-		  -m 1G \
+		  -m 2G \
 		  "${default_display[@]}" \
-		  "$@"
+		  -boot once=c \
+		  -cdrom "$HOME/vm/xp-home-sp1/xp-home-sp1.iso" \
+		  -drive "file=$HOME/vm/xp-home-sp1/disk.qcow2,cache=none,if=ide" \
+		  -drive "file=$HOME/vm/xp-home-sp1/share.qcow2,cache=none,if=ide" \
+		  "${@:2}"
 		;;
 
 	*)
