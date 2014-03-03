@@ -1,11 +1,23 @@
-#!/bin/bash
+#!/bin/sh
 
-user=root
-host=192.168.1.8
+set -e -u
 
-ssh "$user@$host" \
-  'cryptsetup --type=tcrypt open /dev/sda2 home; mount /dev/mapper/home /mnt'
+mnt_dir=/mnt/bu
 
-rsync -avz --progress --fuzzy --delete-before \
-  -e 'ssh -p 222' \
-  /home/ "$user@$host/mnt"
+cleanup() {
+	umount "$mnt_dir"
+	rmdir "$mnt_dir"
+	mount -o rw,remount /home
+}
+
+trap cleanup EXIT
+
+mkdir -p "$mnt_dir"
+
+cryptsetup --type=tcrypt open /dev/sdc1 bu
+mount /dev/mapper/bu /mnt
+
+mount -o ro,remount /home
+
+rsync -av --progress --fuzzy --delete-before \
+  /home/ /mnt
