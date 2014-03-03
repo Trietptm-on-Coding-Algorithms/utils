@@ -1,0 +1,123 @@
+#!/bin/bash
+
+mnt=/mnt/kindle
+do_umount=true
+
+usage() {
+	cat <<EOF
+usage: kin [OPTIONS] ACTION [ACTION_ARGS]
+
+  OPTIONS
+  -m <mnt>           set mountpoint (default: /mnt/kindle)
+  -d <dev>           set block device (default: auto)
+  -n                 do not unmount on exit
+  
+  ACTION
+  ls                 list books
+  cp <book>          copy a book onto the device
+  rm <book>          remove a book from the device
+  purge <book>       remove a book and its *.?ds/*.sdr files from the device
+EOF
+}
+
+parse_args() {
+	while (( $# )) ; do
+		case "$1" in
+			-m)
+				mnt=$2
+				shift
+				;;
+			-d)
+				blk=$2
+				shift
+				;;
+			-n)
+				do_umount=false
+				;;
+			ls)
+				action=ls
+				book=$2
+				shift
+				;;
+			cp)
+				action=cp
+				book=$2
+				shift
+				;;
+			rm)
+				action=rm
+				book=$2
+				shift
+				;;
+			purge)
+				action=purge
+				book=$2
+				shift
+				;;
+			*)
+				usage
+				exit 1
+				;;
+		esac
+		shift
+	done
+
+	if [[ -z "$action" ]] ; then
+		usage
+		exit 1
+	fi
+}
+
+check_root() {
+	if (( $EUID != 0 )) ; then
+		echo >&2 'must be root.'
+		exit 1
+	fi
+}
+
+cleanup() {
+	$do_umount || return
+
+	umount "$mnt"
+	[[ -d "$mnt" ]] && rmdir "$mnt"
+}
+
+do_mount() {
+	trap cleanup EXIT
+
+	# Auto-detect device
+	if [[ -z "$blk" ]] ; then
+		blk=$(blkid | grep 'LABEL="Kindle"' | head -n1 | cut -d: -f1)
+	fi
+
+	mkdir -p "$mnt"
+	mount "$blk" "$mnt"
+
+	echo "$blk mounted to $mnt."
+}
+
+do_ls() {
+	ls --color=auto "$mnt/documents/$book"
+}
+
+do_cp() {
+	cp "$book" "$mnt/documents"
+}
+
+do_rm() {
+	rm -f "$mnt/documents/$book"
+}
+
+do_purge() {
+	rm -rf "$mnt/documents/$book"{,.sdr}
+}
+
+main() {
+	parse_args "$@"
+	check_root
+	do_mount
+
+	do_$action
+}
+
+main "$@"
