@@ -61,23 +61,19 @@ for file ; do
 		# Quoting is strange, but it makes each line consistent.
 		# We add each part of the pattern individually to make parts of the patterne easy to comment out.
 		pattern="$pattern;"'s/\(.*\)/\L\1/'
-		pattern="$pattern;"'s/%20/-/g'
-		pattern="$pattern;"'s/_/-/g'
+		pattern="$pattern;"'s/%20/_/g'
+		pattern="$pattern;"'s/-/_/g'
 		pattern="$pattern;""s/'//g"
 		pattern="$pattern;"'s/"//g'
 		pattern="$pattern;"'s/,//g'
-		pattern="$pattern;"'s/&/-/g'
+		pattern="$pattern;"'s/&/_/g'
 		pattern="$pattern;"'s/(//g'
 		pattern="$pattern;"'s/)//g'
 		pattern="$pattern;"'s/://g'
 		pattern="$pattern;"'s/!//g'
 		pattern="$pattern;"'s/\?//g'
-		pattern="$pattern;"'s/\.-/-/g'
-
-		# TODO: make this sane.
-		for i in {0..5} ; do
-			pattern="$pattern;"'s/--/-/g'
-		done
+		pattern="$pattern;"'s/\._/_/g'
+		pattern="$pattern;"'s/_+/_/g'
 	fi
 
 	do_rename "$pattern" "$file"
