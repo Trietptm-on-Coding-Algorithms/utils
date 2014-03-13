@@ -2,12 +2,25 @@
 
 set -e -u
 
+for arg ; do
+	case "$arg" in
+		-f)
+			final=true
+			;;
+		*)
+			echo >&2 "invalid arg"
+			;;
+	esac
+done
+
 mnt_dir=/mnt/bu
 
 cleanup() {
 	umount "$mnt_dir"
 	rmdir "$mnt_dir"
-	mount -o rw,remount /home
+	if $final ; then
+		mount -o rw,remount /home
+	fi
 }
 
 trap cleanup EXIT
@@ -17,7 +30,9 @@ mkdir -p "$mnt_dir"
 cryptsetup --type=tcrypt open /dev/sdc1 bu
 mount /dev/mapper/bu /mnt
 
-mount -o ro,remount /home
+if $final ; then
+	mount -o ro,remount /home
+fi
 
 rsync -av --progress --fuzzy --delete-before \
   /home/ /mnt
