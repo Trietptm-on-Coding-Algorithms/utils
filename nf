@@ -58,8 +58,6 @@ for file ; do
 	pattern='s/ /-/g'
 
 	if ! $spaces_only ; then
-		# Quoting is strange, but it makes each line consistent.
-		# We add each part of the pattern individually to make parts of the patterne easy to comment out.
 		pattern="$pattern;"'s/\(.*\)/\L\1/'
 		pattern="$pattern;"'s/%20/_/g'
 		pattern="$pattern;"'s/-/_/g'
@@ -73,7 +71,7 @@ for file ; do
 		pattern="$pattern;"'s/!//g'
 		pattern="$pattern;"'s/\?//g'
 		pattern="$pattern;"'s/\._/_/g'
-		pattern="$pattern;"'s/_+/_/g'
+		pattern="$pattern;"'s/_\+/_/g'
 	fi
 
 	do_rename "$pattern" "$file"
