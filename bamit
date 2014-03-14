@@ -1,8 +1,0 @@
-#!/bin/bash
-
-[[ $PWD == *blackarch/packages/* ]] || return 1
-
-pack=$(basename $PWD)
-
-git add -A .
-git commit -vt <(echo "$pack:")
