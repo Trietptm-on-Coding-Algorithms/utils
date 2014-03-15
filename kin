@@ -91,7 +91,7 @@ do_mount() {
 	fi
 
 	mkdir -p "$mnt"
-	mount "$blk" "$mnt"
+	mount -o sync "$blk" "$mnt"
 
 	echo "$blk mounted to $mnt."
 }
