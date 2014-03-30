@@ -101,15 +101,16 @@ do_ls() {
 }
 
 do_cp() {
-	cp "$book" "$mnt/documents"
+	cp -v "$book" "$mnt/documents"
 }
 
 do_rm() {
-	rm -f "$mnt/documents/$book"
+	rm -vf "$mnt/documents/$book"
+	do_ls
 }
 
 do_purge() {
-	rm -rf "$mnt/documents/$book"{,.sdr}
+	rm -vrf "$mnt/documents/$book"{,.sdr}
 }
 
 main() {
