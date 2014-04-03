@@ -1,0 +1,57 @@
+#!/bin/bash
+
+base=${BASH_SOURCE[0]%/*}
+package_list=$HOME/cod/blackarch/blackarch-iso/live-iso/packages.para
+
+act=$1
+
+usage() {
+	cat <<EOF
+manage.sh: ACTION
+
+where ACTION is one of
+
+EOF
+}
+
+list_machine_packages() {
+	pacman -Qqe | sort
+}
+
+list_file_packages() {
+	sed '/^#/d' "$package_list" | sort -u
+}
+
+list_new() {
+	comm -32 <(list_machine_packages) <(list_file_packages)
+}
+
+list_removed() {
+	comm -31 <(list_machine_packages) <(list_file_packages)
+}
+
+list_good() {
+	comm -21 <(list_machine_packages) <(list_file_packages)
+}
+
+do_clean_machine() {
+	list_new | sudo xargs pacman --noconfirm -Rns
+}
+
+do_clean_list() {
+	list_removed | while read p ; do
+		sed -i "/^$p$/d" "$package_list"
+	done
+}
+
+case "$act" in
+	rmed|removed) list_removed ;;
+	new)          list_new ;;
+	good)         list_good ;;
+	clean)        do_clean_machine ;;
+	listclean)    do_clean_list ;;
+	*)
+		usage
+		exit 1
+		;;
+esac
