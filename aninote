@@ -1,7 +1,23 @@
 #!/bin/sh
 
 usage() {
-	:
+	cat <<EOF
+usage: aninote <TYPE> <DATA>
+
+TYPE is one of:
+
+  - friend
+  - owned
+  - mighty
+  - epilepsy
+  - defeated
+  - love
+  - arrived
+  - sphere
+  - anonymous
+
+DATA is encoded	so that spaces become periods.
+EOF
 }
 
 case "$1" in
@@ -14,6 +30,10 @@ case "$1" in
 	arrived) sub=has.arrived ;;
 	sphere) sub=ask.the.sphere ;;
 	anonymous) sub=we.are.anonymous ;;
+	-h)
+		usage
+		exit
+		;;
 	*)
 		usage 1
 		exit
