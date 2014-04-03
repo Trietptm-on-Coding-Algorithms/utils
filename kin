@@ -42,7 +42,8 @@ parse_args() {
 			cp)
 				action=cp
 				book=$2
-				shift
+				book_to=$3
+				shift; shift
 				;;
 			rm)
 				action=rm
@@ -96,17 +97,23 @@ do_mount() {
 	echo "$blk mounted to $mnt."
 }
 
+kin_ls() {
+	local item=$1
+	shift
+	ls --color=auto "$mnt/documents/$item" "$@"
+}
+
 do_ls() {
-	ls --color=auto "$mnt/documents/$book"
+	kin_ls "$book"
 }
 
 do_cp() {
-	cp -v "$book" "$mnt/documents"
+	cp -v "$book" "$mnt/documents/$book_to"
 }
 
 do_rm() {
 	rm -vf "$mnt/documents/$book"
-	do_ls
+	kin_ls
 }
 
 do_purge() {
