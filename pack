@@ -18,20 +18,26 @@ list_machine_packages() {
 	pacman -Qqe | sort
 }
 
+list_machine_packages_filtered() {
+	comm -32 <(list_machine_packages) \
+	         <(pacman -Qgg | grep -E '^(blackarch|base|base-devel) ' |
+			   cut -d' ' -f2 | sort -u)
+}
+
 list_file_packages() {
 	sed '/^#/d' "$package_list" | sort -u
 }
 
 list_new() {
-	comm -32 <(list_machine_packages) <(list_file_packages)
+	comm -32 <(list_machine_packages_filtered) <(list_file_packages)
 }
 
 list_removed() {
-	comm -31 <(list_machine_packages) <(list_file_packages)
+	comm -31 <(list_machine_packages_filtered) <(list_file_packages)
 }
 
 list_good() {
-	comm -21 <(list_machine_packages) <(list_file_packages)
+	comm -21 <(list_machine_packages_filtered) <(list_file_packages)
 }
 
 do_clean_machine() {
