@@ -2,6 +2,8 @@
 
 set -e -u
 
+final=false
+
 for arg ; do
 	case "$arg" in
 		-f)
@@ -21,6 +23,7 @@ cleanup() {
 	if $final ; then
 		mount -o rw,remount /home
 	fi
+	cryptsetup close bu
 }
 
 trap cleanup EXIT
@@ -28,11 +31,11 @@ trap cleanup EXIT
 mkdir -p "$mnt_dir"
 
 cryptsetup --type=tcrypt open /dev/sdc1 bu
-mount /dev/mapper/bu /mnt
+mount /dev/mapper/bu "$mnt_dir"
 
 if $final ; then
 	mount -o ro,remount /home
 fi
 
-rsync -av --progress --fuzzy --delete-before \
-  /home/ /mnt
+rsync -av --progress --fuzzy --delete-before --ignore-errors \
+  /home/ "$mnt_dir"
