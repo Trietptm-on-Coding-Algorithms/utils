@@ -40,6 +40,14 @@ list_good() {
 	comm -21 <(list_machine_packages_filtered) <(list_file_packages)
 }
 
+list_dirt() {
+	echo 'NEW:'
+	list_new
+	echo
+	echo 'REMOVED:'
+	list_removed
+}
+
 do_clean_machine() {
 	list_new | sudo xargs pacman --noconfirm -Rns
 }
@@ -54,6 +62,7 @@ case "$act" in
 	rmed|removed) list_removed ;;
 	new)          list_new ;;
 	good)         list_good ;;
+	dirt)         list_dirt ;;
 	clean)        do_clean_machine ;;
 	listclean)    do_clean_list ;;
 	*)
