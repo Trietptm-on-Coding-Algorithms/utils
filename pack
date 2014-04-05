@@ -4,6 +4,7 @@ base=${BASH_SOURCE[0]%/*}
 package_list=$HOME/cod/blackarch/blackarch-iso/live-iso/packages.para
 
 act=$1
+shift
 
 usage() {
 	cat <<EOF
@@ -48,14 +49,22 @@ list_dirt() {
 	list_removed
 }
 
-do_clean_machine() {
+do_machine_clean() {
 	list_new | sudo xargs pacman --noconfirm -Rns
 }
 
-do_clean_list() {
+do_list_clean() {
 	list_removed | while read p ; do
 		sed -i "/^$p$/d" "$package_list"
 	done
+}
+
+do_list_add() {
+	if (( $# == 0 )) ; then
+		set -- $(list_new)
+	fi
+	printf '%s\n' "$@" >> "$package_list"
+	sort "$package_list" | sponge "$package_list"
 }
 
 case "$act" in
@@ -63,8 +72,10 @@ case "$act" in
 	new)          list_new ;;
 	good)         list_good ;;
 	dirt)         list_dirt ;;
-	clean)        do_clean_machine ;;
-	listclean)    do_clean_list ;;
+	clean)        do_machine_clean ;;
+	listclean)    do_list_clean ;;
+	listadd)      do_list_add "$@" ;;
+	edit)         vim "$package_list" ;;
 	*)
 		usage
 		exit 1
