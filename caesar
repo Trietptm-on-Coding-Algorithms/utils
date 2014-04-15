@@ -3,7 +3,7 @@
 use strict;
 
 sub usage {
-	die 'usage: ceasercrack <string> [shifts,...]'
+	die 'usage: ceaser <string> [shifts,...]'
 }
 
 usage if $#ARGV < 0;
@@ -17,7 +17,7 @@ my @shifts2 = ();
 SHIFT: for my $shift (@shifts) {
 	my @ranges = split /-/, $shift;
 	for my $range (@ranges) {
-		if ($range < 0 || $range > 26) {
+		if ($range < 0 || $range > 25) {
 			warn "invalid shift size: $range";
 			next SHIFT;
 		}
