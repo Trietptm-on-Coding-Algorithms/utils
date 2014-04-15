@@ -1,0 +1,44 @@
+#!/usr/bin/env perl
+
+use strict;
+
+sub usage {
+	die 'usage: ceasercrack <string> [shifts,...]'
+}
+
+usage if $#ARGV < 0;
+
+my @str = split //, $ARGV[0];
+my @shifts = split /,/, $ARGV[1];
+@shifts = (13) unless @shifts;
+
+# Resolve ranges.
+my @shifts2 = ();
+SHIFT: for my $shift (@shifts) {
+	my @ranges = split /-/, $shift;
+	for my $range (@ranges) {
+		if ($range < 0 || $range > 26) {
+			warn "invalid shift size: $range";
+			next SHIFT;
+		}
+	}
+	push @shifts2, ($ranges[0]..$ranges[$#ranges]);
+}
+@shifts = @shifts2;
+
+# Generate ciphered strings.
+for my $shift (@shifts) {
+	my @str2 = @str;
+	for my $c (@str2) {
+		my $d = ord($c);
+		if ($d >= ord('a') && $d <= ord('z') - $shift ||
+		    $d >= ord('A') && $d <= ord('Z') - $shift) {
+			$d += $shift;
+		} elsif ($d >= ord('z') - $shift && $d <= ord('z') ||
+		         $d >= ord('Z') - $shift && $d <= ord('Z')) {
+			$d -= ord('z') - ord('a') - $shift + 1;
+		}
+		$c = chr($d);
+	}
+	printf "%s\n", join '', @str2;
+}
