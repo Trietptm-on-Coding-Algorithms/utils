@@ -8,8 +8,8 @@ if [[ $# = 0 ]] ; then
 	exit 1
 fi
 
-source="$1"
-dest="${2:-$source/..}"
+source=$1
+dest=${2:-$source/..}
 
-mv "$source"/{*,.??*} -t "$dest" 2>/dev/null
+mv "$source"/{*,.??*} -t "$dest" 2> /dev/null
 rmdir "$source"
