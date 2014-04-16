@@ -1,0 +1,13 @@
+#!/usr/bin/env perl
+
+use strict;
+
+my $str = $ARGV[0];
+my $expr = $ARGV[1];
+
+my @chars = split //, $str;
+for (@chars) {
+	eval "\$_ = chr(ord(\$_) $expr)";
+}
+
+printf "%s\n", join '', @chars;
