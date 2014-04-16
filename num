@@ -1,0 +1,11 @@
+#!/bin/bash
+
+if [[ $1 == %* ]] ; then
+	fmt=$1
+	shift
+else
+	fmt=%d
+fi
+expr=$*
+
+perl -e "printf '$fmt' . \"\n\", $expr"
