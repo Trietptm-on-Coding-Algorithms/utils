@@ -1,11 +1,42 @@
-#!/bin/bash
+#!/usr/bin/env perl
 
-if [[ $1 == %* ]] ; then
-	fmt=$1
-	shift
-else
-	fmt=%d
-fi
-expr=$*
+use v5.18;
+use strict;
+use warnings;
+no warnings 'experimental::smartmatch';
 
-perl -e "printf '$fmt' . \"\n\", $expr"
+# Default format.
+my $fmt = '%f';
+
+sub usage {
+	print <<USAGE;
+usage: num [-m <fmt>|-h] <expr>
+
+Utilities:
+  - Compound interest: comp(principal, rate, time, frequency)
+USAGE
+}
+
+# Utilities.
+sub comp {
+	my($p, $r, $t, $n) = @_;
+
+	$n = 1 if !$n;
+
+	$p * (1 + $r/$n)**($n * $t)
+}
+
+given ($ARGV[0]) {
+	when ('-h') {
+		usage;
+		exit;
+	}
+	when ('-m') {
+		shift @ARGV;
+		$fmt = shift @ARGV;
+	}
+}
+
+my $expr = "@ARGV";
+
+printf "$fmt\n", eval "$expr";
