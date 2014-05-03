@@ -11,6 +11,7 @@ for arg ; do
 			;;
 		*)
 			echo >&2 "invalid arg"
+			exit 1
 			;;
 	esac
 done
