@@ -1,0 +1,10 @@
+#!/bin/sh
+
+if [[ -d "$1" ]] ; then
+	dir=$1
+	shift
+else
+	dir=.
+fi
+
+darkhttpd "$dir" --no-server-id "$@"
