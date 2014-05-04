@@ -14,9 +14,10 @@ where ACTION is one of
 
     rmed|removed  List removed
     new           List new
+    loose         List loose dependencies
     good          List packages not new or removed.
-    dirt          List new and removed packages.
-    clean         Uninstall new packages.
+    dirt          List new, removed, and loose packages.
+    clean         Uninstall new and loose packages.
     listclean     Remove removed packages from the package list.
     listadd       Add packages to the package list.
     edit          Edit package list
@@ -45,6 +46,10 @@ list_removed() {
 	comm -31 <(list_machine_packages_filtered) <(list_file_packages)
 }
 
+list_loose() {
+	pacman -Qqtd
+}
+
 list_good() {
 	comm -21 <(list_machine_packages_filtered) <(list_file_packages)
 }
@@ -55,10 +60,13 @@ list_dirt() {
 	echo
 	echo 'REMOVED:'
 	list_removed
+	echo
+	echo 'LOOSE:'
+	list_loose
 }
 
 do_machine_clean() {
-	list_new | sudo xargs pacman --noconfirm -Rns
+	{ list_new; list_loose; } | sudo xargs pacman --noconfirm -Rns
 }
 
 do_list_clean() {
