@@ -12,6 +12,14 @@ manage.sh: ACTION
 
 where ACTION is one of
 
+    rmed|removed  List removed
+    new           List new
+    good          List packages not new or removed.
+    dirt          List new and removed packages.
+    clean         Uninstall new packages.
+    listclean     Remove removed packages from the package list.
+    listadd       Add packages to the package list.
+    edit          Edit package list
 EOF
 }
 
