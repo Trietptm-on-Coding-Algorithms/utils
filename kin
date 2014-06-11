@@ -3,6 +3,17 @@
 mnt=/mnt/kindle
 do_umount=true
 
+backup_dir=$HOME/bu/kindle
+
+die() {
+	err "$*"
+	exit 1
+}
+
+err() {
+	echo >&2 "ERROR: $*"
+}
+
 usage() {
 	cat <<EOF
 usage: kin [OPTIONS] ACTION [ACTION_ARGS]
@@ -17,6 +28,7 @@ usage: kin [OPTIONS] ACTION [ACTION_ARGS]
   cp <book>          copy a book onto the device
   rm <book>          remove a book from the device
   purge <book>       remove a book and its *.?ds/*.sdr files from the device
+  bu                 backup the device to $backup_dir
 EOF
 }
 
@@ -55,6 +67,9 @@ parse_args() {
 				book=$2
 				shift
 				;;
+			bu|backup)
+				action=backup
+				;;
 			*)
 				usage
 				exit 1
@@ -92,7 +107,7 @@ do_mount() {
 	fi
 
 	mkdir -p "$mnt"
-	mount -o sync "$blk" "$mnt"
+	mount -o sync "$blk" "$mnt" || die 'mount failed.'
 
 	echo "$blk mounted to $mnt."
 }
@@ -118,6 +133,17 @@ do_rm() {
 
 do_purge() {
 	rm -vrf "$mnt/documents/$book"{,.sdr}
+}
+
+do_backup() {
+	echo 'backing up...'
+
+	mkdir -p "$backup_dir"
+	rsync --delete-after -a "$mnt/" "$backup_dir"
+
+	ln -sf 'documents/My Clippings.txt' "$backup_dir/clippings"
+
+	echo "backup size: $(du -hs "$backup_dir" | cut -d$'\t' -f1)"
 }
 
 main() {
