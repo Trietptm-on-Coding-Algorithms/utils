@@ -1,0 +1,124 @@
+#!/usr/bin/perl
+# Quickly find duplicate files.
+# We use the following checks in order:
+#  - file size
+#  - crc32 (zlib flavour)
+#  - md5
+# TODO: optimize by pre-calculating crc32 and md5 sums during filesystem
+# search? 
+
+use strict;
+use warnings;
+use v5.20;
+use autodie;
+use Getopt::Std;
+use File::Find;
+use Digest::MD5;
+use Compress::Zlib ();
+
+use constant BUFLEN => 32768;
+
+sub crc32 {
+	my $fh = shift;
+
+	binmode($fh);
+	sysseek($fh, 0, 0);
+
+	my $buf = ' ' x BUFLEN;
+	my $crc = 0;
+
+	while ($fh->sysread($buf, BUFLEN)) {
+		$crc = Compress::Zlib::crc32($buf, $crc);
+	}
+
+	return $crc
+}
+
+sub md5 {
+	my $fh = shift;
+
+	binmode($fh);
+	seek($fh, 0, 0);
+
+	my $md5 = Digest::MD5->new();
+	$md5->addfile($fh);
+	return $md5->digest;
+}
+
+# Remove groups of 1.
+sub remove_loners {
+	my $groups = shift;
+
+	foreach my $key (keys %$groups) {
+		if (@{$$groups{$key}} <= 1) {
+			delete $$groups{$key};
+		}
+	}
+}
+
+sub check_for_dups {
+	my $groups = shift;
+
+	if (!keys %$groups) {
+		say 'no duplicates found';
+		exit 1;
+	}
+}
+
+#my %opts;
+#getopt('r', \%opts);
+#if (defined $opts{r}) {
+#}
+
+my @files = @ARGV;
+
+if (!@files) {
+	die 'pass some files'
+}
+
+# Group by size.
+# TODO: benchmark -s vs stat
+my %size_groups;
+foreach my $file (@files) {
+	-r $file or die "could not read '$file'";
+	my $size = -s $file;
+	push @{$size_groups{$size}}, $file;
+}
+
+remove_loners \%size_groups;
+check_for_dups \%size_groups;
+
+# Group by crc32.
+my %crc32_groups;
+foreach my $key (keys %size_groups) {
+	my @group = @{$size_groups{$key}};
+	foreach my $file (@group) {
+		open my ($fh), $file;
+		my $crc32 = crc32($fh);
+		push @{$crc32_groups{$crc32}}, $file;
+	}
+}
+
+remove_loners \%crc32_groups;
+check_for_dups \%crc32_groups;
+
+# Group by md5.
+my %md5_groups;
+foreach my $key (keys %crc32_groups) {
+	my @group = @{$crc32_groups{$key}};
+	foreach my $file (@group) {
+		open my ($fh), $file;
+		my $md5 = md5($fh);
+		push @{$md5_groups{$md5}}, $file;
+	}
+}
+
+remove_loners \%md5_groups;
+check_for_dups \%md5_groups;
+
+# Print duplicates
+# TODO: support more output styles
+foreach my $key (keys %md5_groups) {
+	my @group = @{$md5_groups{$key}};
+	printf "%s\n" x @group, @group;
+}
