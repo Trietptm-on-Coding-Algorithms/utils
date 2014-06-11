@@ -1,128 +1,217 @@
-#!/bin/bash
-# I like to start virtual machines from a central location.
+#!/usr/bin/perl
+# Manages virtual machines.
 
-# Qemu.
-#default_system() { sudo -g disk qemu-system-x86_64 "$@"; }
-default_system() { sudo qemu-system-x86_64 "$@"; }
-default_backend=(-enable-kvm)
+use strict;
+use warnings;
+use English;
+use v5.20;
+use Getopt::Long qw( :config posix_default bundling no_ignore_case );
+use File::Path qw( mkpath );
 
-# Core hardware.
-default_cpu=(-smp 8,cores=4,threads=2,sockets=1)
-default_memory=(-m 6G)
+my %DISPLAYS = (
+	sdl     => ['-vga', 'std', '-display', 'sdl'],
+	spice   => ['-vga', 'qxl', '-spice', 'port=5900,addr=127.0.0.1,disable-ticketing'],
+	curses  => ['-vga', 'std', '-display', 'curses'],
+	gtk     => ['-vga', 'std', '-display', 'gtk'],
+	console => ['-nographic'],
+	none    => ['-vga', 'none', '-display', 'none'],
+);
 
-# Display.
-default_display=(-vga std)
-#default_display=(-vga qxl -spice port=5900,addr=127.0.0.1,disable-ticketing)
+my $BRIDGE = 'br0';
+my %NETWORKS = (
+	none   => ['-net', 'none'],
+	# TODO: use -net
+	bridge => ['-netdev', "bridge,id=bridge,br=$BRIDGE", '-device', 'virtio-net,netdev=bridge'],
+	# TODO: vlan/nic, tap
+	# https://www.suse.com/documentation/sles11/book_kvm/?page=/documentation/sles11/book_kvm/data/cha_qemu_running_networking.html
+	user   => [], # (default)
+);
 
-# Disks.
-default_sdb=(-drive file=/dev/sdb,cache=none,if=virtio)
+# See usage for more info.
+my %PRESETS = (
+	archinstall => { subdir => 'archinstall', display => 'curses', image => 'archinstall.iso' },
+	blackarch   => { subdir => 'blackarch', image => 'blackarch.iso' },
+	tails       => { subdir => 'tails', cdrom => 'tails.iso' },
+	# TODO: metasploitable
+	# TODO: xp-*
+);
 
-# Network.
-default_network=(-netdev bridge,id=bridge,br=br0
-                 -device virtio-net,netdev=bridge)
+my %DEFAULTS = (
+	arch     => 'x86_64',
+	kvm      => 1,
+	mem      => '6G',
+	smp      => '1',
+	display  => 'sdl',
+	network  => 'user',
+	samba    => 0,
+	basedir  => $ENV{HOME} . '/vm',
+	#subdir  => '<none>',
+	maindisk => 0,
+	makemain => 0,
+	mainsize => '20G',
+	snapshot => 1,
+	#snaplist  not a setting
+	#revert    not a setting
+	#cdrom   => '<none>',
+	#drives  => '<none>',
+	#image   => '<none>',
+);
 
-case "$1" in
-	# Arch Install.
-	arch*)
-		# No `default_display`.
-		#   A curses display is used instead.
-		default_system \
-		  "${default_backend[@]}" \
-		  "${default_cpu[@]}" \
-		  "${default_memory[@]}" \
-		  -vga std -display curses \
-		  "${default_sdb[@]}" \
-		  "${default_network[@]}" \
-		  "${@:2}" \
-		  "$HOME/vm/archinstall/archinstall.iso"
-		;;
+sub usage {
+	my @preset_names = keys %PRESETS;
+	my @display_names = keys %DISPLAYS;
+	my @network_names = keys %NETWORKS;
 
-	# BlackArch.
-	blackarch)
-		default_system \
-		  "${default_backend[@]}" \
-		  "${default_cpu[@]}" \
-		  "${default_memory[@]}" \
-		  "${default_display[@]}" \
-		  "${default_sdb[@]}" \
-		  "${default_network[@]}" \
-		  "${@:2}" \
-		  "$HOME/vm/blackarch/test.iso"
-		;;
+	$" = ', ';
+	print <<HELP;
+usage: vm [options]
 
-	# Metasploitable.
-	meta*)
-		# No `default_sdb`.
-		#   Not necessary.
-		# No `default_network`.
-		#   Not bridged to any host interfaces for security reasons.
-		# No `default_display`.
-		#   A curses display is used instead.
-		tap=metasploitable 
-		sudo ip tuntap add dev $tap mode tap
-		sudo ip link set dev $tap up
-		sudo ip route add 192.168.1.117 dev metasploitable
-		trap "sudo ip tuntap del dev $tap mode tap" EXIT
+Parameters (+ requires a value):
+ NAME      DEFAULT  FLAG  OPTIONS
+ preset    <none>   -p+   @preset_names
+ basedir   ~/vm     -v+   directory name
+ subdir    <none>   -o+   directory name
 
-		default_system \
-		  "${default_backend[@]}" \
-		  "${default_cpu[@]}" \
-		  "${default_memory[@]}" \
-		  -netdev tap,id=tap,ifname=$tap,script=no,downscript=no \
-                  -device virtio-net,netdev=tap \
-		  -vga std -display curses \
-		  "${@:2}" \
-		  "$HOME/vm/metasploitable/metasploitable.img"
-		;;
+ arch      x86_64   -a+   various
+ kvm       true     -k    (toggle)
+ mem       6G       -m+   various
+ smp       1        -s+   various
+ display   sdl      -d+   @display_names
+ network   user     -n+   @network_names
+ samba     false    -M    (toggle)
 
-	# Tails.
-	tail*)
-		# All defaults.
-		# Plus `-no-reboot` and no `-no-shutdown`.
-		default_system \
-		  "${default_backend[@]}" \
-		  "${default_cpu[@]}" \
-		  "${default_memory[@]}" \
-		  "${default_display[@]}" \
-		  "${default_sdb[@]}" \
-		  "${default_network[@]}" \
-		  "${@:2}" \
-		  -no-reboot -no-shutdown \
-		  -boot order=d \
-		  -cdrom "$HOME/vm/tails/tails.iso"
-		  ;;
+ maindisk  false    -i    (toggle)
+ makemain  false    -C    (toggle)
+ mainsize  20G      -z    size of maindisk
+ snapshot  true     -S    (toggle)
+ snaplist           -L    (action)
+ revert    <none>   -R+   snapshot to revert to
 
-	# XP.
-	xp-home-sp1)
-		# No `default_cpu`.
-		#   Only one core is used.
-		# No `default_memory`.
-		#   Only 1G is necessary.
-		# No `default_sdb`.
-		#   No need.
-		# No `default_network`.
-		#   No network connection for security reasons.
-		# TODO: test this with SPICE.
-		default_system \
-		  "${default_backend[@]}" \
-		  -m 2G \
-		  "${default_display[@]}" \
-		  -boot once=c \
-		  -cdrom "$HOME/vm/xp-home-sp1/xp-home-sp1.iso" \
-		  -drive "file=$HOME/vm/xp-home-sp1/disk.qcow2,cache=none,if=ide" \
-		  -drive "file=$HOME/vm/xp-home-sp1/share.qcow2,cache=none,if=ide" \
-		  "${@:2}"
-		;;
+ cdrom     <none>   -c+   cdrom file
+ drives    <none>   -r+   comma-separated drive files (e.g. /dev/sda)
+ image     <none>   -f+   image file
 
-	*)
-		# All defaults.
-		default_system \
-		  "${default_backend[@]}" \
-		  "${default_cpu[@]}" \
-		  "${default_memory[@]}" \
-		  "${default_display[@]}" \
-		  "${default_sdb[@]}" \
-		  "${default_network[@]}" \
-		  "$@"
-		  ;;
-esac
+ passon    <none>   -P+   dashless comma-separated flags to pass to qemu
+HELP
+	$" = ' ';
+}
+
+my %opts;
+GetOptions(\%opts,
+           'preset|p=s',
+           'basedir|v=s',
+           'subdir|o=s',
+           'arch|a=s',
+           'kvm|k!',
+           'mem|m=s',
+           'smp|s=s',
+           'display|d=s',
+           'network|n=s',
+           'samba|M!',
+           'maindisk|i!',
+           'makemain|C!',
+           'mainsize|z!',
+           'snapshot|S!',
+           'snaplist|L',
+           'revert|R=s',
+           'cdrom|c=s',
+           'drives|r=s',
+           'image|f=s',
+           'passon|P=s',
+           'help|h');
+
+if (defined $opts{help}) {
+	&usage;
+	exit;
+}
+
+my %preset;
+if (defined $opts{preset}) {
+	my $preset = $PRESETS{$opts{preset}};
+	if (!$preset) {
+		die "invalid preset: $opts{preset}"
+	}
+	%preset = %$preset;
+}
+
+# Merge in the defaults and preset.
+my %settings = (%DEFAULTS, %preset, %opts);
+
+my ($maindisk, $vmdir, $sharedir);
+if (defined $settings{subdir}) {
+	$vmdir = "$settings{basedir}/$settings{subdir}";
+} else {
+	$vmdir = '.';
+}
+$maindisk = "$vmdir/maindisk.qcow2";
+$sharedir = "$vmdir/shared";
+
+# Handle snaplist command.
+if (defined $opts{snaplist}) {
+	# TODO: test
+	die "could not read maindisk ($maindisk)" if (!-r $maindisk);
+	system 'qemu-img', 'snapshot', '-l', $maindisk;
+	exit;
+}
+
+# TODO: add an option to delete the last snapshot
+# Handle revert command.
+if (defined $opts{revert}) {
+	# TODO: test
+	die "could not read maindisk ($maindisk)" if (!-r $maindisk);
+	system 'qemu-img', 'snapshot', '-a', $opts{revert}, $maindisk;
+	exit;
+}
+
+if (!(defined $settings{maindisk} || $settings{cdrom} || $settings{image})) {
+	die 'no possible boot media found. you must specify at least one of: maindisk, cdrom, image.'
+}
+
+my @args;
+# Assemble an argument list.
+if ($settings{kvm}) {
+	die 'KVM needs root.' if ($EUID != 0);
+	push @args, '-enable-kvm'
+}
+push @args, '-m', $settings{mem};
+push @args, '-smp', $settings{smp};
+my $display = $DISPLAYS{$settings{display}};
+die "invalid display: $settings{display}" if (!$display);
+push @args, @$display;
+# TODO: handle static ip address with route and such? and dhcp?
+my $network = $NETWORKS{$settings{network}};
+die "invalid network: $settings{network}" if (!$network);
+push @args, @$network;
+if ($settings{samba}) {
+	mkpath "$sharedir";
+	push @args, "-net', 'user,smb=$sharedir"
+}
+if ($settings{maindisk}) {
+	if (!-e $maindisk) {
+		if ($settings{makemain}) {
+			system 'qemu-img', 'create', '-f', 'qcow2', $maindisk, $settings{mainsize};
+		} else {
+			die "maindisk ($maindisk) does not exist. use -C to create it."
+		}
+	} elsif (!-r $maindisk) {
+		die "could not read maindisk ($maindisk)";
+	}
+
+	push @args, '-drive', "file=$maindisk,cache=none,if=ide"
+}
+if (defined $settings{cdrom}) {
+	push @args, '-cdrom', "$vmdir/$settings{cdrom}";
+}
+if (defined $settings{drives}) {
+	my @drives = split /,/, $settings{drives};
+	push @args, map { ('-drive', "file=$_,cache=none,if=virtio") } @drives;
+}
+if (defined $settings{image}) {
+	push @args, "$vmdir/$settings{image}";
+}
+if (defined $settings{passon}) {
+	push @args, map { "-$_" } split /,/, $settings{passon};
+}
+
+# TODO: handle snapshot
+system "qemu-system-$settings{arch}", @args;
