@@ -7,6 +7,7 @@ use English;
 use v5.20;
 use Getopt::Long qw( :config posix_default bundling no_ignore_case );
 use File::Path qw( mkpath );
+# TODO: spoof mac address
 
 my %DISPLAYS = (
 	sdl     => ['-vga', 'std', '-display', 'sdl'],
@@ -17,14 +18,17 @@ my %DISPLAYS = (
 	none    => ['-vga', 'none', '-display', 'none'],
 );
 
+# TODO: allow for multiple networks?
 my $BRIDGE = 'br0';
 my %NETWORKS = (
 	none   => ['-net', 'none'],
 	# TODO: use -net
 	bridge => ['-netdev', "bridge,id=bridge,br=$BRIDGE", '-device', 'virtio-net,netdev=bridge'],
-	# TODO: vlan/nic, tap
+	# TODO: tap
+	# TODO: hubport?
+	# TODO: dump
 	# https://www.suse.com/documentation/sles11/book_kvm/?page=/documentation/sles11/book_kvm/data/cha_qemu_running_networking.html
-	user   => [], # (default)
+	user   => ['-net', 'nic', '-net', 'user'],
 );
 
 # See usage for more info.
@@ -163,8 +167,8 @@ if (defined $opts{revert}) {
 	exit;
 }
 
-if (!(defined $settings{maindisk} || $settings{cdrom} || $settings{image})) {
-	die 'no possible boot media found. you must specify at least one of: maindisk, cdrom, image.'
+if (!($settings{maindisk} || defined $settings{cdrom} || defined $settings{image})) {
+	die 'no potential boot media found. you must specify at least one of: maindisk, cdrom, image.'
 }
 
 my @args;
@@ -206,11 +210,11 @@ if (defined $settings{drives}) {
 	my @drives = split /,/, $settings{drives};
 	push @args, map { ('-drive', "file=$_,cache=none,if=virtio") } @drives;
 }
-if (defined $settings{image}) {
-	push @args, "$vmdir/$settings{image}";
-}
 if (defined $settings{passon}) {
 	push @args, map { "-$_" } split /,/, $settings{passon};
+}
+if (defined $settings{image}) {
+	push @args, "$vmdir/$settings{image}";
 }
 
 # TODO: handle snapshot
