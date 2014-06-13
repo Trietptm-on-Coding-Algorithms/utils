@@ -1,5 +1,16 @@
 #!/usr/bin/perl
 # Manages virtual machines.
+# TODO: isolated network
+
+# TODO: fix netopt
+# TODO: make netdriver opts
+
+# TODO: multi-opt networks and drives
+# TODO: support multiple netdrivers (separate -device and -netdev parts in args)
+# TODO: handle static ip address with route and such? and dhcp?
+# TODO: hubport?
+# TODO: tor-only host?
+# https://www.suse.com/documentation/sles11/book_kvm/?page=/documentation/sles11/book_kvm/data/cha_qemu_running_networking.html
 
 use strict;
 use warnings;
@@ -8,6 +19,13 @@ use v5.20;
 use Getopt::Long qw( :config posix_default bundling no_ignore_case );
 use File::Path qw( mkpath );
 
+sub needs_root {
+	my $msg = shift;
+	if ($EUID != 0) {
+		die "$msg needs root.";
+	}
+}
+
 # See usage for more info.
 my %PRESETS = (
 	archinstall    => { subdir => 'archinstall', display => 'curses', image => 'archinstall.iso' },
@@ -15,7 +33,7 @@ my %PRESETS = (
 	tails          => { subdir => 'tails', cdrom => 'tails.iso' },
 	# TODO: isolate with tap+ip (even though user-mode networking acts as a firewall)
 	metasploitable => { subdir => 'metasploitable', image => 'metasploitable.iso' },
-	'xp-home'      => { subdir => 'xp-home-sp1', maindisk => 1, share => 1, kvm => 0 }
+	'xp-home'      => { subdir => 'xp-home-sp1', maindisk => 1, kvm => 0, networks => 'none' }
 	# TODO: let's start making simple application isolation VMs
 	#       for the sake of speed, maybe we can use user-mode networking with guestfwd
 );
@@ -27,10 +45,10 @@ my %DEFAULTS = (
 	smp       => '1',
 	bootopts  => 'order=dc',
 	display   => 'sdl',
-	network   => 'user',
+	networks  => 'user',
 	netopts  => '',
 	netdriver => 'virtio-net',
-	share     => 0,
+	share     => 'none',
 	basedir   => $ENV{HOME} . '/vm',
 	#subdir   => '<none>',
 	maindisk  => 0,
@@ -41,6 +59,7 @@ my %DEFAULTS = (
 	#revert    not a setting
 	#cdrom    => '<none>',
 	#drives   => '<none>',
+	iodriver  => 'virtio',
 	#image    => '<none>',
 );
 
@@ -72,10 +91,10 @@ DISPLAY
  display    sdl         -d+   @display_names
 
 NETWORK
- network    user        -n+   @network_names
+ networks   user        -n+   @network_names (comma-separated)
  netopts    <none>      -N    see qemu(1)
  netdriver  virtio-net  -D    see qemu -device help
- share      false       -H    (toggle)
+ share      none        -H+   smb, virtfs, none
 
 MAINDISK
  maindisk   false       -i    (toggle)
@@ -88,6 +107,7 @@ MAINDISK
 OTHER MEDIA
  cdrom      <none>      -c+   cdrom file
  drives     <none>      -r+   comma-separated drive files (e.g. /dev/sda)
+ iodriver   virtio      -I+   virtio, ide, scsi, sd, others
  image      <none>      -f+   image file
 
 META
@@ -109,10 +129,10 @@ GetOptions(\%opts,
            'smp|s=s',
            'bootopts|B=s',
            'display|d=s',
-           'network|n=s',
+           'networks|n=s',
            'netopts|N=s',
            'netdriver|D=s',
-           'share|H!',
+           'share|H=s',
            'maindisk|i!',
            'makemain|C!',
            'mainsize|z!',
@@ -121,6 +141,7 @@ GetOptions(\%opts,
            'revert|R=s',
            'cdrom|c=s',
            'drives|r=s',
+           'iodriver|I=s',
            'image|f=s',
            'passon|P=s',
            'viewcmd|V!',
@@ -153,7 +174,7 @@ my @args;
 # <BASE SYSTEM>
 # -----------------------------------------------------------------------------
 if ($settings{kvm}) {
-	die 'KVM needs root.' if ($EUID != 0);
+	needs_root 'KVM';
 	push @args, '-enable-kvm';
 }
 
@@ -188,38 +209,45 @@ push @args, @$display;
 # -----------------------------------------------------------------------------
 # <NETWORK>
 # -----------------------------------------------------------------------------
-# TODO: virtual FS passthrough?
-# TODO: virtio?
+if ($settings{netdriver} =~ /virtio-net/) {
+	needs_root 'virtio-net';
+}
 
-# TODO: handle \&handler
-# TODO: allow the user to specify a net driver
-# TODO: switch to -netdev
-# TODO: handle static ip address with route and such? and dhcp?
-# TODO: tap
-# TODO: hubport?
-# https://www.suse.com/documentation/sles11/book_kvm/?page=/documentation/sles11/book_kvm/data/cha_qemu_running_networking.html
 my $sharedir = "$vmdir/shared";
-if ($settings{share}) {
+if ($settings{share} eq 'smb') {
 	mkpath "$sharedir";
-	$settings{netopt} .= ",smb=$sharedir";
+	# TODO: apply to netopts instead. this is deprecated
+	push @args, '-smb';
+} elsif ($settings{share} eq 'virtfs') {
+	mkpath "$sharedir";
+	push @args, '-virtfs', "local,path=$sharedir,security_model=mapped-file,mount_tag=share";
+} elsif ($settings{share} eq 'none') {
+	# do nothing
+} else {
+	die "invalid share type: $settings{share}";
 }
 
 %NETWORKS = (
-	none   => ['-net', 'none'],
-	bridge => ['-netdev', "bridge,id=bridge,$settings{netopts}", '-device', "$settings{netdriver},netdev=bridge"],
-	tap    => ['-netdev', 'tap', '-device', "$settings{netdriver}"],
-	dump   => ['-netdev', "dump,file=$vmdir/dump.pcap,$settings{netopts}"],
-	user   => ['-net', 'nic', '-net', 'user'],
+	# needs_root, pre_hook, post_hook, netdev, device
+	user   => { netdev => ['-netdev', "user,id=net0"], device => ['-device', "$settings{netdriver},netdev=net0"] },
+	bridge => { needs_root => 1, netdev => ['-netdev', "bridge,id=net0"], device => ['-device', "$settings{netdriver},netdev=net0"] },
+	tap    => { needs_root => 1, netdev => ['-netdev', 'tap,id=net0'], device => ['-device', "$settings{netdriver},netdev=net0"] },
+	none   => { netdev => ['-net', 'none'], device => [] },
+	dump   => { netdev => ['-net', "dump,file=$vmdir/dump.pcap"] },
 );
 
-my $network = $NETWORKS{$settings{network}};
-if ($EUID != 0 && $settings{network} =~ /^(bridge|tap)$/) {
-	die "network $settings{network} needs root.";
+my @networks = split /,/, $settings{networks};
+
+foreach my $network_name (@networks) {
+	my $network = $NETWORKS{$network_name};
+	if (!$network) {
+		die "invalid network: $network_name";
+	}
+	if ($network->{needs_root}) {
+		needs_root "network $network_name";
+	}
+	push @args, @{$network->{netdev}}, @{$network->{device}};
 }
-if (!$network) {
-	die "invalid network: $settings{network}";
-}
-push @args, @$network;
 # -----------------------------------------------------------------------------
 # </NETWORK>
 # -----------------------------------------------------------------------------
@@ -255,7 +283,8 @@ if ($settings{maindisk}) {
 		exit;
 	}
 
-	push @args, '-drive', "file=$maindisk,cache=none,if=ide"
+	# TODO: support device-specific iodrivers   e.g. /dev/sda:ide
+	push @args, '-drive', "file=$maindisk,cache=none,if=$settings{iodriver}"
 }
 # -----------------------------------------------------------------------------
 # </MAINDISK>
@@ -298,9 +327,30 @@ if (!($settings{maindisk} || defined $settings{cdrom} || defined $settings{image
 	die 'no potential boot media found. you must specify at least one of: maindisk, cdrom, image.'
 }
 
+
+# Network hooks
+foreach my $network_name (@networks) {
+	my $network = $NETWORKS{$network_name};
+
+	if ($network->{pre_hook}) {
+		print "running pre_hook for $network_name...";
+		&{$network->{pre_hook}};
+	}
+}
+
 # TODO: handle snapshot
 if ($settings{viewcmd}) {
 	print "qemu-system-$settings{arch}", @args;
 } else {
 	system "qemu-system-$settings{arch}", @args;
+}
+
+# Network hooks
+foreach my $network_name (@networks) {
+	my $network = $NETWORKS{$network_name};
+
+	if ($network->{post_hook}) {
+		print "running post_hook for $network_name...";
+		&{$network->{post_hook}};
+	}
 }
