@@ -214,6 +214,30 @@ if ($settings{netdriver} =~ /virtio-net/) {
 	needs_root 'virtio-net';
 }
 
+sub dhcp {
+	my ($if, $range) = @_;
+
+    system 'dnsmasq',
+	  '--strict-order',
+	  "--interface=$if",
+	  '--except-interface=lo',
+	  #"--listen-address=192.168.0.1",
+	  '--bind-interfaces',
+	  "--dhcp-range=$range",
+	  '--conf-file=/dev/null',
+	  "--pid-file=/var/run/qemu-dnsmasq-$if.pid",
+	  "--dhcp-leasefile=/var/run/qemu-dnsmasq-$if.leases",
+	  '--dhcp-no-override';
+}
+
+sub dhcp_kill {
+	my ($if) = @_;
+
+	open my ($pid_file), '<', "/var/run/qemu-dnsmasq-$if.pid" or die $!;
+	my $pid = <$pid_file>;
+	kill 'TERM', int($pid);
+}
+
 my $sharedir = "$vmdir/shared";
 if ($settings{share} eq 'smb') {
 	mkpath "$sharedir";
@@ -237,6 +261,9 @@ sub net_pre_hook_tor {
 	system 'ip', 'link', 'set', 'tor', 'up';
 	system 'ip', 'addr', 'add', '192.168.0.1/24', 'dev', 'tor';
 
+	# dhcp
+	dhcp 'tor', '192.168.0.2,192.168.0.2';
+
 	# rinetd
 	my ($rinetd_conf, $rinetd_conf_name) = tempfile();
 	print $rinetd_conf <<EOF;
@@ -252,6 +279,9 @@ sub net_post_hook_tor {
 	open my $rinetd_pid_file, '<', '/var/run/rinetd.pid';
 	$pid = <$rinetd_pid_file>;
 	kill 'TERM', $pid;
+
+	# dhcp
+	dhcp_kill 'tor';
 
 	# bridge
 	system 'ip', 'link', 'set', 'tor', 'down';
@@ -377,7 +407,8 @@ foreach my $network_name (@networks) {
 
 # TODO: handle snapshot
 if ($settings{viewcmd}) {
-	print "qemu-system-$settings{arch}", @args;
+	say "qemu-system-$settings{arch} @args";
+	sleep 1;
 } else {
 	system "qemu-system-$settings{arch}", @args;
 }
