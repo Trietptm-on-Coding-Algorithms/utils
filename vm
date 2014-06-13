@@ -9,15 +9,16 @@
 # TODO: support multiple netdrivers (separate -device and -netdev parts in args)
 # TODO: handle static ip address with route and such? and dhcp?
 # TODO: hubport?
-# TODO: tor-only host?
 # https://www.suse.com/documentation/sles11/book_kvm/?page=/documentation/sles11/book_kvm/data/cha_qemu_running_networking.html
 
 use strict;
 use warnings;
+use autodie;
 use English;
 use v5.20;
 use Getopt::Long qw( :config posix_default bundling no_ignore_case );
 use File::Path qw( mkpath );
+use File::Temp qw( tempfile );
 
 sub needs_root {
 	my $msg = shift;
@@ -227,11 +228,47 @@ if ($settings{share} eq 'smb') {
 	die "invalid share type: $settings{share}";
 }
 
+sub net_pre_hook_tor {
+	# tor
+	system 'systemctl', 'start', 'tor';
+
+	# bridge
+	system 'brctl', 'addbr', 'tor';
+	system 'ip', 'link', 'set', 'tor', 'up';
+	system 'ip', 'addr', 'add', '192.168.0.1/24', 'dev', 'tor';
+
+	# rinetd
+	my ($rinetd_conf, $rinetd_conf_name) = tempfile();
+	print $rinetd_conf <<EOF;
+192.168.0.1     9050            127.0.0.1       9050
+EOF
+	system 'rinetd', '-c', $rinetd_conf_name;
+}
+
+sub net_post_hook_tor {
+	my $pid;
+
+	# rinetd
+	open my $rinetd_pid_file, '<', '/var/run/rinetd.pid';
+	$pid = <$rinetd_pid_file>;
+	kill 'TERM', $pid;
+
+	# bridge
+	system 'ip', 'link', 'set', 'tor', 'down';
+	system 'brctl', 'delbr', 'tor';
+
+	# tor
+	system 'systemctl', 'stop', 'tor';
+}
+
 %NETWORKS = (
 	# needs_root, pre_hook, post_hook, netdev, device
-	user   => { netdev => ['-netdev', "user,id=net0"], device => ['-device', "$settings{netdriver},netdev=net0"] },
-	bridge => { needs_root => 1, netdev => ['-netdev', "bridge,id=net0"], device => ['-device', "$settings{netdriver},netdev=net0"] },
-	tap    => { needs_root => 1, netdev => ['-netdev', 'tap,id=net0'], device => ['-device', "$settings{netdriver},netdev=net0"] },
+	user   => { netdev => ['-netdev', "user,id=user"], device => ['-device', "$settings{netdriver},netdev=user"] },
+	bridge => { needs_root => 1, netdev => ['-netdev', "bridge,id=bridge,$settings{netopts}"],
+	            device => ['-device', "$settings{netdriver},netdev=bridge"] },
+	tor    => { needs_root => 1, pre_hook => \&net_pre_hook_tor, post_hook => \&net_post_hook_tor,
+	            netdev => ['-netdev', 'bridge,id=tor,br=tor'], device => ['-device', "$settings{netdriver},netdev=tor"] },
+	#tap   => { needs_root => 1, netdev => ['-netdev', 'tap,id=net0'], device => ['-device', "$settings{netdriver},netdev=net0"] },
 	none   => { netdev => ['-net', 'none'], device => [] },
 	dump   => { netdev => ['-net', "dump,file=$vmdir/dump.pcap"] },
 );
@@ -333,7 +370,7 @@ foreach my $network_name (@networks) {
 	my $network = $NETWORKS{$network_name};
 
 	if ($network->{pre_hook}) {
-		print "running pre_hook for $network_name...";
+		say "running pre_hook for $network_name...";
 		&{$network->{pre_hook}};
 	}
 }
@@ -350,7 +387,7 @@ foreach my $network_name (@networks) {
 	my $network = $NETWORKS{$network_name};
 
 	if ($network->{post_hook}) {
-		print "running post_hook for $network_name...";
+		say "running post_hook for $network_name...";
 		&{$network->{post_hook}};
 	}
 }
