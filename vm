@@ -1,10 +1,7 @@
 #!/usr/bin/perl
 # Manages virtual machines.
 # TODO: isolated network
-
-# TODO: fix netopt
 # TODO: make netdriver opts
-
 # TODO: multi-opt networks and drives
 # TODO: support multiple netdrivers (separate -device and -netdev parts in args)
 # TODO: handle static ip address with route and such? and dhcp?
@@ -47,7 +44,6 @@ my %DEFAULTS = (
 	bootopts  => 'order=dc',
 	display   => 'sdl',
 	networks  => 'user',
-	netopts  => '',
 	netdriver => 'virtio-net',
 	share     => 'none',
 	basedir   => $ENV{HOME} . '/vm',
@@ -92,8 +88,7 @@ DISPLAY
  display    sdl         -d+   @display_names
 
 NETWORK
- networks   user        -n+   @network_names (comma-separated)
- netopts    <none>      -N    see qemu(1)
+ networks   user        -n+   @network_names (comma-separated, options colon separated)
  netdriver  virtio-net  -D    see qemu -device help
  share      none        -H+   smb, virtfs, none
 
@@ -131,7 +126,6 @@ GetOptions(\%opts,
            'bootopts|B=s',
            'display|d=s',
            'networks|n=s',
-           'netopts|N=s',
            'netdriver|D=s',
            'share|H=s',
            'maindisk|i!',
@@ -294,7 +288,7 @@ sub net_post_hook_tor {
 %NETWORKS = (
 	# needs_root, pre_hook, post_hook, netdev, device
 	user   => { netdev => ['-netdev', "user,id=user"], device => ['-device', "$settings{netdriver},netdev=user"] },
-	bridge => { needs_root => 1, netdev => ['-netdev', "bridge,id=bridge,$settings{netopts}"],
+	bridge => { needs_root => 1, netdev => ['-netdev', "bridge,id=bridge"],
 	            device => ['-device', "$settings{netdriver},netdev=bridge"] },
 	tor    => { needs_root => 1, pre_hook => \&net_pre_hook_tor, post_hook => \&net_post_hook_tor,
 	            netdev => ['-netdev', 'bridge,id=tor,br=tor'], device => ['-device', "$settings{netdriver},netdev=tor"] },
@@ -305,7 +299,8 @@ sub net_post_hook_tor {
 
 my @networks = split /,/, $settings{networks};
 
-foreach my $network_name (@networks) {
+foreach my $network_raw (@networks) {
+	my ($network_name, @options) = split /:/, $network_raw;
 	my $network = $NETWORKS{$network_name};
 	if (!$network) {
 		die "invalid network: $network_name";
@@ -313,7 +308,10 @@ foreach my $network_name (@networks) {
 	if ($network->{needs_root}) {
 		needs_root "network $network_name";
 	}
-	push @args, @{$network->{netdev}}, @{$network->{device}};
+	my @netdev = @{$network->{netdev}};
+	my @device = @{$network->{device}};
+	$netdev[-1] .= ',' . join ',', @options;
+	push @args, @netdev, @device;
 }
 # -----------------------------------------------------------------------------
 # </NETWORK>
