@@ -7,60 +7,45 @@ use English;
 use v5.20;
 use Getopt::Long qw( :config posix_default bundling no_ignore_case );
 use File::Path qw( mkpath );
-# TODO: spoof mac address
-
-my %DISPLAYS = (
-	sdl     => ['-vga', 'std', '-display', 'sdl'],
-	spice   => ['-vga', 'qxl', '-spice', 'port=5900,addr=127.0.0.1,disable-ticketing'],
-	curses  => ['-vga', 'std', '-display', 'curses'],
-	gtk     => ['-vga', 'std', '-display', 'gtk'],
-	console => ['-nographic'],
-	none    => ['-vga', 'none', '-display', 'none'],
-);
-
-# TODO: allow for multiple networks?
-my $BRIDGE = 'br0';
-my %NETWORKS = (
-	none   => ['-net', 'none'],
-	# TODO: use -net
-	bridge => ['-netdev', "bridge,id=bridge,br=$BRIDGE", '-device', 'virtio-net,netdev=bridge'],
-	# TODO: tap
-	# TODO: hubport?
-	# TODO: dump
-	# https://www.suse.com/documentation/sles11/book_kvm/?page=/documentation/sles11/book_kvm/data/cha_qemu_running_networking.html
-	user   => ['-net', 'nic', '-net', 'user'],
-);
 
 # See usage for more info.
 my %PRESETS = (
-	archinstall => { subdir => 'archinstall', display => 'curses', image => 'archinstall.iso' },
-	blackarch   => { subdir => 'blackarch', image => 'blackarch.iso' },
-	tails       => { subdir => 'tails', cdrom => 'tails.iso' },
-	# TODO: metasploitable
-	# TODO: xp-*
+	archinstall    => { subdir => 'archinstall', display => 'curses', image => 'archinstall.iso' },
+	blackarch      => { subdir => 'blackarch', image => 'blackarch.iso' },
+	tails          => { subdir => 'tails', cdrom => 'tails.iso' },
+	# TODO: isolate with tap+ip (even though user-mode networking acts as a firewall)
+	metasploitable => { subdir => 'metasploitable', image => 'metasploitable.iso' },
+	'xp-home'      => { subdir => 'xp-home-sp1', maindisk => 1, share => 1, kvm => 0 }
+	# TODO: let's start making simple application isolation VMs
+	#       for the sake of speed, maybe we can use user-mode networking with guestfwd
 );
 
 my %DEFAULTS = (
-	arch     => 'x86_64',
-	kvm      => 1,
-	mem      => '6G',
-	smp      => '1',
-	display  => 'sdl',
-	network  => 'user',
-	samba    => 0,
-	basedir  => $ENV{HOME} . '/vm',
-	#subdir  => '<none>',
-	maindisk => 0,
-	makemain => 0,
-	mainsize => '20G',
-	snapshot => 1,
+	arch      => 'x86_64',
+	kvm       => 1,
+	mem       => '6G',
+	smp       => '1',
+	bootopts  => 'order=dc',
+	display   => 'sdl',
+	network   => 'user',
+	netopts  => '',
+	netdriver => 'virtio-net',
+	share     => 0,
+	basedir   => $ENV{HOME} . '/vm',
+	#subdir   => '<none>',
+	maindisk  => 0,
+	makemain  => 0,
+	mainsize  => '20G',
+	snapshot  => 1,
 	#snaplist  not a setting
 	#revert    not a setting
-	#cdrom   => '<none>',
-	#drives  => '<none>',
-	#image   => '<none>',
+	#cdrom    => '<none>',
+	#drives   => '<none>',
+	#image    => '<none>',
 );
 
+my %NETWORKS;
+my %DISPLAYS;
 sub usage {
 	my @preset_names = keys %PRESETS;
 	my @display_names = keys %DISPLAYS;
@@ -71,31 +56,44 @@ sub usage {
 usage: vm [options]
 
 Parameters (+ requires a value):
- NAME      DEFAULT  FLAG  OPTIONS
- preset    <none>   -p+   @preset_names
- basedir   ~/vm     -v+   directory name
- subdir    <none>   -o+   directory name
+ NAME       DEFAULT     FLAG  OPTIONS
+ preset     <none>      -p+   @preset_names
+ basedir    ~/vm        -v+   directory name
+ subdir     <none>      -o+   directory name
 
- arch      x86_64   -a+   various
- kvm       true     -k    (toggle)
- mem       6G       -m+   various
- smp       1        -s+   various
- display   sdl      -d+   @display_names
- network   user     -n+   @network_names
- samba     false    -M    (toggle)
+BASE SYSTEM
+ arch       x86_64      -a+   various
+ kvm        true        -k    (toggle)
+ mem        6G          -m+   various
+ smp        1           -s+   various
+ bootopts   order=dc    -B+   see qemu(1)
 
- maindisk  false    -i    (toggle)
- makemain  false    -C    (toggle)
- mainsize  20G      -z    size of maindisk
- snapshot  true     -S    (toggle)
- snaplist           -L    (action)
- revert    <none>   -R+   snapshot to revert to
+DISPLAY
+ display    sdl         -d+   @display_names
 
- cdrom     <none>   -c+   cdrom file
- drives    <none>   -r+   comma-separated drive files (e.g. /dev/sda)
- image     <none>   -f+   image file
+NETWORK
+ network    user        -n+   @network_names
+ netopts    <none>      -N    see qemu(1)
+ netdriver  virtio-net  -D    see qemu -device help
+ share      false       -H    (toggle)
 
- passon    <none>   -P+   dashless comma-separated flags to pass to qemu
+MAINDISK
+ maindisk   false       -i    (toggle)
+ makemain   false       -C    (toggle)
+ mainsize   20G         -z    size of maindisk
+ snapshot   true        -S    (toggle)
+ snaplist               -L    (action)
+ revert     <none>      -R+   snapshot to revert to
+
+OTHER MEDIA
+ cdrom      <none>      -c+   cdrom file
+ drives     <none>      -r+   comma-separated drive files (e.g. /dev/sda)
+ image      <none>      -f+   image file
+
+META
+ passon     <none>      -P+   dashless comma-separated flags to pass to qemu
+ viewcmd    0           -V    (toggle)
+ help       0           -h    (toggle)
 HELP
 	$" = ' ';
 }
@@ -109,9 +107,12 @@ GetOptions(\%opts,
            'kvm|k!',
            'mem|m=s',
            'smp|s=s',
+           'bootopts|B=s',
            'display|d=s',
            'network|n=s',
-           'samba|M!',
+           'netopts|N=s',
+           'netdriver|D=s',
+           'share|H!',
            'maindisk|i!',
            'makemain|C!',
            'mainsize|z!',
@@ -122,13 +123,10 @@ GetOptions(\%opts,
            'drives|r=s',
            'image|f=s',
            'passon|P=s',
+           'viewcmd|V!',
            'help|h');
 
-if (defined $opts{help}) {
-	&usage;
-	exit;
-}
-
+# Handle preset.
 my %preset;
 if (defined $opts{preset}) {
 	my $preset = $PRESETS{$opts{preset}};
@@ -141,55 +139,96 @@ if (defined $opts{preset}) {
 # Merge in the defaults and preset.
 my %settings = (%DEFAULTS, %preset, %opts);
 
-my ($maindisk, $vmdir, $sharedir);
+my $vmdir;
 if (defined $settings{subdir}) {
 	$vmdir = "$settings{basedir}/$settings{subdir}";
 } else {
 	$vmdir = '.';
 }
-$maindisk = "$vmdir/maindisk.qcow2";
-$sharedir = "$vmdir/shared";
 
-# Handle snaplist command.
-if (defined $opts{snaplist}) {
-	# TODO: test
-	die "could not read maindisk ($maindisk)" if (!-r $maindisk);
-	system 'qemu-img', 'snapshot', '-l', $maindisk;
-	exit;
-}
-
-# TODO: add an option to delete the last snapshot
-# Handle revert command.
-if (defined $opts{revert}) {
-	# TODO: test
-	die "could not read maindisk ($maindisk)" if (!-r $maindisk);
-	system 'qemu-img', 'snapshot', '-a', $opts{revert}, $maindisk;
-	exit;
-}
-
-if (!($settings{maindisk} || defined $settings{cdrom} || defined $settings{image})) {
-	die 'no potential boot media found. you must specify at least one of: maindisk, cdrom, image.'
-}
-
+# This is the argument list passed to qemu.
 my @args;
-# Assemble an argument list.
+
+# -----------------------------------------------------------------------------
+# <BASE SYSTEM>
+# -----------------------------------------------------------------------------
 if ($settings{kvm}) {
 	die 'KVM needs root.' if ($EUID != 0);
-	push @args, '-enable-kvm'
+	push @args, '-enable-kvm';
 }
+
 push @args, '-m', $settings{mem};
+
 push @args, '-smp', $settings{smp};
+
+push @args, '-boot', $settings{bootopts};
+# -----------------------------------------------------------------------------
+# </BASE SYSTEM>
+# -----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
+# <DISPLAY>
+# -----------------------------------------------------------------------------
+%DISPLAYS = (
+	sdl     => ['-vga', 'std', '-display', 'sdl'],
+	spice   => ['-vga', 'qxl', '-spice', 'port=5900,addr=127.0.0.1,disable-ticketing'],
+	curses  => ['-vga', 'std', '-display', 'curses'],
+	gtk     => ['-vga', 'std', '-display', 'gtk'],
+	console => ['-nographic'],
+	none    => ['-vga', 'none', '-display', 'none'],
+);
+
 my $display = $DISPLAYS{$settings{display}};
 die "invalid display: $settings{display}" if (!$display);
 push @args, @$display;
+# -----------------------------------------------------------------------------
+# </DISPLAY>
+# -----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
+# <NETWORK>
+# -----------------------------------------------------------------------------
+# TODO: virtual FS passthrough?
+# TODO: virtio?
+
+# TODO: handle \&handler
+# TODO: allow the user to specify a net driver
+# TODO: switch to -netdev
 # TODO: handle static ip address with route and such? and dhcp?
-my $network = $NETWORKS{$settings{network}};
-die "invalid network: $settings{network}" if (!$network);
-push @args, @$network;
-if ($settings{samba}) {
+# TODO: tap
+# TODO: hubport?
+# https://www.suse.com/documentation/sles11/book_kvm/?page=/documentation/sles11/book_kvm/data/cha_qemu_running_networking.html
+my $sharedir = "$vmdir/shared";
+if ($settings{share}) {
 	mkpath "$sharedir";
-	push @args, "-net', 'user,smb=$sharedir"
+	$settings{netopt} .= ",smb=$sharedir";
 }
+
+%NETWORKS = (
+	none   => ['-net', 'none'],
+	bridge => ['-netdev', "bridge,id=bridge,$settings{netopts}", '-device', "$settings{netdriver},netdev=bridge"],
+	tap    => ['-netdev', 'tap', '-device', "$settings{netdriver}"],
+	dump   => ['-netdev', "dump,file=$vmdir/dump.pcap,$settings{netopts}"],
+	user   => ['-net', 'nic', '-net', 'user'],
+);
+
+my $network = $NETWORKS{$settings{network}};
+if ($EUID != 0 && $settings{network} =~ /^(bridge|tap)$/) {
+	die "network $settings{network} needs root.";
+}
+if (!$network) {
+	die "invalid network: $settings{network}";
+}
+push @args, @$network;
+# -----------------------------------------------------------------------------
+# </NETWORK>
+# -----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
+# <MAINDISK>
+# -----------------------------------------------------------------------------
+my $maindisk = "$vmdir/maindisk.qcow2";
+
 if ($settings{maindisk}) {
 	if (!-e $maindisk) {
 		if ($settings{makemain}) {
@@ -201,8 +240,30 @@ if ($settings{maindisk}) {
 		die "could not read maindisk ($maindisk)";
 	}
 
+	# Handle snaplist command.
+	if (defined $opts{snaplist}) {
+		# TODO: test
+		system 'qemu-img', 'snapshot', '-l', $maindisk;
+		exit;
+	}
+
+	# TODO: add an option to delete the last snapshot
+	# Handle revert command.
+	if (defined $opts{revert}) {
+		# TODO: test
+		system 'qemu-img', 'snapshot', '-a', $opts{revert}, $maindisk;
+		exit;
+	}
+
 	push @args, '-drive', "file=$maindisk,cache=none,if=ide"
 }
+# -----------------------------------------------------------------------------
+# </MAINDISK>
+# -----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
+# <OTHER MEDIA>
+# -----------------------------------------------------------------------------
 if (defined $settings{cdrom}) {
 	push @args, '-cdrom', "$vmdir/$settings{cdrom}";
 }
@@ -210,12 +271,36 @@ if (defined $settings{drives}) {
 	my @drives = split /,/, $settings{drives};
 	push @args, map { ('-drive', "file=$_,cache=none,if=virtio") } @drives;
 }
-if (defined $settings{passon}) {
-	push @args, map { "-$_" } split /,/, $settings{passon};
-}
 if (defined $settings{image}) {
 	push @args, "$vmdir/$settings{image}";
 }
+# -----------------------------------------------------------------------------
+# </OTHER MEDIA>
+# -----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
+# <META>
+# -----------------------------------------------------------------------------
+if (defined $settings{passon}) {
+	push @args, map { "-$_" } split /,/, $settings{passon};
+}
+
+# We handle help down here because &usage lists networks and displays.
+if (defined $opts{help}) {
+	&usage;
+	exit;
+}
+# -----------------------------------------------------------------------------
+# </META>
+# -----------------------------------------------------------------------------
+
+if (!($settings{maindisk} || defined $settings{cdrom} || defined $settings{image})) {
+	die 'no potential boot media found. you must specify at least one of: maindisk, cdrom, image.'
+}
 
 # TODO: handle snapshot
-system "qemu-system-$settings{arch}", @args;
+if ($settings{viewcmd}) {
+	print "qemu-system-$settings{arch}", @args;
+} else {
+	system "qemu-system-$settings{arch}", @args;
+}
