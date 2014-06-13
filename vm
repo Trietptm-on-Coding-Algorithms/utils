@@ -63,17 +63,13 @@ my %DEFAULTS = (
 my %NETWORKS;
 my %DISPLAYS;
 sub usage {
-	my @preset_names = keys %PRESETS;
-	my @display_names = keys %DISPLAYS;
-	my @network_names = keys %NETWORKS;
+	my $preset_names = join ', ', keys %PRESETS;
 
-	$" = ', ';
 	print <<HELP;
-usage: vm [options]
+usage: vm [options] [preset]
 
 Parameters (+ requires a value):
  NAME       DEFAULT     FLAG  OPTIONS
- preset     <none>      -p+   @preset_names
  basedir    ~/vm        -v+   directory name
  subdir     <none>      -o+   directory name
 
@@ -85,10 +81,10 @@ BASE SYSTEM
  bootopts   order=dc    -B+   see qemu(1)
 
 DISPLAY
- display    sdl         -d+   @display_names
+ display    sdl         -d+   various
 
 NETWORK
- networks   user        -n+   @network_names (comma-separated, options colon separated)
+ networks   user        -n+   various (comma-separated, options colon separated)
  netdriver  virtio-net  -D    see qemu -device help
  share      none        -H+   smb, virtfs, none
 
@@ -111,12 +107,10 @@ META
  viewcmd    0           -V    (toggle)
  help       0           -h    (toggle)
 HELP
-	$" = ' ';
 }
 
 my %opts;
 GetOptions(\%opts,
-           'preset|p=s',
            'basedir|v=s',
            'subdir|o=s',
            'arch|a=s',
@@ -142,12 +136,19 @@ GetOptions(\%opts,
            'viewcmd|V!',
            'help|h');
 
+# We handle help down here because &usage lists networks and displays.
+if (defined $opts{help}) {
+	&usage;
+	exit;
+}
+
 # Handle preset.
 my %preset;
-if (defined $opts{preset}) {
-	my $preset = $PRESETS{$opts{preset}};
+if ($#ARGV >= 0) {
+	my $preset_name = $ARGV[0];
+	my $preset = $PRESETS{$preset_name};
 	if (!$preset) {
-		die "invalid preset: $opts{preset}"
+		die "invalid preset: $preset_name"
 	}
 	%preset = %$preset;
 }
@@ -378,12 +379,6 @@ if (defined $settings{image}) {
 if (defined $settings{passon}) {
 	push @args, map { "-$_" } split /,/, $settings{passon};
 }
-
-# We handle help down here because &usage lists networks and displays.
-if (defined $opts{help}) {
-	&usage;
-	exit;
-}
 # -----------------------------------------------------------------------------
 # </META>
 # -----------------------------------------------------------------------------
@@ -391,7 +386,6 @@ if (defined $opts{help}) {
 if (!($settings{maindisk} || defined $settings{cdrom} || defined $settings{image})) {
 	die 'no potential boot media found. you must specify at least one of: maindisk, cdrom, image.'
 }
-
 
 # Network hooks
 foreach my $network_name (@networks) {
