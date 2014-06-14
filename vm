@@ -103,7 +103,7 @@ OTHER MEDIA
  image      <none>      -f+   image file
 
 META
- passon     <none>      -P+   comma-separated flags to pass on. first dash is added.
+ passon     <none>      -P+   colon-separated flags to pass on. first dash is added.
  viewcmd    0           -V    (toggle)
  help       0           -h    (toggle)
 
@@ -389,7 +389,7 @@ if (defined $settings{image}) {
 # <META>
 # -----------------------------------------------------------------------------
 if (defined $settings{passon}) {
-	my @passon = split /,/, $settings{passon};
+	my @passon = split /:/, $settings{passon};
 	if (!$passon[0] =~ /^-/) {
 		$passon[0] = "-$passon[0]";
 	}
