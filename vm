@@ -25,9 +25,8 @@ my %PRESETS = (
 	archinstall    => { subdir => 'archinstall', display => 'curses', image => 'archinstall.iso' },
 	blackarch      => { subdir => 'blackarch', image => 'blackarch.iso' },
 	tails          => { subdir => 'tails', cdrom => 'tails.iso' },
-	# TODO: isolate with tap+ip (even though user-mode networking acts as a firewall)
 	metasploitable => { subdir => 'metasploitable', image => 'metasploitable.iso' },
-	'xp-home'      => { subdir => 'xp-home-sp1', maindisk => 1, kvm => 0, networks => 'none' }
+	'xp-home'      => { subdir => 'xp-home-sp1', maindisk => 1, iodriver => 'ide', kvm => 0, networks => 'none', netdriver => 'e1000' }
 	# TODO: let's start making simple application isolation VMs
 	#       for the sake of speed, maybe we can use user-mode networking with guestfwd
 );
