@@ -2,6 +2,7 @@
 # Manages virtual machines.
 # TODO: make netdriver opts
 # TODO: support multiple netdrivers (separate -device and -netdev parts in args)
+# TODO: NAT? http://wiki.qemu.org/Documentation/Networking/NAT
 # https://www.suse.com/documentation/sles11/book_kvm/?page=/documentation/sles11/book_kvm/data/cha_qemu_running_networking.html
 
 use strict;
@@ -26,9 +27,12 @@ my %PRESETS = (
 	blackarch      => { subdir => 'blackarch', image => 'blackarch.iso' },
 	tails          => { subdir => 'tails', cdrom => 'tails.iso' },
 	metasploitable => { subdir => 'metasploitable', image => 'metasploitable.iso' },
+	# TODO: sort out virtio drivers for windows
 	'xp-home'      => { subdir => 'xp-home-sp1', maindisk => 1, iodriver => 'ide', kvm => 0, networks => 'none', netdriver => 'e1000' }
+	'xp-pro3'      => { subdir => 'xp-pro-sp3', maindisk => 1, iodriver => 'ide', kvm => 0, networks => 'none', netdriver => 'e1000' }
+	'seven'        => { subdir => 'seven', maindisk => 1, iodriver => 'ide', kvm => 0, networks => 'none', netdriver => 'e1000' }
 	# TODO: let's start making simple application isolation VMs
-	#       for the sake of speed, maybe we can use user-mode networking with guestfwd
+	#       maybe we can use user-mode networking with guestfwd
 );
 
 my %DEFAULTS = (
