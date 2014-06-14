@@ -28,9 +28,9 @@ my %PRESETS = (
 	tails          => { subdir => 'tails', cdrom => 'tails.iso' },
 	metasploitable => { subdir => 'metasploitable', image => 'metasploitable.iso' },
 	# TODO: sort out virtio drivers for windows
-	'xp-home'      => { subdir => 'xp-home-sp1', maindisk => 1, iodriver => 'ide', kvm => 0, networks => 'none', netdriver => 'e1000' }
-	'xp-pro3'      => { subdir => 'xp-pro-sp3', maindisk => 1, iodriver => 'ide', kvm => 0, networks => 'none', netdriver => 'e1000' }
-	'seven'        => { subdir => 'seven', maindisk => 1, iodriver => 'ide', kvm => 0, networks => 'none', netdriver => 'e1000' }
+	'xp-home'      => { subdir => 'xp-home-sp1', maindisk => 1, iodriver => 'ide', kvm => 0, networks => 'none', netdriver => 'e1000' },
+	'xp-pro3'      => { subdir => 'xp-pro-sp3', maindisk => 1, iodriver => 'ide', kvm => 0, networks => 'none', netdriver => 'e1000' },
+	'seven'        => { subdir => 'seven', maindisk => 1, iodriver => 'ide', kvm => 0, networks => 'none', netdriver => 'e1000' },
 	# TODO: let's start making simple application isolation VMs
 	#       maybe we can use user-mode networking with guestfwd
 );
