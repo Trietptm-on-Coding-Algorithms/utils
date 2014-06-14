@@ -1,11 +1,7 @@
 #!/usr/bin/perl
 # Manages virtual machines.
-# TODO: isolated network
 # TODO: make netdriver opts
-# TODO: multi-opt networks and drives
 # TODO: support multiple netdrivers (separate -device and -netdev parts in args)
-# TODO: handle static ip address with route and such? and dhcp?
-# TODO: hubport?
 # https://www.suse.com/documentation/sles11/book_kvm/?page=/documentation/sles11/book_kvm/data/cha_qemu_running_networking.html
 
 use strict;
@@ -45,6 +41,7 @@ my %DEFAULTS = (
 	display   => 'sdl',
 	networks  => 'user',
 	netdriver => 'virtio-net',
+	#dhcp      => '<none>',
 	share     => 'none',
 	basedir   => $ENV{HOME} . '/vm',
 	#subdir   => '<none>',
@@ -63,12 +60,11 @@ my %DEFAULTS = (
 my %NETWORKS;
 my %DISPLAYS;
 sub usage {
-	my $preset_names = join ', ', keys %PRESETS;
-
+# TODO: enumerate possible values for items
 	print <<HELP;
 usage: vm [options] [preset]
 
-Parameters (+ requires a value):
+Parameters (+ requires a value, : may have a value):
  NAME       DEFAULT     FLAG  OPTIONS
  basedir    ~/vm        -v+   directory name
  subdir     <none>      -o+   directory name
@@ -85,8 +81,9 @@ DISPLAY
 
 NETWORK
  networks   user        -n+   various (comma-separated, options colon separated)
- netdriver  virtio-net  -D    see qemu -device help
- share      none        -H+   smb, virtfs, none
+ netdriver  virtio-net  -N    see qemu -device help
+ dhcp       <none>      -D:   dhcp range. uses net default range if no value.
+ share      none        -H:   smb, virtfs, none
 
 MAINDISK
  maindisk   false       -i    (toggle)
@@ -94,7 +91,7 @@ MAINDISK
  mainsize   20G         -z    size of maindisk
  snapshot   true        -S    (toggle)
  snaplist               -L    (action)
- revert     <none>      -R+   snapshot to revert to
+ revert     <none>      -R:   snapshot to revert to (if no value, revert one back)
 
 OTHER MEDIA
  cdrom      <none>      -c+   cdrom file
@@ -103,10 +100,19 @@ OTHER MEDIA
  image      <none>      -f+   image file
 
 META
- passon     <none>      -P+   dashless comma-separated flags to pass to qemu
+ passon     <none>      -P+   comma-separated flags to pass on. first dash is added.
  viewcmd    0           -V    (toggle)
  help       0           -h    (toggle)
+
+Presets:
 HELP
+
+	for my $preset_name (keys %PRESETS) {
+		my %preset = %{$PRESETS{$preset_name}};
+		print " $preset_name: ";
+		print join ', ', map { "$_ => $preset{$_}" } keys %preset;
+		say '';
+	}
 }
 
 my %opts;
@@ -120,7 +126,7 @@ GetOptions(\%opts,
            'bootopts|B=s',
            'display|d=s',
            'networks|n=s',
-           'netdriver|D=s',
+           'netdriver|N=s',
            'share|H=s',
            'maindisk|i!',
            'makemain|C!',
@@ -248,16 +254,18 @@ if ($settings{share} eq 'smb') {
 }
 
 sub net_pre_hook_tor {
+	my $bridge = 'qemu-tor';
+
 	# tor
 	system 'systemctl', 'start', 'tor';
 
 	# bridge
-	system 'brctl', 'addbr', 'tor';
-	system 'ip', 'link', 'set', 'tor', 'up';
-	system 'ip', 'addr', 'add', '192.168.0.1/24', 'dev', 'tor';
+	system 'brctl', 'addbr', $bridge;
+	system 'ip', 'link', 'set', $bridge, 'up';
+	system 'ip', 'addr', 'add', '192.168.0.1/24', 'dev', $bridge;
 
 	# dhcp
-	dhcp 'tor', '192.168.0.2,192.168.0.2';
+	dhcp $bridge, '192.168.0.2,192.168.0.2';
 
 	# rinetd
 	my ($rinetd_conf, $rinetd_conf_name) = tempfile();
@@ -269,6 +277,7 @@ EOF
 
 sub net_post_hook_tor {
 	my $pid;
+	my $bridge = 'qemu-tor';
 
 	# rinetd
 	open my $rinetd_pid_file, '<', '/var/run/rinetd.pid';
@@ -276,18 +285,18 @@ sub net_post_hook_tor {
 	kill 'TERM', $pid;
 
 	# dhcp
-	dhcp_kill 'tor';
+	dhcp_kill $bridge;
 
 	# bridge
-	system 'ip', 'link', 'set', 'tor', 'down';
-	system 'brctl', 'delbr', 'tor';
+	system 'ip', 'link', 'set', $bridge, 'down';
+	system 'brctl', 'delbr', $bridge;
 
 	# tor
 	system 'systemctl', 'stop', 'tor';
 }
 
 %NETWORKS = (
-	# needs_root, pre_hook, post_hook, netdev, device
+	# needs_root, pre_hook, post_hook, netdev, device, dhcp_range
 	user   => { netdev => ['-netdev', "user,id=user"], device => ['-device', "$settings{netdriver},netdev=user"] },
 	bridge => { needs_root => 1, netdev => ['-netdev', "bridge,id=bridge"],
 	            device => ['-device', "$settings{netdriver},netdev=bridge"] },
@@ -377,7 +386,11 @@ if (defined $settings{image}) {
 # <META>
 # -----------------------------------------------------------------------------
 if (defined $settings{passon}) {
-	push @args, map { "-$_" } split /,/, $settings{passon};
+	my @passon = split /,/, $settings{passon};
+	if (!$passon[0] =~ /^-/) {
+		$passon[0] = "-$passon[0]";
+	}
+	push @args, @passon; 
 }
 # -----------------------------------------------------------------------------
 # </META>
