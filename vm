@@ -1,8 +1,12 @@
 #!/usr/bin/perl
 # Manages virtual machines.
+# TODO: automatically create small isolated network
+# TODO: finish dhcp
+# TODO: multiple cdrom args, etc
 # TODO: make netdriver opts
 # TODO: support multiple netdrivers (separate -device and -netdev parts in args)
 # TODO: NAT? http://wiki.qemu.org/Documentation/Networking/NAT
+# TODO: no-persist mode
 # https://www.suse.com/documentation/sles11/book_kvm/?page=/documentation/sles11/book_kvm/data/cha_qemu_running_networking.html
 
 use strict;
@@ -28,9 +32,9 @@ my %PRESETS = (
 	tails          => { subdir => 'tails', cdrom => 'tails.iso' },
 	metasploitable => { subdir => 'metasploitable', image => 'metasploitable.iso' },
 	# TODO: sort out virtio drivers for windows
-	'xp-home'      => { subdir => 'xp-home-sp1', maindisk => 1, iodriver => 'ide', kvm => 0, networks => 'none', netdriver => 'e1000' },
-	'xp-pro3'      => { subdir => 'xp-pro-sp3', maindisk => 1, iodriver => 'ide', kvm => 0, networks => 'none', netdriver => 'e1000' },
-	'seven'        => { subdir => 'seven', maindisk => 1, iodriver => 'ide', kvm => 0, networks => 'none', netdriver => 'e1000' },
+	'xp-home'      => { subdir => 'xp-home-sp1', maindisk => 1, iodriver => 'ide', kvm => 1, networks => 'none', netdriver => 'e1000' },
+	'xp-pro3'      => { subdir => 'xp-pro-sp3', maindisk => 1, iodriver => 'ide', kvm => 1, networks => 'none', netdriver => 'e1000' },
+	'seven'        => { subdir => 'seven', maindisk => 1, iodriver => 'ide', kvm => 1, networks => 'none', netdriver => 'e1000' },
 	# TODO: let's start making simple application isolation VMs
 	#       maybe we can use user-mode networking with guestfwd
 );
@@ -42,6 +46,9 @@ my %DEFAULTS = (
 	smp       => '1',
 	bootopts  => 'order=dc',
 	display   => 'sdl',
+	tablet    => 1,
+	# TODO: add usbdevice support when we add multi-opts
+	#usbdevice => '<none>',
 	networks  => 'user',
 	netdriver => 'virtio-net',
 	#dhcp      => '<none>',
@@ -82,6 +89,10 @@ BASE SYSTEM
 DISPLAY
  display    sdl         -d+   various
 
+PERIPHERALS
+ tablet     1           -T    (toggle)
+ usbdevice  <none>      -U    see qemu(1)
+
 NETWORK
  networks   user        -n+   various (comma-separated, options colon separated)
  netdriver  virtio-net  -N    see qemu -device help
@@ -95,6 +106,7 @@ MAINDISK
  snapshot   true        -S    (toggle)
  snaplist               -L    (action)
  revert     <none>      -R:   snapshot to revert to (if no value, revert one back)
+ snapapply  <none>      -A:   snapshot to apply (if no value, apply one back)
 
 OTHER MEDIA
  cdrom      <none>      -c+   cdrom file
@@ -128,15 +140,16 @@ GetOptions(\%opts,
            'smp|s=s',
            'bootopts|B=s',
            'display|d=s',
+           'tablet|T!',
            'networks|n=s',
            'netdriver|N=s',
            'share|H=s',
            'maindisk|i!',
            'makemain|C!',
            'mainsize|z!',
-           'snapshot|S!',
+           'snapshot|S:s',
            'snaplist|L',
-           'revert|R=s',
+           'revert|R:s',
            'cdrom|c=s',
            'drives|r=s',
            'iodriver|I=s',
@@ -212,6 +225,16 @@ push @args, @$display;
 # -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
+# </PERIPHERALS>
+# -----------------------------------------------------------------------------
+if ($settings{tablet}) {
+	push @args, '-usbdevice', 'tablet';
+}
+# -----------------------------------------------------------------------------
+# </PERIPHERALS>
+# -----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
 # <NETWORK>
 # -----------------------------------------------------------------------------
 if ($settings{netdriver} =~ /virtio-net/) {
@@ -240,20 +263,6 @@ sub dhcp_kill {
 	open my ($pid_file), '<', "/var/run/qemu-dnsmasq-$if.pid" or die $!;
 	my $pid = <$pid_file>;
 	kill 'TERM', int($pid);
-}
-
-my $sharedir = "$vmdir/shared";
-if ($settings{share} eq 'smb') {
-	mkpath "$sharedir";
-	# TODO: apply to netopts instead. this is deprecated
-	push @args, '-smb';
-} elsif ($settings{share} eq 'virtfs') {
-	mkpath "$sharedir";
-	push @args, '-virtfs', "local,path=$sharedir,security_model=mapped-file,mount_tag=share";
-} elsif ($settings{share} eq 'none') {
-	# do nothing
-} else {
-	die "invalid share type: $settings{share}";
 }
 
 sub net_pre_hook_tor {
@@ -300,15 +309,33 @@ sub net_post_hook_tor {
 
 %NETWORKS = (
 	# needs_root, pre_hook, post_hook, netdev, device, dhcp_range
-	user   => { netdev => ['-netdev', "user,id=user"], device => ['-device', "$settings{netdriver},netdev=user"] },
-	bridge => { needs_root => 1, netdev => ['-netdev', "bridge,id=bridge"],
-	            device => ['-device', "$settings{netdriver},netdev=bridge"] },
-	tor    => { needs_root => 1, pre_hook => \&net_pre_hook_tor, post_hook => \&net_post_hook_tor,
-	            netdev => ['-netdev', 'bridge,id=tor,br=tor'], device => ['-device', "$settings{netdriver},netdev=tor"] },
-	#tap   => { needs_root => 1, netdev => ['-netdev', 'tap,id=net0'], device => ['-device', "$settings{netdriver},netdev=net0"] },
-	none   => { netdev => ['-net', 'none'], device => [] },
-	dump   => { netdev => ['-net', "dump,file=$vmdir/dump.pcap"] },
+	user     => { netdev => ['-netdev', "user,id=user"],
+	              device => ['-device', "$settings{netdriver},netdev=user"] },
+	restrict => { netdev => ['-netdev', 'user,id=restrict,restrict=on'],
+	              device => ['-device', "$settings{netdriver},netdev=restrict"] },
+	bridge   => { needs_root => 1, netdev => ['-netdev', "bridge,id=bridge"],
+	              device => ['-device', "$settings{netdriver},netdev=bridge"] },
+	tor      => { needs_root => 1, pre_hook => \&net_pre_hook_tor, post_hook => \&net_post_hook_tor,
+	              netdev => ['-netdev', 'bridge,id=tor,br=qemu-tor'], device => ['-device', "$settings{netdriver},netdev=tor"] },
+	#tap     => { needs_root => 1, netdev => ['-netdev', 'tap,id=net0'], device => ['-device', "$settings{netdriver},netdev=net0"] },
+	none     => { netdev => ['-net', 'none'], device => [] },
+	dump     => { netdev => ['-net', "dump,file=$vmdir/dump.pcap"] },
 );
+
+my $sharedir = "$vmdir/shared";
+if ($settings{share} eq 'smb') {
+	mkpath "$sharedir";
+	# TODO: stop giving this its own device...
+	#push @args, '-netdev', "user,restrict=on,smb=$sharedir,id=share", '-device', "$settings{netdriver},netdev=share";
+	push @args, '-netdev', "user,smb=$sharedir,id=share", '-device', "$settings{netdriver},netdev=share";
+} elsif ($settings{share} eq 'virtfs') {
+	mkpath "$sharedir";
+	push @args, '-virtfs', "local,path=$sharedir,security_model=mapped-file,mount_tag=share";
+} elsif ($settings{share} eq 'none') {
+	# do nothing
+} else {
+	die "invalid share type: $settings{share}";
+}
 
 my @networks = split /,/, $settings{networks};
 
@@ -353,12 +380,20 @@ if ($settings{maindisk}) {
 		exit;
 	}
 
-	# TODO: add an option to delete the last snapshot
 	# Handle revert command.
+	# TODO: finish this
 	if (defined $opts{revert}) {
-		# TODO: test
-		system 'qemu-img', 'snapshot', '-a', $opts{revert}, $maindisk;
-		exit;
+		#my $snap;
+		#if ($opts{revert} eq '') {
+		#    $snap = ``;
+		#} else {
+		#    $snap = $opts{revert};
+		#}
+		## TODO: test
+		#for $snap (@snaps) {
+		#    system 'qemu-img', 'snapshot', '-a', $snap, $maindisk;
+		#}
+		#exit;
 	}
 
 	# TODO: support device-specific iodrivers   e.g. /dev/sda:ide
