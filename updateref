@@ -1,0 +1,36 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+my %refs;
+my %tbl;
+my $i = 0;
+my $refre = qr/\[([0-9]+)\]/;
+
+sub print_tbl {
+	printf "%s" x (keys %tbl), map { $tbl{$_} } sort keys %tbl;
+	%tbl = ();
+}
+
+while (<>) {
+	if (/^$refre/) {
+		my $ref = $1;
+		if (defined $refs{$ref}) {
+			s/\[$ref\]/[$refs{$ref}]/g;
+			$tbl{$refs{$ref}} = $_;
+		}
+	} else {
+		print_tbl;
+
+		for my $ref (/$refre/g) {
+			if (!defined $refs{$ref}) {
+				$refs{$ref} = $i++;
+			}
+			s/\[$ref\]/[$refs{$ref}]/g;
+		}
+		print;
+	}
+}
+
+print_tbl;
