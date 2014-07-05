@@ -1,0 +1,8 @@
+#!/usr/bin/perl
+
+while (<>) {
+	my @matches = /([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]+)/g;
+	for my $match (@matches) {
+		printf "%s\n", $match 
+	}
+}
