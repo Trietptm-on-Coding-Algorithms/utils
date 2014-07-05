@@ -1,0 +1,11 @@
+#!/bin/sh
+
+fbcmd reset
+fbcmd go access
+fbcmd go auth
+
+echo -n 'auth: '
+read auth
+fbcmd auth "$auth"
+
+# TODO: dump
