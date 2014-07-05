@@ -1,6 +1,5 @@
 #!/usr/bin/perl
 # Manages virtual machines.
-# TODO: automatically create small isolated network
 # TODO: finish dhcp
 # TODO: multiple cdrom args, etc
 # TODO: make netdriver opts
@@ -265,31 +264,41 @@ sub dhcp_kill {
 	kill 'TERM', int($pid);
 }
 
+# TODO: replace this with something that auto-increments
+sub random_name {
+	my $name = shift;
+	$name .= int rand 99999;
+	# trim due to ifname limit
+	# TODO: adjust to IFNAMSIZ?
+	$name = substr $name, 0, 15;
+	return $name;
+}
+
 sub net_pre_hook_tor {
-	my $bridge = 'qemu-tor';
+	my $network = shift;
 
 	# tor
-	system 'systemctl', 'start', 'tor';
+	system qq( systemctl start tor );
 
 	# bridge
-	system 'brctl', 'addbr', $bridge;
-	system 'ip', 'link', 'set', $bridge, 'up';
-	system 'ip', 'addr', 'add', '192.168.0.1/24', 'dev', $bridge;
+	system qq( brctl addbr $network->{if} );
+	system qq( ip link set $network->{if} up );
+	system qq( ip addr add 192.168.0.1/24 dev $network->{if} );
 
 	# dhcp
-	dhcp $bridge, '192.168.0.2,192.168.0.2';
+	dhcp $network->{if}, '192.168.0.2,192.168.0.2';
 
 	# rinetd
 	my ($rinetd_conf, $rinetd_conf_name) = tempfile();
 	print $rinetd_conf <<EOF;
 192.168.0.1     9050            127.0.0.1       9050
 EOF
-	system 'rinetd', '-c', $rinetd_conf_name;
+	system qq( rinetd -c $rinetd_conf_name );
 }
 
 sub net_post_hook_tor {
+	my $network = shift;
 	my $pid;
-	my $bridge = 'qemu-tor';
 
 	# rinetd
 	open my $rinetd_pid_file, '<', '/var/run/rinetd.pid';
@@ -297,27 +306,55 @@ sub net_post_hook_tor {
 	kill 'TERM', $pid;
 
 	# dhcp
-	dhcp_kill $bridge;
+	dhcp_kill $network->{if};
 
 	# bridge
-	system 'ip', 'link', 'set', $bridge, 'down';
-	system 'brctl', 'delbr', $bridge;
+	system qq( ip link set $network->{if} down );
+	system qq( brctl delbr $network->{if} );
 
 	# tor
-	system 'systemctl', 'stop', 'tor';
+	system qq( systemctl stop tor );
+}
+
+sub net_pre_hook_isolated {
+	my $network = shift;
+
+	# bridge
+	system qq( brctl addbr $network->{if} );
+	system qq( ip link set $network->{if} up );
+	# TODO: make this address configurable... -D
+	system qq( ip addr add 10.13.13.1/24 dev $network->{if} );
+	system qq( ip route add 10.13.13.2/32 dev $network->{if} );
+
+	# dhcp
+	dhcp $network->{if}, '10.13.13.2,10.13.13.2';
+}
+
+sub net_post_hook_isolated {
+	my $network = shift;
+
+	# dhcp
+	dhcp_kill $network->{if};
+
+	# bridge
+	system qq( ip link set $network->{if} down);
+	system qq( brctl delbr $network->{if});
 }
 
 %NETWORKS = (
 	# needs_root, pre_hook, post_hook, netdev, device, dhcp_range
-	user     => { netdev => ['-netdev', "user,id=user"],
-	              device => ['-device', "$settings{netdriver},netdev=user"] },
-	restrict => { netdev => ['-netdev', 'user,id=restrict,restrict=on'],
-	              device => ['-device', "$settings{netdriver},netdev=restrict"] },
-	bridge   => { needs_root => 1, netdev => ['-netdev', "bridge,id=bridge"],
-	              device => ['-device', "$settings{netdriver},netdev=bridge"] },
+	user     => { netdev => ['-netdev', "user,id=%ID%"],
+	              device => ['-device', "$settings{netdriver},netdev=%ID%"] },
+	restrict => { netdev => ['-netdev', 'user,id=%ID%,restrict=on'],
+	              device => ['-device', "$settings{netdriver},netdev=%ID%"] },
+	isolated => { needs_root => 1, pre_hook => \&net_pre_hook_isolated, post_hook => \&net_post_hook_isolated,
+	              netdev => ['-netdev', "bridge,id=%ID%,br=%IF%"],
+	              device => ['-device', "$settings{netdriver},netdev=%ID%"] },
+	bridge   => { needs_root => 1, netdev => ['-netdev', "bridge,id=%ID%"],
+	              device => ['-device', "$settings{netdriver},netdev=%ID%"] },
 	tor      => { needs_root => 1, pre_hook => \&net_pre_hook_tor, post_hook => \&net_post_hook_tor,
-	              netdev => ['-netdev', 'bridge,id=tor,br=qemu-tor'], device => ['-device', "$settings{netdriver},netdev=tor"] },
-	#tap     => { needs_root => 1, netdev => ['-netdev', 'tap,id=net0'], device => ['-device', "$settings{netdriver},netdev=net0"] },
+	              netdev => ['-netdev', 'bridge,id=%ID%,br=%IF%'],
+                  device => ['-device', "$settings{netdriver},netdev=%ID%"] },
 	none     => { netdev => ['-net', 'none'], device => [] },
 	dump     => { netdev => ['-net', "dump,file=$vmdir/dump.pcap"] },
 );
@@ -341,6 +378,7 @@ my @networks = split /,/, $settings{networks};
 
 foreach my $network_raw (@networks) {
 	my ($network_name, @options) = split /:/, $network_raw;
+
 	my $network = $NETWORKS{$network_name};
 	if (!$network) {
 		die "invalid network: $network_name";
@@ -348,8 +386,18 @@ foreach my $network_raw (@networks) {
 	if ($network->{needs_root}) {
 		needs_root "network $network_name";
 	}
+
+	my $id = random_name 'net';
+	my $if = random_name "q$network_name";
+	$network->{if} = $if;
+
 	my @netdev = @{$network->{netdev}};
 	my @device = @{$network->{device}};
+	for (@netdev, @device) {
+		s/%ID%/$id/g;
+		s/%IF%/$if/g;
+	}
+
 	$netdev[-1] .= ',' . join ',', @options;
 	push @args, @netdev, @device;
 }
@@ -423,12 +471,13 @@ if (defined $settings{image}) {
 # -----------------------------------------------------------------------------
 # <META>
 # -----------------------------------------------------------------------------
+# TODO: fix this crap
 if (defined $settings{passon}) {
 	my @passon = split /:/, $settings{passon};
 	if (!$passon[0] =~ /^-/) {
 		$passon[0] = "-$passon[0]";
 	}
-	push @args, @passon; 
+	push @args, @passon;
 }
 # -----------------------------------------------------------------------------
 # </META>
@@ -444,7 +493,8 @@ foreach my $network_name (@networks) {
 
 	if ($network->{pre_hook}) {
 		say "running pre_hook for $network_name...";
-		&{$network->{pre_hook}};
+		# TODO: prettier way to do this?
+		&{$network->{pre_hook}}($network);
 	}
 }
 
@@ -462,6 +512,6 @@ foreach my $network_name (@networks) {
 
 	if ($network->{post_hook}) {
 		say "running post_hook for $network_name...";
-		&{$network->{post_hook}};
+		&{$network->{post_hook}}($network);
 	}
 }
