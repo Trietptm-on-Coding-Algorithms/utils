@@ -1,0 +1,7 @@
+#!/usr/bin/perl
+
+# TODO: actually parse stuff and do this correctly
+for (@ARGV) {
+	s/;;/\n/g;
+	print;
+}
