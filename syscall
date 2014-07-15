@@ -3,7 +3,7 @@
 # by paraxor
 
 # override with -a
-abi=$(uname -m)
+abi=`uname -m`
 
 die() {
 	echo >&2 "FATAL: $*"
@@ -27,12 +27,12 @@ while (( $# )) ; do
 	shift
 done
 
-[[ -z "$lookup" ]] && die 'do you like apples?'
+[ -z "$lookup" ] && die 'do you like apples?'
 
-if [[ $abi == x86_64 ]] ; then
+if [ $abi == x86_64 ] ; then
 	arch=64
 	macros='__SYSCALL_COMMON|__SYSCALL_64'
-elif [[ $abi == x32 ]] ; then
+elif [ $abi == x32 ] ; then
 	arch=64
 	macros='__SYSCALL_COMMON|__SYSCALL_X32'
 else
@@ -40,8 +40,8 @@ else
 	macros='__SYSCALL_I386'
 fi
 
-[[ -z "$file" ]] && file=/usr/lib/modules/$(uname -r)/build/arch/x86/include/generated/asm/syscalls_$arch.h
-[[ -r "$file" ]] || die "could not read '$file'"
+[ -z "$file" ] && file=/usr/lib/modules/`uname -r`/build/arch/x86/include/generated/asm/syscalls_$arch.h
+[ -r "$file" ] || die "could not read '$file'"
 
 if echo "$lookup" | grep -q '^[0-9]\+$' ; then
 	grep -E "($macros)\($lookup," "$file" | sed 's/^[^ ]\+ //; s/,.*//'
