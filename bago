@@ -1,5 +1,0 @@
-#!/bin/bash
-
-cd "$@"
-tmux split-window -h \; send-keys "batest" C-m \; select-pane -t 0 \;
-vim PKGBUILD

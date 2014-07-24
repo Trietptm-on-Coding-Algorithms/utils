@@ -1,17 +1,5 @@
-#!/bin/sh
+#!/bin/bash
+# Squeezes repeat blank lines and strips leading and trailing whitespace.
 
-if [ $# != 0 ] ; then
-	cd "$1"
-fi
-
-# This is somewhat dangerous.
-rm -f *.class *.o *.bin
-rm -f *.swp *.swo *~
-
-# This is even more dangerous.
-for tex_file in *.tex ; do
-	base=$(basename "$tex_file" .tex)
-	for ext in aux log dvi pdf idx out nav snm toc ; do
-		rm -f "$base.$ext"
-	done
-done
+sed -e 's/^[ \t]*//;s/[ \t]*$//' | cat -s
+# Why does cat even have this feature?  ^
