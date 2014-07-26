@@ -28,8 +28,9 @@ sub needs_root {
 my %PRESETS = (
 	archinstall    => { subdir => 'archinstall', display => 'curses', image => 'archinstall.iso' },
 	blackarch      => { subdir => 'blackarch', image => 'blackarch.iso' },
+	live           => { subdir => 'live', image => 'live.iso' },
 	tails          => { subdir => 'tails', cdrom => 'tails.iso' },
-	metasploitable => { subdir => 'metasploitable', image => 'metasploitable.iso' },
+	metasploitable => { subdir => 'metasploitable', maindisk => 1 },
 	# TODO: sort out virtio drivers for windows
 	'xp-home'      => { subdir => 'xp-home-sp1', maindisk => 1, iodriver => 'ide', kvm => 1, networks => 'none', netdriver => 'e1000' },
 	'xp-pro3'      => { subdir => 'xp-pro-sp3', maindisk => 1, iodriver => 'ide', kvm => 1, networks => 'none', netdriver => 'e1000' },
