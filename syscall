@@ -4,6 +4,8 @@
 
 # override with -a
 abi=`uname -m`
+# override with -t
+table_style=false
 
 die() {
 	echo >&2 "FATAL: $*"
@@ -19,6 +21,9 @@ while [ $# != 0 ] ; do
 		-f)
 			file=$2
 			shift
+			;;
+		-t)
+			table_style=true
 			;;
 		*)
 			lookup=$1
@@ -43,6 +48,7 @@ fi
 [ -z "$file" ] && file=/usr/lib/modules/`uname -r`/build/arch/x86/include/generated/asm/syscalls_$arch.h
 [ -r "$file" ] || die "could not read '$file'"
 
+$table_style && echo -n "$lookup "
 if echo "$lookup" | grep -q '^[0-9]\+$' ; then
 	sed -n "/^\($macros\)($lookup,/{ s/^[^ ]\+ //; s/,.*//; p }" "$file"
 else
