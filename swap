@@ -1,6 +1,8 @@
 #!/bin/sh
 # Swaps two files.
 
+[[ $# == 2 ]] || exit 1
+
 temp=$1.$RANDOM$RANDOM
 mv "$1" "$temp"
 mv "$2" "$1"
