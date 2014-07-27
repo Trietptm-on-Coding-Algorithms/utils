@@ -1,0 +1,41 @@
+#!/bin/sh
+
+remote_irc() {
+	if command -v irssi &> /dev/null ; then
+		irc=irssi
+	else
+		echo >&2 'no irssi'
+		return 1
+	fi
+
+	unset DISPLAY
+
+	while grep -q '%RANDOM%' "$tmp/.irssi/config" ; do
+		sed -i "0,/%RANDOM%/s/%RANDOM%/$(makepasswd --chars 8 --string 'abcdefghijklmnopqrstuvwxyz')/g" "$tmp/.irssi/config"
+	done
+
+	tmux attach-session -t irc 2> /dev/null ||
+	  tmux new-session -n irssi -s irc \; send-keys \
+	  "unset HISTFILE; HOME=$tmp $irc && exit" C-m "$@" && exit
+}
+
+we_started_ssh=false
+cleanup() {
+	$we_started_ssh && kill "$SSH_AGENT_PID" 2> /dev/null >&2
+}
+trap cleanup EXIT
+
+if [[ $1 == lcl ]] ; then
+	tmp=$HOME
+	remote_irc
+else
+	if [[ -z "$SSH_AGENT_PID" ]] ; then
+		we_started_ssh=true
+		eval $(ssh-agent)
+		ssh-add
+	fi
+
+	tmp=$(ssh irc 'mktemp -d /tmp/irssi.XXXXXX')
+	rsync -az "$HOME/.irssi" irc:$tmp
+	TERM=xterm-256color ssh -t irc "tmp=$tmp; $(declare -f remote_irc); remote_irc"
+fi
