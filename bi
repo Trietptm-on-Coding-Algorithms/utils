@@ -18,10 +18,10 @@ set() {
 }
 
 get() {
-	stdbuf -o0 xrandr --verbose | grep -m1 'Brightness:' | cut -d' ' -f2
+	stdbuf -o0 xrandr --verbose | awk '/Brightness/ { print $2; exit }'
 }
 
-screen=$(stdbuf -o0 xrandr | grep -m1 '[^ ]* connected' | sed 's/ connected.*//')
+screen=$(stdbuf -o0 xrandr | awk '/^[^ ]* connected/ { print $1; exit }')
 err "screen: $screen"
 
 case "$1" in
