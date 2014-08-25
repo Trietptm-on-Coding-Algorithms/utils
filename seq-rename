@@ -14,7 +14,7 @@ nfiles=$(( $# - 3 ))
 
 fn=1
 for file in "${files[@]}" ; do
-	mv "$file" "$prefix$(printf "%0${digits}d" $fn)"
+	mv "$file" "$prefix$(printf "%0${digits}d" $fn)$suffix"
 	(( fn++ ))
 done
 echo "$nfiles renamed"
