@@ -32,7 +32,9 @@ while [ $# != 0 ] ; do
 	shift
 done
 
-[ -z "$lookup" ] && die 'do you like apples?'
+if [ -z "$lookup" ] && !$table_style; then
+	die 'do you like apples?'
+fi
 
 if [ $abi == x86_64 ] ; then
 	arch=64
@@ -47,6 +49,11 @@ fi
 
 [ -z "$file" ] && file=/usr/lib/modules/`uname -r`/build/arch/x86/include/generated/asm/syscalls_$arch.h
 [ -r "$file" ] || die "could not read '$file'"
+
+if [ -z "$lookup" ] && $table_style; then
+	sed 's/.*(//; s/,[^,]*$//; s/,//' "$file"
+	exit
+fi
 
 $table_style && echo -n "$lookup "
 if echo "$lookup" | grep -q '^[0-9]\+$' ; then
