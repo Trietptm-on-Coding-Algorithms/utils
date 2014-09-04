@@ -1,21 +1,17 @@
 #!/bin/sh
 
 remote_irc() {
-	if command -v irssi &> /dev/null ; then
-		irc=irssi
+	if command -v weechat &> /dev/null ; then
+		irc=weechat
 	else
-		echo >&2 'no irssi'
+		echo >&2 'no weechat'
 		return 1
 	fi
 
 	unset DISPLAY
 
-	while grep -q '%RANDOM%' "$tmp/.irssi/config" ; do
-		sed -i "0,/%RANDOM%/s/%RANDOM%/$(makepasswd --chars 8 --string 'abcdefghijklmnopqrstuvwxyz')/g" "$tmp/.irssi/config"
-	done
-
 	tmux attach-session -t irc 2> /dev/null ||
-	  tmux new-session -n irssi -s irc \; send-keys \
+	  tmux new-session -n weechat -s irc \; send-keys \
 	  "unset HISTFILE; HOME=$tmp $irc && exit" C-m "$@" && exit
 }
 
@@ -25,7 +21,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-if [[ $1 == lcl ]] ; then
+if [[ $1 != rmt ]] ; then
 	tmp=$HOME
 	remote_irc
 else
@@ -35,7 +31,7 @@ else
 		ssh-add
 	fi
 
-	tmp=$(ssh irc 'mktemp -d /tmp/irssi.XXXXXX')
-	rsync -az "$HOME/.irssi" irc:$tmp
+	tmp=$(ssh irc 'mktemp -d /tmp/weechat.XXXXXX')
+	rsync -az "$HOME/.weechat" irc:$tmp
 	TERM=xterm-256color ssh -t irc "tmp=$tmp; $(declare -f remote_irc); remote_irc"
 fi
