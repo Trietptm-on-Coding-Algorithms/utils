@@ -1,10 +1,13 @@
 #!/bin/bash
 # Useful for quickly transferring data off of encrypted flashdrives.
 
-if [[ $# == 1 ]] ; then
-	cryptsetup open --type=tcrypt "$1" dat
-	mount /dev/mapper/dat /dat
+name=${2:-dat}
+
+if [[ $1 == close ]] ; then
+	umount "/dev/mapper/$name"
+	cryptsetup close "$name"
 else
-	umount /dev/mapper/dat
-	cryptsetup close dat
+	mkdir -p "/$name"
+	cryptsetup open --type=tcrypt "$1" "$name"
+	mount "/dev/mapper/$name" "/$name"
 fi
