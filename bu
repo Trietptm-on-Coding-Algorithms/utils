@@ -38,5 +38,5 @@ if $final ; then
 	mount -o ro,remount /home
 fi
 
-rsync -av --progress --fuzzy --delete-before --ignore-errors \
+rsync -av --progress --fuzzy --delete --ignore-errors \
   /home/ "$mnt_dir"
