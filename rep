@@ -1,0 +1,5 @@
+#!/bin/sh
+trap exit SIGINT
+while true ; do
+	eval "$@"
+done
