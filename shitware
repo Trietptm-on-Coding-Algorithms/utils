@@ -3,9 +3,9 @@
 thing=$1
 file=$HOME/notes/shitware
 
-if grep -q "$thing" "$file" ; then
+if grep -iq "$thing" "$file" ; then
 	echo
-	grep -h "$thing" "$file" | nl
+	grep -ih "$thing" "$file" | nl
 	echo
 	echo -n 'is it one of these (yN)? '
 	read ans
