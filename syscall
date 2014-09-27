@@ -32,7 +32,7 @@ while [ $# != 0 ] ; do
 	shift
 done
 
-if [ -z "$lookup" ] && !$table_style; then
+if [ -z "$lookup" ] && ! $table_style; then
 	die 'do you like apples?'
 fi
 
