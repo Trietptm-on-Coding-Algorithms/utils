@@ -7,10 +7,11 @@ if grep -iq "$thing" "$file" ; then
 	echo
 	grep -ih "$thing" "$file" | nl
 	echo
-	echo -n 'is it one of these (yN)? '
+	echo -n 'is it one of these (Yn)? '
 	read ans
 	case "$ans" in
-		y|Y) exit 1 ;;
+		n|N) ;;
+		*) echo >&2 'not adding.'; exit 1 ;;
 	esac
 fi
 	
