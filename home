@@ -6,6 +6,9 @@ set -e
 
 if=${1:-eth0}
 
+randomize_mac=false
+wifi_creds=/home/para/pass/wifi
+
 rand() {
 	hexdump -n  $(( $RANDOM % 13 + 4 )) /dev/urandom | head -n1 |
 	  sed 's/0//g; s/ //g'
@@ -81,25 +84,67 @@ EOF
 	sudo openvpn "$tmp/openvpn.conf"
 }
 
-setup_if() {
-	# TODO: uncomment
-	#sudo macchanger -r $if
-	# blackhole
+blackhole_route() {
 	echo 'adding blackhole route...'
-	#sudo ip r a default via 127.0.0.1 dev lo metric 0 ||:
+	sudo ip r a default via 127.0.0.1 dev lo metric 0 ||:
+}
+
+random_mac() {
+	local if=$1
+	sudo macchanger -r "$if"
+}
+
+setup_eth() {
+	local if=$1
+
 	echo 'starting dhcpcd'
 	sudo dhcpcd -4 -h $(rand) -i $(rand) -v ,$(rand) -I $(rand) $if
+
+	# get gateway
 	gw=$(arp -an | awk '{ print $2 }' | tr -d '()' | head -n1)
 	gw_mac=$(arp -an | awk '{ print $4 }' | tr -d '()' | head -n1)
+
 	echo 'cleaning default routes'
 	#sudo ip r d default dev eth0
 	#sudo ip r d default dev lo
-	echo "gateway: $gw $gw_mac"
+
+	echo "$if gateway: $gw $gw_mac"
 }
 
-set_static_arp() {
+setup_wifi() {
+	local if=$1
+	local id=$2
+
+	. "$wifi_creds"
+
+	if ! declare -f wifi_$if &> /dev/null ; then
+		die "unknown network: $id"
+	fi
+	wifi_$id
+}
+
+clean_default_routes() {
+	ip r | grep '^default ' |
+	xargs -n1
+	while read route ; do
+		ip r d $route
+	done
+}
+
+static_arp() {
 	sudo arp -s $gw $gw_mac
 }
 
-setup_if
-setup_vpn
+if $randomize_mac ; then
+	random_mac "$if"
+fi
+
+case "$if" in
+	eth*)
+		setup_eth "$if"
+		;;
+	wlan*)
+		setup_wifi "$if"
+		;;
+esac
+#setup_vpn
