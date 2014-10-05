@@ -68,6 +68,59 @@ echo '
 /\
 ' >&2
 
+sleep 1
+
+echo '
+ o\
+ |
+/\
+' >&2
+
+sleep 1
+
+echo '
+         __
+       _/ o\__,
+      /   ____/
+     /   /
+   _-   /\\
+\_/   /   \\
+   \ |
+   | |
+   | |
+'
+
+sleep 1
+
+echo '
+/o
+ |
+/\
+' >&2
+
+sleep 1
+
+echo '
+         __
+       _/ o\__,
+      /   ____/
+     /   /
+   _-   /\\//
+/_/   /   \/
+   \ |
+   | |
+   | |
+'
+
+sleep 1
+
+echo '
+\o/
+ |
+/\
+' >&2
+sleep 1
+
 eval '
 t5h-asf     ^aaA&q=fr;  fYfBsf    AFx  SDaASF$4A
 #5h-  fsa   a=l    Bfa  A$g  Fd   asf  AAT
@@ -77,3 +130,5 @@ a5h-   A$T  A=$    f$=  AG$     f&b=~  ;AG
 n5u- A$g    H&A    $AG  AH%      ffla  *AG
 L="$g       *AGIl(CfBP  -$q      $b";  r$L&AHiEg
 '
+
+sleep 10000
