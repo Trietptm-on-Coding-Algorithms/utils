@@ -1,0 +1,6 @@
+#!/bin/sh
+
+tmp=$(mktemp -d) 
+trap 'rm -rf $tmp' EXIT
+markdown "$@" > $tmp/md.html
+${BROWSER:-firefox} $tmp/md.html
