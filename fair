@@ -1,0 +1,46 @@
+#!/bin/bash
+# interactively determine a winner fairly without dependence on a third party
+# usage: fair <our name> [names of other players...]
+#
+# TODO: determine order of names fairly based on the sorted hashes of name+shared_value?
+
+declare -A evals
+declare -A vals
+
+n=$#
+
+us=$1
+shift
+
+if [[ $# == 0 ]] ; then
+	while read -rp 'player name: ' player ; do
+		players+=("$player")
+	done
+else
+	players=("$@")
+fi
+
+# the most significant digit is not statistically random. only the lower digits matter though
+vals[$us]=$(od -lN8 /dev/urandom | sed '2d; s/[^ ]\+\s*//; s/ //g; s/-//g')
+echo "secret value: ${vals[$us]}"
+echo -n "encrypted value (share this now): "
+echo ${vals[$us]} | openssl aes-256-cbc -pass pass:${vals[$us]} -a
+
+# gather encrypted values
+for player in "${players[@]}" ; do
+	read -rp "encrypted value for $player: " val
+	evals[$player]=$val
+done
+
+# verify the encrypted values
+for player in "${players[@]}" ; do
+	read -rp "value for $player: " val
+	if [[ $(echo ${evals[$player]} | openssl aes-256-cbc -pass pass:$val -a -d) != $val ]] ; then
+		echo "invalid value for $player!"
+	else
+		vals[$player]=$val
+	fi
+done
+
+res=$({ echo -n '('; printf '%s+' ${vals[@]}; echo "0) % $n"; } | bc)
+echo "result: $res"
