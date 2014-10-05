@@ -32,11 +32,9 @@ my %PRESETS = (
 	tails          => { subdir => 'tails', cdrom => 'tails.iso' },
 	metasploitable => { subdir => 'metasploitable', maindisk => 1 },
 	# TODO: sort out virtio drivers for windows
-	'xp-home'      => { subdir => 'xp-home-sp1', maindisk => 1, iodriver => 'ide', kvm => 1, networks => 'none', netdriver => 'e1000' },
-	'xp-pro3'      => { subdir => 'xp-pro-sp3', maindisk => 1, iodriver => 'ide', kvm => 1, networks => 'none', netdriver => 'e1000' },
-	'seven'        => { subdir => 'seven', maindisk => 1, iodriver => 'ide', kvm => 1, networks => 'none', netdriver => 'e1000' },
-	# TODO: let's start making simple application isolation VMs
-	#       maybe we can use user-mode networking with guestfwd
+	'xp-home'      => { subdir => 'xp-home-sp1', maindisk => 1, iodriver => 'ide', networks => 'none', netdriver => 'e1000' },
+	'xp-pro3'      => { subdir => 'xp-pro-sp3', maindisk => 1, iodriver => 'ide', networks => 'none', netdriver => 'e1000' },
+	'seven'        => { subdir => 'seven', maindisk => 1, iodriver => 'ide', netdriver => 'e1000' },
 );
 
 my %DEFAULTS = (
@@ -414,7 +412,7 @@ my $maindisk = "$vmdir/maindisk.qcow2";
 if ($settings{maindisk}) {
 	if (!-e $maindisk) {
 		if ($settings{makemain}) {
-			system 'qemu-img', 'create', '-f', 'qcow2', $maindisk, $settings{mainsize};
+			system qq( qemu-img create -f qcow2 $maindisk $settings{mainsize} );
 		} else {
 			die "maindisk ($maindisk) does not exist. use -C to create it."
 		}
@@ -425,25 +423,41 @@ if ($settings{maindisk}) {
 	# Handle snaplist command.
 	if (defined $opts{snaplist}) {
 		# TODO: test
-		system 'qemu-img', 'snapshot', '-l', $maindisk;
+		system qq( qemu-img snapshot -l $maindisk );
 		exit;
 	}
 
+	my $last_snap = `qemu-img snapshot -l $maindisk | tail -n1` =~ /^([0-9]+)/;
+
 	# Handle revert command.
-	# TODO: finish this
 	if (defined $opts{revert}) {
-		#my $snap;
-		#if ($opts{revert} eq '') {
-		#    $snap = ``;
-		#} else {
-		#    $snap = $opts{revert};
-		#}
-		## TODO: test
-		#for $snap (@snaps) {
-		#    system 'qemu-img', 'snapshot', '-a', $snap, $maindisk;
-		#}
-		#exit;
+		my $snap;
+
+		if ($opts{revert} eq '') {
+			$snap = $last_snap;
+		} else {
+		    $snap = $opts{revert};
+		}
+
+		for $snap ($snap + 1..$last_snap) {
+		    system qq( qemu-img snapshot -d $snap $maindisk );
+		}
+		exit;
 	}
+
+	# Handle snapapply command.
+	if (defined $opts{snapapply}) {
+		my $snap;
+
+		$snap = $opts{revert};
+
+		for $snap ($snap..$last_snap) {
+		    system qq( qemu-img snapshot -d $snap $maindisk );
+		}
+		exit;
+	}
+
+	system qq( qemu-img snapshot -c boot $maindisk );
 
 	# TODO: support device-specific iodrivers   e.g. /dev/sda:ide
 	push @args, '-drive', "file=$maindisk,cache=none,if=$settings{iodriver}"
