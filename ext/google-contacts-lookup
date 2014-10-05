@@ -1,7 +1,0 @@
-#!/bin/bash
-# From 'http://atechnologyjobisnoexcuse.com/2010/04/google-contacts-in-mutt-and-vim/'
-# Uses goobook to search for contacts. This can be used as a vim completion script.
-
-goobook query "$*" |
-sed -e '/^$/d' -e 's/\(.*\) \(.*\)\t.*/\1 \2/'\
-    -e 's/\(^\<.*\)\t\(.*\)/"\2" \<\1\>/'
