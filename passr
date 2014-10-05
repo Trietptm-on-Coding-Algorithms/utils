@@ -1,0 +1,25 @@
+#!/bin/bash
+
+enc ~/pass
+res=$(grep "[^ ]*$1" ~/pass/pass)
+nres=$(wc -l <<< "$res")
+
+if (( $nres > 1 )) ; then
+	mapfile -t results <<< "$res"
+	echo 'select one:'
+	for i in $(seq 1 ${#results[@]}) ; do
+		line=${results[$(( i - 1 ))]}
+		echo "$i: $(cut -d' ' -f1,2 <<< $line )"
+	done
+	echo -n '> '
+	read n
+	res=${results[$(( i - 1))]}
+elif (( $nres == 0 )) ; then
+	echo >&2 'no results!'
+	exit 1
+fi
+
+user=$(cut -d' ' -f2 <<< "$res")
+pass=$(cut -d' ' -f3 <<< "$res")
+echo "user: $user"
+xclip <<< $pass
