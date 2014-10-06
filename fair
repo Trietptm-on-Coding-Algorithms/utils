@@ -22,7 +22,6 @@ fi
 
 # the most significant digit is not statistically random. only the lower digits matter though
 vals[$us]=$(od -lN8 /dev/urandom | sed '2d; s/[^ ]\+\s*//; s/ //g; s/-//g')
-echo "secret value: ${vals[$us]}"
 echo -n "encrypted value (share this now): "
 echo ${vals[$us]} | openssl aes-256-cbc -pass pass:${vals[$us]} -a
 
@@ -33,6 +32,7 @@ for player in "${players[@]}" ; do
 done
 
 # verify the encrypted values
+echo "secret value (share this now): ${vals[$us]}"
 for player in "${players[@]}" ; do
 	read -rp "value for $player: " val
 	if [[ $(echo ${evals[$player]} | openssl aes-256-cbc -pass pass:$val -a -d) != $val ]] ; then
