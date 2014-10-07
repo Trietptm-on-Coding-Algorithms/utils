@@ -1,7 +1,8 @@
 #!/bin/sh
 
 list=$1
-thing=$2
+shift
+thing=$*
 file=$HOME/notes/$list
 
 if grep -iq "$thing" "$file" ; then
