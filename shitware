@@ -1,7 +1,8 @@
 #!/bin/sh
 
-thing=$1
-file=$HOME/notes/shitware
+list=$1
+thing=$2
+file=$HOME/notes/$list
 
 if grep -iq "$thing" "$file" ; then
 	echo
@@ -15,5 +16,5 @@ if grep -iq "$thing" "$file" ; then
 	esac
 fi
 	
-echo >&2 "adding '$thing' to shitware list..."
+echo >&2 "adding '$thing' to $list list..."
 echo "$thing" >> "$file"
