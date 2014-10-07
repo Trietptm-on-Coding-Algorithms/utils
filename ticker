@@ -1,0 +1,8 @@
+#!/usr/bin/perl
+
+my $n = 0;
+
+while (<STDIN>) {
+	$n++;
+	print "$n\n";
+}
