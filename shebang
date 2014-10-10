@@ -1,0 +1,11 @@
+#!/usr/bin/perl
+# Allows you to pass more arguments in on a shebang line
+
+my ($arg, $file) = @ARGV;
+my $sep = substr $arg, 0, 1;
+
+my @args = split /$sep/, $arg;
+shift @args;
+push @args, $file;
+pop @args;
+exec (@args);
