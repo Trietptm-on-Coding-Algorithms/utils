@@ -7,4 +7,3 @@ trap "rm -rf '$tmp'" EXIT
 
 calibredb add "--library-path=$tmp" "$@"
 calibre "--with-library=$tmp"
-#calibre "--library-path=$tmp" add "$@"
