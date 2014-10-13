@@ -1,8 +1,20 @@
 #!/bin/bash
 
-enc ~/pass
-res=$(grep "[^ ]*$1" ~/pass/pass)
+# override with -c
+xselection=primary
+dir=$HOME/pass
+
+enc "$dir"
+pattern=$1
+shift
+res=$(grep "[^ ]*$pattern" "$dir/pass")
 nres=$(wc -l <<< "$res")
+
+for arg ; do
+	case "$arg" in
+		-c) xselection=clipboard ;;
+	esac
+done
 
 if (( $nres > 1 )) ; then
 	mapfile -t results <<< "$res"
@@ -22,4 +34,4 @@ fi
 user=$(cut -d' ' -f2 <<< "$res")
 pass=$(cut -d' ' -f3 <<< "$res")
 echo "user: $user"
-xclip <<< $pass
+xclip -selection $xselection <<< $pass
