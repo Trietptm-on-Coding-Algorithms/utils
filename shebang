@@ -1,12 +1,13 @@
 #!/usr/bin/perl
-# Allows you to pass more arguments in on a shebang line
+# Allows you to pass multiple arguments in on a shebang line.
 
-my ($arg, $file) = @ARGV;
-my $sep = substr $arg, 0, 1;
+use warnings;
+use strict;
 
-my @args = split /$sep/, $arg;
+my ($split, @other_args) = @ARGV;
+my $sep = substr $split, 0, 1;
+
+my @args = split /$sep/, $split;
 shift @args;
-if (defined $file) {
-	push @args, $file;
-}
+push @args, @other_args;
 exec (@args);
