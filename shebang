@@ -6,6 +6,7 @@ my $sep = substr $arg, 0, 1;
 
 my @args = split /$sep/, $arg;
 shift @args;
-push @args, $file;
-pop @args;
+if (defined $file) {
+	push @args, $file;
+}
 exec (@args);
