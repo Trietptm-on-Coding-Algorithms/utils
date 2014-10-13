@@ -1,8 +1,50 @@
 #!/bin/bash
 # Interactively determine a winner fairly without dependence on a third party
+#
 # usage: fair <our name> [names of other players...]
+# (interactive)
+#
+# problem/story:
+#
+# A friend was giving away his old GPUs on IRC. He called out to the channel,
+# asking for those interested to step forward. Four people expressed their
+# interest. A coin flip tournament seemed to be an ideal solution at the time.
+# But who was to flip the coin? It was decided that the host of the giveaway
+# would flip the coin. An irssi hook was written that caused the host to call
+# out 'Flip: Heads!' or 'Flip: Tails!' whenever somebody yelled '!flip'.
+#
+# Although the host would have little reason to rig the drawing, I was inspired
+# to come up with a simple way to determine a random drawing winner fairly
+# without dependence on on a third party. This script is what I came up with.
+#
+# theory/procedure:
+#
+# A list of players is created with associated numbers 0 through n - 1 where n
+# is the number of players. Example:
+#
+#     0 alice
+#     1 bob
+#     2 carthy
+#
+# Each player contributes a number to a pool of entropy. It is probably in the
+# player's best interest to use a random number.
+#
+#     e = v_1 + v_2 + ... + v_n
+#
+# The winning player is selected like so:
+#
+#     i = e mod n
+#     select player with ID i from list
+#
+# All calculations are performed by all players. In order to prevent players
+# from knowing others' numbers before they select their number, number sharing
+# is a two-stage process. First, all players share their numbers encrypted with
+# keys derived from the numbers themselves. Then players share their numbers.
+# Other players' numbers are verified by decrypting and verifying the shared
+# encrypted numbers.
 #
 # TODO: determine order of names fairly based on the sorted hashes of name+shared_value?
+#       (some people prefer lucky IDs/spots)
 #
 # by Evan Teitelman <teitelmanevan@gmail.com>
 
