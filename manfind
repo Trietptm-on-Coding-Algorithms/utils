@@ -2,4 +2,4 @@
 # Find something in manpages
 # by Evan Teitelman <teitelmanevan@gmail.com>
 
-find . -type f -exec zgrep -H "$*" {} \;
+find /usr/share/man/man? -type f -exec zgrep -H "$*" {} \;
