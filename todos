@@ -3,4 +3,4 @@
 # by Evan Teitelman <teitelmanevan@gmail.com>
 
 # TODO: expand this script's functionality
-grep -Er '(TODO|FIXME):'
+grep -Er '(TODO|FIXME|XXX):'
