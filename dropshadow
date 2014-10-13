@@ -1,8 +1,9 @@
 #!/bin/bash
 # Adds a dropshadow to the image
-# -background white for .jpgs
-# -background none for others
-# Based on https://github.com/stnly/scripts/blob/master/ardshdw
+# - background white for .jpgs
+# - background none for others
+# Modified from https://github.com/stnly/scripts/blob/master/ardshdw
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 in=$1
 out=$(echo "$1" | sed -e 's/.\(jpg\|jpeg\|png\|tif\)$//i')-shadow.$(echo "$1" | sed -e 's/.*.\(jpg\|jpeg\|png\|tif\)$/\1/i')

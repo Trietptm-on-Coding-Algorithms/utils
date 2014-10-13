@@ -1,4 +1,7 @@
 #!/bin/bash
+# Give a screenful of text
+# TODO make this not suck
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 tmp=$(mktemp -d)
 trap "rm -rf $tmp" EXIT

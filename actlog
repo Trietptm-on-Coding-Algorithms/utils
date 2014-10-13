@@ -1,4 +1,6 @@
 #!/bin/bash
+# Creates an action log with timestamp
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 file=${1:-act.log}
 

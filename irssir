@@ -1,5 +1,6 @@
 #!/bin/bash
 # A light wrapper around irssi to handle configuration.
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 tmp=$(mktemp /tmp/irssi.XXXXXX)
 trap "rm $tmp" EXIT

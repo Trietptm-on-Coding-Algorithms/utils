@@ -1,5 +1,8 @@
 #!/bin/bash
+# Continuously search for drives
+# TODO: just use udev
 # Probably has to run as root.
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 sleep=1
 

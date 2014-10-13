@@ -1,4 +1,6 @@
 #!/bin/sh
+# Add a note to a list
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 list=$1
 shift

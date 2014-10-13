@@ -1,8 +1,13 @@
 #!/bin/bash
+# Get sorted disk usage
+# usage: du-sorted [files]
+# If no files are specified, all files in the current directory are checked
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 if [[ $# = 0 ]] ; then
 	files=(*)
 else
 	files=("$@")
 fi
-paste -d$'\t' <(du -s "${files[@]}") <(du -hs "${files[@]}") | sort -n | cut -d$'\t' -f3-
+paste -d$'\t' <(du -s "${files[@]}") <(du -hs "${files[@]}") | sort -n |
+  cut -d$'\t' -f3-

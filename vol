@@ -1,5 +1,7 @@
 #!/bin/bash
-# A wrapper around alsamixer
+# alsamixer/amixer wrapper
+# by Evan Teitelman <teitelmanevan@gmail.com>
+
 if [[ $# == 0 ]] ; then
 	# use the gui
 	alsamixer

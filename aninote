@@ -1,4 +1,6 @@
 #!/bin/sh
+# Makes aninote URLs
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 usage() {
 	cat <<EOF

@@ -1,4 +1,6 @@
 #!/bin/bash
+# Modify remote URLs in bulk
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 usage() {
 	cat >&2 <<USAGE

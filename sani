@@ -1,3 +1,6 @@
 #!/bin/sh
+# Sanitize stdin (strips terminal escape sequences)
+# Based on an hour-long test (sani < /dev/urandom), this works quite well.
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g"

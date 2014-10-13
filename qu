@@ -1,5 +1,6 @@
 #!/bin/bash
 # Queues files for some action.
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 queue=/tmp/queue
 mkdir -p "$queue"

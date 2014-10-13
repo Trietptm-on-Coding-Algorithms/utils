@@ -1,4 +1,6 @@
 #!/bin/bash
+# Trash things
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 # trash
 trash_dir="$HOME/.trash"

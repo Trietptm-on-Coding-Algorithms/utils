@@ -1,4 +1,6 @@
 #!/bin/bash
+# Dump things from phone
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 host=${1:-dark@192.168.1.5}
 mount=$HOME/phone

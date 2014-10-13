@@ -1,4 +1,6 @@
 #!/usr/bin/env perl
+# Permutate a string in all possible ways
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 use strict;
 

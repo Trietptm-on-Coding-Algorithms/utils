@@ -1,4 +1,6 @@
 #!/bin/sh
+# Backup /home
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 set -e -u
 

@@ -1,4 +1,6 @@
 #!/bin/bash
+# Changes X brightness
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 default_inc=0.1
 

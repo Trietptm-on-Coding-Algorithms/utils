@@ -1,4 +1,6 @@
 #!/bin/bash
+# List files untouched by a person
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 file=$1
 person=$2

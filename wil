@@ -1,4 +1,6 @@
 #!/bin/sh
+# Wild card
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 pattern=$1
 shift

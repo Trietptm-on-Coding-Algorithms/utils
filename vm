@@ -7,6 +7,7 @@
 # TODO: NAT? http://wiki.qemu.org/Documentation/Networking/NAT
 # TODO: no-persist mode
 # https://www.suse.com/documentation/sles11/book_kvm/?page=/documentation/sles11/book_kvm/data/cha_qemu_running_networking.html
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 use strict;
 use warnings;

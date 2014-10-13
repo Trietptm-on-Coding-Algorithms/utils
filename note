@@ -1,4 +1,7 @@
 #!/bin/bash
+# Make a note
+# by Evan Teitelman <teitelmanevan@gmail.com>
+
 note_file="$HOME/.notes"
 
 if (( $# == 0 )); then

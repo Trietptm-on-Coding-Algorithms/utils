@@ -6,6 +6,7 @@
 #   -f?  field number
 # TODO: trimming
 # TODO: ranges
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 delim=$'\t'
 

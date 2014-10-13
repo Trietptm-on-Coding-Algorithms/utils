@@ -1,4 +1,7 @@
 #!/bin/bash
+# Turn text into LaTeX
+# TODO handle quotation marks and such
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 # Print the beginning of the document
 echo '\documentclass{article}'

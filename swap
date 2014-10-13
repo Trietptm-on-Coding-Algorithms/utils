@@ -1,5 +1,6 @@
 #!/bin/sh
 # Swaps two files.
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 [[ $# == 2 ]] || exit 1
 

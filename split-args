@@ -1,4 +1,5 @@
 #!/bin/bash
 # Splits the arguments passed into lines
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 printf '%s\n' "$@"

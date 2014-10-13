@@ -1,4 +1,6 @@
 #!/bin/bash
+# Sets the backlight
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 # Exit if no arguments
 (( $# == 0 )) && exit 1

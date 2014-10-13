@@ -1,5 +1,6 @@
 #!/bin/bash
-# This is a wrapper to use the Garmin Colorado with gpsd.
+# Wrapper to use the Garmin Colorado with gpsd.
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 cleanup() {
 	rm -f "$temp"

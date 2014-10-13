@@ -1,9 +1,11 @@
 #!/bin/bash
+# youtube-dl wrapper
 # usage: youtube <url> <args> -- <mplayer_args>
 #   -a   only play audio
 #   -f   download entire video
 #   -n   use a named pipe to download the video
 #   --   begin passing to mplayer(1)
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 full=false
 named_pipe=false

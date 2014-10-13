@@ -1,4 +1,6 @@
 #!/bin/sh
+# Poll a site
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 site=$1
 shift

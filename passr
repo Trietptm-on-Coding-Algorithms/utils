@@ -1,4 +1,6 @@
 #!/bin/bash
+# Get passwords from a list
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 # override with -c
 xselection=primary

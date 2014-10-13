@@ -1,5 +1,6 @@
 #!/bin/bash
 # freenode/##linux joke.
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 case "$1" in
 	tunnel)

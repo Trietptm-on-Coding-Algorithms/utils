@@ -1,8 +1,10 @@
 #!/bin/bash
-# interactively determine a winner fairly without dependence on a third party
+# Interactively determine a winner fairly without dependence on a third party
 # usage: fair <our name> [names of other players...]
 #
 # TODO: determine order of names fairly based on the sorted hashes of name+shared_value?
+#
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 declare -A evals
 declare -A vals

@@ -1,5 +1,6 @@
 #!/bin/bash
 # Displays a list of file names and use dates sorted from most recently used to least recently used
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 if [[ $# = 0 ]] ; then
 	echo "No files specified."

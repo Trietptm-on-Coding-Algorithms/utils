@@ -2,6 +2,7 @@
 # Makes a drive or partition dump.
 # Filesystem first. Image second.
 # Also gathers info about the device through udev.
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 umask 077
 

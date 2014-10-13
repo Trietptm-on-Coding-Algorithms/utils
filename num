@@ -1,4 +1,6 @@
 #!/usr/bin/env perl
+# Compute things
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 use v5.18;
 use strict;

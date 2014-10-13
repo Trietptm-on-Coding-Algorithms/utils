@@ -9,6 +9,8 @@
 # path of the file that the "file" link points to. If the "-f" flag is
 # passed to `qln`, all of the links after it will be created regardless
 # of whether or not they already exist.
+#
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 link_dir="$HOME/ql"
 force=false

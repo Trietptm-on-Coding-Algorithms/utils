@@ -1,4 +1,6 @@
 #!/bin/bash
+# rot13 strings
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 do_rot13() {
 	tr '[a-m][n-z][A-M][N-Z]' '[n-z][a-m][N-Z][A-M]'

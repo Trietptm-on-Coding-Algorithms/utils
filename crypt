@@ -1,5 +1,7 @@
 #!/bin/bash
+# cryptsetup wrapper
 # Useful for quickly transferring data off of encrypted flashdrives.
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 name=${2:-dat}
 

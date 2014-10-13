@@ -1,6 +1,8 @@
 #!/bin/bash
 # Retrieves packages in a list file from a mirror
 # It's a bit brute, but it works
+# by Evan Teitelman <teitelmanevan@gmail.com>
+
 url="http://us.mirror.archlinuxarm.org/arm"
 repos="core extra community"
 types="any arm"

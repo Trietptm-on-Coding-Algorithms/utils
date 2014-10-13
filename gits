@@ -1,6 +1,7 @@
 #!/bin/bash
 # Finds all git repositories below a specified directory
 # If no directory is specified, the cwd is used.
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 if [[ $# = 0 ]] ; then
 	dir=.

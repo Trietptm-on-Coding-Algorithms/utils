@@ -1,4 +1,8 @@
 #!/bin/bash
+# Colorize ss output
+# TODO improve
+# by Evan Teitelman <teitelmanevan@gmail.com>
+
 color_red=$'\e[0;31m'
 color_green=$'\e[0;32m'
 color_yellow=$'\e[0;33m'

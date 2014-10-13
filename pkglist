@@ -1,4 +1,6 @@
 #!/bin/bash
+# Handle a package list
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 do_all() {
 	sed -n -e '/^\t[^\t]/s/^\t//p' "$1" | sed 's/^-//'

@@ -1,4 +1,6 @@
 #!/bin/sh
+# Sends email alerts
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 for arg ; do
 	case "$arg" in

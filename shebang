@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 # Allows you to pass multiple arguments in on a shebang line.
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 use warnings;
 use strict;

@@ -1,3 +1,5 @@
 #!/bin/sh
+# Find an object by its associated filename or hash
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 git rev-list --all --objects | grep "$@"

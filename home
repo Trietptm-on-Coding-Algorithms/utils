@@ -1,6 +1,8 @@
 #!/bin/bash
+# Network config
 # TODO: merge in wpa_sup stuff
 # TODO: improve args
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 set -e
 

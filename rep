@@ -1,4 +1,7 @@
 #!/bin/sh
+# Repeat something over and over again
+# by Evan Teitelman <teitelmanevan@gmail.com>
+
 trap exit SIGINT
 while true ; do
 	eval "$@"

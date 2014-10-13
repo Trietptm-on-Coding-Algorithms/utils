@@ -1,3 +1,5 @@
 #!/bin/sh
+# Send to sprunge
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 curl -sF 'sprunge=<-' http://sprunge.us | tee /dev/stderr | xclip

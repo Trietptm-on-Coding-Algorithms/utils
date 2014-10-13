@@ -1,4 +1,6 @@
 #!/bin/bash
+# Run a command for each file in the CWD
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 for f in * ; do
 	"$@" "$f"

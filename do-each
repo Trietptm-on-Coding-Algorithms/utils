@@ -1,5 +1,6 @@
 #!/bin/bash
 # Performs a command within each directory passed
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 cmd=()
 dir_time=false

@@ -1,4 +1,6 @@
 #!/bin/bash
+# Handle URLs
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 term=st
 

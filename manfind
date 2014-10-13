@@ -1,3 +1,5 @@
 #!/bin/bash
+# Find something in manpages
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 find . -type f -exec zgrep -H "$*" {} \;

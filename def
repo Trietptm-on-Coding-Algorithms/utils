@@ -1,5 +1,6 @@
 #!/bin/sh
 # Gets a word definition from dict.org
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 if [ "$1" = '-h' ] ; then
 	cat <<EOF

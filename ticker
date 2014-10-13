@@ -1,4 +1,6 @@
 #!/usr/bin/perl
+# Ticker
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 my $n = 0;
 

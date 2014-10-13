@@ -2,4 +2,5 @@
 # View the latest xkcd.
 # Taken from https://github.com/stnly/scripts/blob/master/xkcd.
 
-curl -s http://xkcd.com/ | tee >(feh $(grep -Po '(?<=")http://imgs[^/]+/comics/[^"]+\.\w{3}')) | grep -Po '(?<=(\w{3})" title=").*(?=" alt)';
+curl -s http://xkcd.com/ |
+tee >(feh $(grep -Po '(?<=")http://imgs[^/]+/comics/[^"]+\.\w{3}')) | grep -Po '(?<=(\w{3})" title=").*(?=" alt)';

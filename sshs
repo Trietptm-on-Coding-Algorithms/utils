@@ -1,3 +1,5 @@
 #!/bin/sh
+# ssh with single master
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 ssh -o 'ControlMaster auto' -o 'ControlPath ~/.ssh/control:%h:%p:%r' -T "$@" /bin/bash

@@ -1,5 +1,6 @@
 #!/bin/bash
 # Encapsulates the windows version of eagle.
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 eagle='c:\Program Files\eagle\bin\eagle.exe'
 # disown

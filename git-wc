@@ -1,5 +1,6 @@
 #!/bin/bash
 # Prints line, word, and byte counts for commits in log format.
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 long=false
 

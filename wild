@@ -1,4 +1,8 @@
 #!/bin/sh
+# Wild card move to directory
+# example: 'wild aaa' moves all files with 'aaa' in their names to a directory
+#          named 'aaa'
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 if test "$2" ; then
 	mkdir -- "$2" 2> /dev/null

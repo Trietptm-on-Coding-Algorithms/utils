@@ -1,6 +1,6 @@
 #!/bin/sh
 # syscall lookup
-# by paraxor
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 # override with -a
 abi=`uname -m`

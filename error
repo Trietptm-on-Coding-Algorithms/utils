@@ -1,3 +1,5 @@
 #!/bin/sh
+# Print to stderr
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 echo >&2 "$@"

@@ -1,4 +1,6 @@
 #!/bin/sh
+# Poll a site, complain on IRC if it dies
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 wait_success=60
 wait_failure=3600

@@ -1,3 +1,5 @@
 #!/bin/sh
+# Echo data read on stdin, handle shell metacharacters with eval
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 eval echo $(cat)

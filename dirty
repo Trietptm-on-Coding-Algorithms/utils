@@ -1,5 +1,6 @@
 #!/bin/bash
 # Checks for dirty working directories or unpushed commits in git repositories
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 # Only checks these remotes
 remotes=(origin locserv github googlecode)

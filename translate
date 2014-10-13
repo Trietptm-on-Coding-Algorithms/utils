@@ -1,5 +1,7 @@
 #!/bin/bash
+# Translate with translate.google.com
 # Based one something I found online.
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 default_target=en
 

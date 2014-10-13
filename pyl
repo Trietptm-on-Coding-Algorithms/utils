@@ -1,6 +1,8 @@
 #!/usr/bin/perl
-
+# Single-line python
 # TODO: actually parse stuff and do this correctly
+# by Evan Teitelman <teitelmanevan@gmail.com>
+
 for (@ARGV) {
 	s/;;/\n/g;
 	print;

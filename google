@@ -1,5 +1,6 @@
 #!/bin/zsh
 # Opens browser with google link to search term
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 # Encodes url
 url-encode() {

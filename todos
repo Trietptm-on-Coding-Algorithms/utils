@@ -1,5 +1,6 @@
 #!/bin/bash
-# Finds todo listings in code.
+# Finds TODOs
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 # TODO: expand this script's functionality
 grep -Er '(TODO|FIXME):'

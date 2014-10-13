@@ -1,9 +1,15 @@
 #!/usr/bin/env perl
+# Perform caesar shifts
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 use strict;
 
 sub usage {
-	die 'usage: ceaser <string> [shifts,...]'
+	die <<USAGE;
+usage: ceaser <string> [shifts,...]
+
+Multiple shifts are separated with commas. Ranges are specified with hyphens.
+USAGE
 }
 
 usage if $#ARGV < 0;

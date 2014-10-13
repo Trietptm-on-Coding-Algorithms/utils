@@ -1,4 +1,9 @@
 #!/usr/bin/env perl
+# Mutate characters
+# usage: mutchar <str> <expr>
+# example: $ mutchar abcd +5
+#          fghi
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 use strict;
 

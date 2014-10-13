@@ -1,4 +1,6 @@
 #!/bin/sh
+# Test shellcode
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 sc=$1
 

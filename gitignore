@@ -1,4 +1,6 @@
 #!/bin/bash
+# Get a gitignore file
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 basedir=$HOME/ecod/gitignore
 

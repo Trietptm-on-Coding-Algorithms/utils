@@ -1,4 +1,6 @@
 #!/bin/bash
+# From privateinternetaccess.com
+
 json=$(curl -s 'http://privateinternetaccess.com/vpninfo/servers?version=24' | head -n1)
 python2 <<EOF | column -ts$'\t'
 import json

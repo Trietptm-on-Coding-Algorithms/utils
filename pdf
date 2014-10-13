@@ -1,6 +1,7 @@
 #!/bin/bash
 # Opens some specified ($1) number of pdfs from ~/ela sorted by modification time.
 # Opens one pdf by default.
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 dir=$HOME/ela
 pdf_viewer=zathura

@@ -1,4 +1,6 @@
 #!/bin/bash
+# Kindle management
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 mnt=/mnt/kindle
 do_umount=true

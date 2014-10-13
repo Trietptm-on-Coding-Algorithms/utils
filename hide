@@ -1,5 +1,6 @@
 #!/bin/sh
 # Hides a file.
 # TODO: unhide as well
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 mv "$1" ".$1"

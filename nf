@@ -1,5 +1,6 @@
 #!/bin/bash
 # Normalizes file names.
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 if [[ $# == 0 ]] ; then
 	echo >&2 "No files specified."

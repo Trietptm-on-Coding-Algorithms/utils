@@ -1,1 +1,5 @@
+#!/bin/sh
+# Grab SSL info
+# by Evan Teitelman <teitelmanevan@gmail.com>
+
 echo -n | openssl s_client -connect "${1}:${2:-443}"

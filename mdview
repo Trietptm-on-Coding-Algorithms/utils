@@ -1,4 +1,6 @@
 #!/bin/sh
+# View markdown in a browser
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 tmp=$(mktemp -d) 
 trap 'rm -rf $tmp' EXIT

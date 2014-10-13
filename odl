@@ -1,4 +1,6 @@
 #!/usr/bin/perl
+# od -c with line splits
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 while (<>) {
 	chomp;

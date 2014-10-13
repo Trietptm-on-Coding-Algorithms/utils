@@ -1,4 +1,6 @@
 #!/bin/sh
+# Converts numbers between bases
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 if test "$3" ; then
 	echo "obase=$3; ibase=$2; $1" | bc

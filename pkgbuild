@@ -1,4 +1,6 @@
 #!/bin/bash
+# Output pkgbuild templates
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 case "$1" in
 	contained)

@@ -1,5 +1,7 @@
 #!/bin/bash
 # Squeezes repeat blank lines and strips leading and trailing whitespace.
+# TODO: do more things
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 sed -e 's/^[ \t]*//;s/[ \t]*$//' | cat -s
 # Why does cat even have this feature?  ^

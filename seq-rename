@@ -1,5 +1,6 @@
 #!/bin/bash
 # Sequentially renames files with a prefix, suffix, and zero-padded numbers
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 if (( $# <= 2 )) ; then
 	echo "usage: $(basename $0) <prefix> <suffix> <minimum number of digits> [<files>]"

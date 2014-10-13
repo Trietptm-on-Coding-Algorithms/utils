@@ -1,5 +1,6 @@
 #!/bin/bash
-# Runs a separate rsync command for each file being transferred.
+# Runs a separate rsync command for each file being transferred in parallel
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 src="$1"
 server="$2"

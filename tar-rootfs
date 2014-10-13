@@ -1,6 +1,7 @@
 #!/bin/sh
 # Tars up a root filesystem.
 # usage: tar-rootfs <file.tar.gz> <rootfs>
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
 # tar
 tar -cvpzf "$2"          \
