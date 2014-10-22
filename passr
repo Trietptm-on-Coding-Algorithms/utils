@@ -28,7 +28,7 @@ if (( $nres > 1 )) ; then
 	echo -n '> '
 	read n
 	res=${results[$(( n - 1))]}
-elif (( $nres == 0 )) ; then
+elif (( $nres == 1 )) ; then
 	echo >&2 'no results!'
 	exit 1
 fi
