@@ -1,29 +1,57 @@
-#!/bin/bash
-# Extracts various archives
+#!/bin/sh
+# Extract various archives
+# by Evan Teitelman <teitelmanevan@gmail.com>
 
-if [[ $# = 0 ]] ; then
-	echo "No file specified."
+err() {
+	echo >&2 "$*"
+}
+
+die() {
+	err "$*"
 	exit 1
-fi
+}
 
-if [[ ! -f "$1" ]] ; then
-    echo "'$1' does not exist."
-    exit 1
-fi
+ndirs() {
+	dir=$1
+	set -- "$dir"/*
+	echo $#
+}
 
-case "$1" in
-    *.tar.bz2)   tar xvjf "$1"   ;;
-    *.tar.xz)    tar xvJf "$1"   ;;
-    *.tar.gz)    tar xvzf "$1"   ;;
-    *.bz2)       bunzip2 "$1"    ;;
-    *.rar)       rar x "$1"      ;;
-    *.gz)        gunzip "$1"     ;;
-    *.tar)       tar xvf "$1"    ;;
-    *.tbz2)      tar xvjf "$1"   ;;
-    *.tgz)       tar xvzf "$1"   ;;
-    *.zip)       unzip "$1"      ;;
-    *.Z)         uncompress "$1" ;;
-    *.7z)        7z x "$1"       ;;
-    *.a)         ar x "$1"       ;;
-    *)           echo "Unable to extract '$1'." ;;
-esac
+shift_dirs() {
+	dir=$1
+	subdir=$(find "$dir" -maxdepth 1 -type d)
+	while [ $(ndirs) ; do
+
+	done
+}
+
+[ $# = 0 ] && die "No file specified."
+[ -f "$1" ] || die "'$1' does not exist."
+
+tmp=$(mktemp -d)
+trap 'rm -rf $tmp' EXIT
+
+for arg ; do
+	mkdir -p "$tmp/$arg.d"
+	cp "$arg" "$tmp/$arg.d"
+	(
+	cd "$tmp/$arg.d"
+	case "$arg" in
+		*.tar.bz2)      tar xvjf "$arg"   ;;
+		*.tar.xz)       tar xvJf "$arg"   ;;
+		*.tar.gz|*.tgz) tar xvzf "$arg"   ;;
+		*.bz2)          bunzip2 "$arg"    ;;
+		*.rar)          unrar x "$arg"    ;;
+		*.gz)           gunzip "$arg"     ;;
+		*.tar)          tar xvf "$arg"    ;;
+		*.tbz2)         tar xvjf "$arg"   ;;
+		*.zip)          unzip "$arg"      ;;
+		*.Z)            uncompress "$arg" ;;
+		*.7z)           7z x "$arg"       ;;
+		*.a)            ar x "$arg"       ;;
+		*)              err "Unable to extract '$arg'." ;;
+	esac
+	)
+	shift_dirs "$tmp/$arg.d"
+done
+# vim: set ft=zsh:
