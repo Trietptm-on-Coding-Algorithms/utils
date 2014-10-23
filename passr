@@ -10,6 +10,10 @@ enc "$dir"
 pattern=$1
 shift
 res=$(grep "[^ ]*$pattern" "$dir/pass")
+if [[ -z "$res" ]] ; then
+	echo >&2 'no results!'
+	exit 1
+fi
 nres=$(wc -l <<< "$res")
 
 for arg ; do
@@ -28,9 +32,6 @@ if (( $nres > 1 )) ; then
 	echo -n '> '
 	read n
 	res=${results[$(( n - 1))]}
-elif (( $nres == 1 )) ; then
-	echo >&2 'no results!'
-	exit 1
 fi
 
 user=$(cut -d' ' -f2 <<< "$res")
