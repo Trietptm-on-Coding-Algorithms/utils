@@ -1,0 +1,10 @@
+#!/bin/sh
+# Thin wrapper around dhcpcd
+# By Evan Teitelman
+
+rand() {
+	hexdump -n  $(( $RANDOM % 13 + 4 )) /dev/urandom | head -n1 |
+	sed 's/0//g; s/ //g'
+}
+
+sudo dhcpcd -4 -h $(rand) -i $(rand) -v ,$(rand) -I $(rand) "$@"
