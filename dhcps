@@ -7,4 +7,4 @@ rand() {
 	sed 's/0//g; s/ //g'
 }
 
-sudo dhcpcd -4 -h $(rand) -i $(rand) -v ,$(rand) -I $(rand) "$@"
+sudo dhcpcd -4 --nohook=10-wpa_supplicant -h $(rand) -i $(rand) -v ,$(rand) -I $(rand) "$@"
