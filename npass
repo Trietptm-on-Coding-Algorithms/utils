@@ -1,0 +1,6 @@
+#!/bin/bash
+
+enc "$HOME/pass"
+pass=$(makepasswd --chars=12)
+echo "$pass" | xclip
+echo "$1 $2 $pass" >> ~/pass/pass
