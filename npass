@@ -1,6 +1,10 @@
 #!/bin/bash
 
 enc "$HOME/pass"
-pass=$(makepasswd --chars=15)
+if [[ -n "$3" ]] ; then
+	pass=$3
+else
+	pass=$(makepasswd --chars=15)
+fi
 echo "$pass" | xclip
 echo "$1 $2 $pass" >> ~/pass/pass
