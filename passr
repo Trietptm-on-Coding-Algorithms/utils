@@ -4,6 +4,8 @@
 
 # override with -c
 xselection=primary
+# override with -p
+print_mode=false
 dir=$HOME/pass
 
 enc "$dir"
@@ -19,6 +21,7 @@ nres=$(wc -l <<< "$res")
 for arg ; do
 	case "$arg" in
 		-c) xselection=clipboard ;;
+		-p) print_mode=true ;;
 	esac
 done
 
@@ -34,7 +37,14 @@ if (( $nres > 1 )) ; then
 	res=${results[$(( n - 1))]}
 fi
 
+service=$(cut -d' ' -f1 <<< "$res")
 user=$(cut -d' ' -f2 <<< "$res")
 pass=$(cut -d' ' -f3 <<< "$res")
-echo "user: $user"
-xclip -selection $xselection <<< $pass
+if $print_mode ; then
+	echo "$service"$'\t'"$user"$'\t'"$pass"
+else
+	echo "service: $service"
+	echo "user: $user"
+	echo "password copied to $xselection"
+	xclip -selection $xselection <<< $pass
+fi
