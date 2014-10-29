@@ -1,0 +1,10 @@
+#!/usr/bin/perl
+
+my $sum;
+while (<>) {
+	if (/^([0-9]+) /) {
+		$sum += $1;
+	}
+	print $_;
+}
+print "$sum\n";
