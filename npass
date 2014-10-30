@@ -1,6 +1,6 @@
 #!/bin/bash
 
-enc "$HOME/pass"
+enc "$HOME/pass" || exit 1
 if [[ -n "$3" ]] ; then
 	pass=$3
 else
