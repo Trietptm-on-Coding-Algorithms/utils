@@ -1,10 +1,17 @@
 #!/bin/bash
 # TODO: screen flasher
 # TODO: beep
-# TODO: argds
+# TODO: args
 
-date=$(date +%s "-d$1")
+pdate=$1
+vol=$2
+
+date=$(date +%s "-d$pdate")
 now=$(date +%s)
 diff=$(( date - now ))
 
 sleep $diff
+
+while sudo ibeep "$vol" ; do
+	sleep 1
+done
