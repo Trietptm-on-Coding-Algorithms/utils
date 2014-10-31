@@ -2,9 +2,13 @@
 # Beep!
 # by Evan Teitelman <teitelmanevan@gmail.com>
 
+vol=$1
+[ -z "$vol" ] && vol=15
+shift
+
 exec > /dev/null
 
-amixer set Beep 5
+amixer set Beep "$vol"
 amixer set Beep unmute 
 beep "$@"
 amixer set Beep 0
