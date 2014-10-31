@@ -1,0 +1,10 @@
+#!/bin/bash
+# TODO: screen flasher
+# TODO: beep
+# TODO: argds
+
+date=$(date +%s "-d$1")
+now=$(date +%s)
+diff=$(( date - now ))
+
+sleep $diff
