@@ -1,0 +1,6 @@
+#!/bin/bash
+
+n=$1
+bin=$(rax2 $n | sed 's/b$//')
+i=$(echo $bin | wc -c)
+perl -e "print '0' x (64 - $i + 1), '$bin', \"\n\"" | fold -w8
