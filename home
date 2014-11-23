@@ -54,9 +54,9 @@ mqz5bEc=
 -----END X509 CRL-----
 EOF
 
-	passr privateinternetaccess | tr ' ' '\n' > "$tmp/login.conf"
-	host=64.237.35.85
-	sudo ip r a $host via $gw dev eth0 ||:
+	passr privateinternetaccess -p | cut -d' ' -f2- | tr ' ' '\n' > "$tmp/login.conf"
+	host=108.170.8.202
+	#sudo ip r a $host via $gw dev $if ||:
 
 	cat > "$tmp/openvpn.conf" <<EOF
 client
@@ -148,5 +148,7 @@ case "$if" in
 	wlan*)
 		setup_wifi "$if"
 		;;
+	vpn)
+		setup_vpn
+		;;
 esac
-#setup_vpn
