@@ -45,7 +45,7 @@ if (( $nres > 1 )) ; then
 	echo 'select one:'
 	for i in $(seq 1 ${#results[@]}) ; do
 		line=${results[$(( i - 1 ))]}
-		echo "$i: $(cut -d' ' -f1,2 <<< $line )"
+		echo "$i: $(cut -d, -f1,2 <<< $line )"
 	done
 	echo -n '> '
 	read n
