@@ -7,6 +7,11 @@ shift
 thing=$*
 file=$HOME/notes/$list
 
+if grep -qih "^$thing$" "$file" ; then
+	echo 'already in list.'
+	exit
+fi
+
 if grep -iq "$thing" "$file" ; then
 	echo
 	grep -ih "$thing" "$file" | nl
@@ -18,6 +23,6 @@ if grep -iq "$thing" "$file" ; then
 		*) echo >&2 'not adding.'; exit 1 ;;
 	esac
 fi
-	
+
 echo >&2 "adding '$thing' to $list list..."
 echo "$thing" >> "$file"
