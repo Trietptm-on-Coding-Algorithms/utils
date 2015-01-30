@@ -6,24 +6,39 @@
 xselection=primary
 # override with -p
 print_mode=false
+# override with -d
 dir=$HOME/pass
+# override with -f
+file=pass
+
+while (( $# )) ; do
+	case "$1" in
+		-c) xselection=clipboard ;;
+		-p) print_mode=true ;;
+		-d) dir=$2; shift ;;
+		-f) file=$2; shift ;;
+		*)  pattern=$pattern$1 ;;
+	esac
+	shift
+done
+
+if [[ ! -d "$dir" ]] ; then
+	echo >&2 "'$dir' does not exist."
+	exit 1
+fi
+if [[ ! -r "$dir/$file" ]] ; then
+	echo >&2 "'$dir/$file' not readable."
+	exit 1
+fi
+
 
 enc "$dir"
-pattern=$1
-shift
-res=$(grep "[^ ]*$pattern" "$dir/pass")
+res=$(grep "[^ ]*$pattern" "$dir/$file")
 if [[ -z "$res" ]] ; then
 	echo >&2 'no results!'
 	exit 1
 fi
 nres=$(wc -l <<< "$res")
-
-for arg ; do
-	case "$arg" in
-		-c) xselection=clipboard ;;
-		-p) print_mode=true ;;
-	esac
-done
 
 if (( $nres > 1 )) ; then
 	mapfile -t results <<< "$res"
