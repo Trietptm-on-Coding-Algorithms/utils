@@ -1,0 +1,58 @@
+#!/bin/bash
+# little wifi helper
+
+pattern=$1
+if=wlan0
+
+rand() {
+	n=$(( $RANDOM % 240 ))
+	makepasswd --chars $n
+}
+
+needs notroot || exit 1
+
+# clean up first
+# TODO: stop doing this...
+sudo killall wpa_supplicant
+sudo killall dhcpcd
+sudo ip link set $if down
+
+# change mac
+sudo macchanger -r $if
+
+# get essid/psk
+essid=$(passr -p -f wifi "$pattern" | cut -d' ' -f2)
+psk=$(passr -p -f wifi "$pattern" | cut -d' ' -f3)
+
+# wpa
+tmp=$(mktemp /tmp/wifi.XXXXXXXX)
+echo 'ctrl_interface=/var/run/wpa_supplicant' > $tmp
+wpa_passphrase "$essid" "$psk" >> $tmp
+
+# dhcp
+sudo dhcpcd -f /dev/stdin $if <<EOF
+env wpa_supplicant_conf=$tmp
+
+hostname $(rand)
+vendorclassid $(rand)
+vendor ,$(rand)
+clientid $(rand)
+
+persistent
+ipv4only
+noipv4ll
+
+option rapid_commit
+option host_name
+option domain_search
+option domain_name
+option domain_name_servers
+option classless_static_routes
+option ntp_servers
+
+slaac private
+nohook lookup-hostname
+nohook hostname
+nohook resolv.conf
+nohook timezone
+EOF
