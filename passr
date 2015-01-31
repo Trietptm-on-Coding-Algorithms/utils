@@ -26,13 +26,15 @@ if [[ ! -d "$dir" ]] ; then
 	echo >&2 "'$dir' does not exist."
 	exit 1
 fi
+
+enc "$dir"
+
 if [[ ! -r "$dir/$file" ]] ; then
 	echo >&2 "'$dir/$file' not readable."
 	exit 1
 fi
 
 
-enc "$dir"
 res=$(grep "[^ ]*$pattern" "$dir/$file")
 if [[ -z "$res" ]] ; then
 	echo >&2 'no results!'
