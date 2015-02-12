@@ -5,7 +5,8 @@ pattern=$1
 if=wlan0
 
 rand() {
-	n=$(( $RANDOM % 240 ))
+	max=$1
+	n=$(( RANDOM % max ))
 	makepasswd --chars $n
 }
 
@@ -33,10 +34,10 @@ wpa_passphrase "$essid" "$psk" >> $tmp
 sudo dhcpcd -f /dev/stdin $if <<EOF
 env wpa_supplicant_conf=$tmp
 
-hostname $(rand)
-vendorclassid $(rand)
-vendor ,$(rand)
-clientid $(rand)
+hostname $(rand 255)
+vendorclassid $(rand 255)
+vendor ,$(rand 255)
+clientid $(rand 10)
 
 persistent
 ipv4only
