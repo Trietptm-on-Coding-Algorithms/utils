@@ -3,13 +3,21 @@
 # Useful for quickly transferring data off of encrypted flashdrives.
 # by Evan Teitelman <teitelmanevan@gmail.com>
 
+# TODO: add -flags
+dev=${1:-/dev/sdc1}
 name=${2:-dat}
+dir=/$name
+mapper=/dev/mapper/$name
+mnt_opts=$3
 
-if [[ $1 == close ]] ; then
-	umount "/dev/mapper/$name"
+needs root
+
+if [[ $dev == close ]] ; then
+	umount "$mapper"
 	cryptsetup close "$name"
+	rmdir "$dir"
 else
-	mkdir -p "/$name"
-	cryptsetup open --type=tcrypt "$1" "$name"
-	mount "/dev/mapper/$name" "/$name"
+	mkdir -p "$dir"
+	cryptsetup open --type=tcrypt "$dev" "$name"
+	mount -o "$mnt_opts" "$mapper" "$dir"
 fi
