@@ -1,44 +1,63 @@
-#!/bin/sh
+#!/bin/bash
 # Backup /home
 # by Evan Teitelman <teitelmanevan@gmail.com>
 
 set -e -u
 
+# override with -f
 final=false
+# override with -d
+dev=/dev/sdc1
+# override with -n
+name=home_bu
 
-for arg ; do
-	case "$arg" in
+needs root
+
+while (( $# )) ; do
+		case "$1" in
 		-f)
 			final=true
+			;;
+		-d)
+			dev=$2
+			shift
+			# default in /dev
+			if [[ $dev != /* ]] ; then
+				dev=/dev/$dev
+			fi
+			# default first partition
+			if [[ ! $dev =~ [0-9]$ ]] ; then
+				dev=${dev}1
+			fi
+			;;
+		-n)
+			name=$2
+			shift
 			;;
 		*)
 			echo >&2 "invalid arg"
 			exit 1
 			;;
 	esac
+	shift
 done
 
-mnt_dir=/mnt/bu
+bu_root
 
 cleanup() {
-	umount "$mnt_dir"
-	rmdir "$mnt_dir"
+	set +e
 	if $final ; then
 		mount -o rw,remount /home
 	fi
-	cryptsetup close bu
+	crypt close "$name"
 }
-
 trap cleanup EXIT
 
-mkdir -p "$mnt_dir"
-
-cryptsetup --type=tcrypt open /dev/sdc1 bu
-mount /dev/mapper/bu "$mnt_dir"
+crypt "$dev" "$name"
 
 if $final ; then
 	mount -o ro,remount /home
 fi
 
 rsync -av --progress --fuzzy --delete --ignore-errors \
-  /home/ "$mnt_dir"
+  /home/ "/$name"
