@@ -1,0 +1,33 @@
+#!/bin/sh
+# Reverse hexdump anything with xxd
+
+# override with -p
+print_hex=false
+# override with filename
+f=/dev/stdin
+
+for arg ; do
+	case "$arg" in
+		-p) print_hex=true ;;
+		*) f=$1 ;;
+	esac
+done
+
+if [ ! -r "$f" ] ; then
+	echo >&2 "cannot read '$f'."
+	exit 1
+fi
+
+tr 'A-F' 'a-f' < "$f" |  # convert to lowercase hex
+sed 's/[^0-9a-f]//g' |   # remove non-hex
+fold -w 32 |             # split into lines
+sed 's/\(....\)/\1 /g' | # split into groups
+while read line ; do     # add line numbers
+	printf '%07x: %s\n' $n "$line"
+	let n+=32
+done |
+if $print_hex ; then
+	cat
+else
+	xxd -r
+fi
