@@ -2,7 +2,7 @@
 # little wifi helper
 
 pattern=$1
-if=wlan0
+if=${2:-wlan0}
 
 rand() {
 	max=$1
