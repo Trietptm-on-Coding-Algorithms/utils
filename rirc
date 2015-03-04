@@ -2,19 +2,32 @@
 # IRC client wrapper with remote machine support
 # by Evan Teitelman <teitelmanevan@gmail.com>
 
+tmp=/tmp/irc
+
+remote_make_session() {
+	tmux new-session -d -n weechat -s irc
+	sleep 1
+	tmux respawn-pane -t irc -k "HOME=$tmp weechat"
+	tmux list-s
+}
+
 remote_irc() {
-	if command -v weechat &> /dev/null ; then
-		irc=weechat
-	else
-		echo >&2 'no weechat'
-		return 1
-	fi
+	check_command() {
+		cmd=$1
+		if ! command -v $cmd &> /dev/null ; then
+			echo >&2 "no $cmd"
+			return 1
+		fi
+	}
+
+	check_command weechat
+	check_command tmux
 
 	unset DISPLAY
 
-	tmux attach-session -t irc 2> /dev/null ||
-	  tmux new-session -n weechat -s irc \; send-keys \
-	  "unset HISTFILE; HOME=$tmp $irc && exit" C-m "$@" && exit
+	if ! tmux attach-session -t irc 2> /dev/null ; then
+		return 2
+	fi
 }
 
 we_started_ssh=false
@@ -23,17 +36,49 @@ cleanup() {
 }
 trap cleanup EXIT
 
-if [[ $1 != rmt ]] ; then
-	tmp=$HOME
-	remote_irc
-else
+run_remote() {
+	cmd=$1
+	if [[ -z "$host" ]] ; then
+		$cmd
+	else
+		TERM=xterm-256color ssh -t "$host" "tmp=$tmp; mkdir -p $tmp; $(declare -f $cmd); $cmd"
+	fi
+}
+
+run_rsync() {
+	src=$1
+	if [[ -z "$host" ]] ; then
+		dst=$2
+	else
+		dst=$host:$dst
+	fi
+	rsync -az "$src" "$dst"
+}
+
+host=$1
+
+if [[ ! -z "$host" ]] ; then
+	echo 'starting ssh-agent...'
 	if [[ -z "$SSH_AGENT_PID" ]] ; then
 		we_started_ssh=true
 		eval $(ssh-agent)
 		ssh-add
 	fi
+fi
 
-	tmp=$(ssh irc 'mktemp -d /tmp/weechat.XXXXXX')
-	rsync -az "$HOME/.weechat" irc:$tmp
-	TERM=xterm-256color ssh -t irc "tmp=$tmp; $(declare -f remote_irc); remote_irc"
+echo 'creating temporary directory...'
+
+echo 'copying files...'
+run_rsync "$HOME/.weechat" "$host/$tmp"
+
+echo 'attempting connection...'
+run_remote remote_irc 
+(exit 2)
+# attempt reconnection
+if [[ $? == 2 ]] ; then
+	echo 'session not found'
+	echo 'creating session...'
+	run_remote remote_make_session
+	echo 'trying again...'
+	run_remote remote_irc
 fi
