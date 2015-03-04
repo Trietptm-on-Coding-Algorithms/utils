@@ -23,6 +23,7 @@ sed 's/[^0-9a-f]//g' |   # remove non-hex
 fold -w 32 |             # split into lines
 sed 's/\(....\)/\1 /g' | # split into groups
 while read line ; do     # add line numbers
+	[ -z "$n" ] && n=0
 	printf '%07x: %s\n' $n "$line"
 	let n+=32
 done |
