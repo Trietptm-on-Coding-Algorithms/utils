@@ -25,7 +25,7 @@ sed 's/\(....\)/\1 /g' | # split into groups
 while read line ; do     # add line numbers
 	[ -z "$n" ] && n=0
 	printf '%07x: %s\n' $n "$line"
-	let n+=32
+	let n+=16
 done |
 if $print_hex ; then
 	cat
