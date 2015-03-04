@@ -50,9 +50,12 @@ run_rsync() {
 	if [[ -z "$host" ]] ; then
 		dst=$2
 	else
-		dst=$host:$dst
+		dst=$host:$2
 	fi
-	rsync -az "$src" "$dst"
+	if ! rsync -az "$src" "$dst" ; then
+		echo >&2 'rsync failed'
+		exit 1
+	fi
 }
 
 host=$1
@@ -69,7 +72,7 @@ fi
 echo 'creating temporary directory...'
 
 echo 'copying files...'
-run_rsync "$HOME/.weechat" "$host/$tmp"
+run_rsync "$HOME/.weechat" "$tmp"
 
 echo 'attempting connection...'
 run_remote remote_irc 
