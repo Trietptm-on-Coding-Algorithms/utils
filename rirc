@@ -73,7 +73,6 @@ run_rsync "$HOME/.weechat" "$host/$tmp"
 
 echo 'attempting connection...'
 run_remote remote_irc 
-(exit 2)
 # attempt reconnection
 if [[ $? == 2 ]] ; then
 	echo 'session not found'
