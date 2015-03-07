@@ -22,8 +22,8 @@ sudo ip link set $if down
 sudo macchanger -r $if
 
 # get essid/psk
-essid=$(passr -p -f wifi "$pattern" | cut -d' ' -f2)
-psk=$(passr -p -f wifi "$pattern" | cut -d' ' -f3)
+essid=$(passr -p -f wifi "$pattern" | cut -d$'\t' -f2)
+psk=$(passr -p -f wifi "$pattern" | cut -d$'\t' -f3)
 
 # wpa
 tmp=$(mktemp /tmp/wifi.XXXXXXXX)
@@ -31,12 +31,13 @@ echo 'ctrl_interface=/var/run/wpa_supplicant' > $tmp
 wpa_passphrase "$essid" "$psk" >> $tmp
 
 # dhcp
+iwconfig $if essid "$essid"
 sudo dhcpcd -f /dev/stdin $if <<EOF
 env wpa_supplicant_conf=$tmp
 
-hostname $(rand 255)
-vendorclassid $(rand 255)
-vendor ,$(rand 255)
+hostname $(rand 20)
+vendorclassid $(rand 30)
+vendor ,$(rand 30)
 clientid $(rand 10)
 
 persistent
