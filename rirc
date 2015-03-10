@@ -8,7 +8,6 @@ remote_make_session() {
 	tmux new-session -d -n weechat -s irc
 	sleep 1
 	tmux respawn-pane -t irc -k "HOME=$tmp weechat"
-	tmux list-s
 }
 
 remote_irc() {
@@ -52,7 +51,7 @@ run_rsync() {
 	else
 		dst=$host:$2
 	fi
-	if ! rsync -az "$src" "$dst" ; then
+	if ! rsync -Laz "$src" "$dst" ; then
 		echo >&2 'rsync failed'
 		exit 1
 	fi
@@ -67,12 +66,12 @@ if [[ ! -z "$host" ]] ; then
 		eval $(ssh-agent)
 		ssh-add
 	fi
+
+	echo 'copying files...'
+	run_rsync "$HOME/.weechat" "$tmp"
+else
+	tmp=$HOME
 fi
-
-echo 'creating temporary directory...'
-
-echo 'copying files...'
-run_rsync "$HOME/.weechat" "$tmp"
 
 echo 'attempting connection...'
 run_remote remote_irc 
