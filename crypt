@@ -10,7 +10,7 @@ dir=/$name
 mapper=/dev/mapper/$name
 mnt_opts=$3
 
-needs root
+needs root || exit 1
 
 if [[ $dev == close ]] ; then
 	umount "$mapper"
