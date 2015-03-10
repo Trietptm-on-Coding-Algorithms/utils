@@ -58,7 +58,7 @@ service=$(cut -d, -f1 <<< "$res")
 user=$(cut -d, -f2 <<< "$res")
 pass=$(cut -d, -f3 <<< "$res")
 if $print_mode ; then
-	echo "$service $user $pass"
+	echo -e "$service\t$user\t$pass"
 else
 	echo "service: $service"
 	echo "user: $user"
