@@ -1,0 +1,4 @@
+#!/usr/bin/perl -p
+
+$res = eval "sprintf \"$_\"";
+$_ = $res;
