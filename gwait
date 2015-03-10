@@ -1,0 +1,17 @@
+#!/bin/sh
+# global wait/pgrep-like wait thing
+
+prog=$1
+
+# TODO: handle multiple
+while true ; do
+	if [[ "$prog" =~ [0-9]+ ]] ; then
+		pid=$prog
+	else
+		pid=$(pgrep "$prog" | head -n1)
+	fi
+	if ! ps "$pid" > /dev/null 2>&1 ; then
+		break
+	fi
+	sleep 1
+done

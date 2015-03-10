@@ -1,0 +1,8 @@
+#!/bin/sh
+# wait like pgrep/killall
+
+prog=$1
+while pgrep "$prog" > /dev/null 2>&1 ; do
+	pid=$(pgrep "$prog" | head -n1)
+	wait $pid
+done
