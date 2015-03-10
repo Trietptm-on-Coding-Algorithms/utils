@@ -1,0 +1,41 @@
+#!/bin/bash
+# Authenticates with CAS, returns a cookie
+# usage: cas_auth [url_encoded] [user] [pass]
+# By Evan Teitelman
+
+url=$1
+user=$2
+pass=$3
+host=${4:-auth.vt.edu}
+if [[ -z "$pass" ]] ; then
+	res=$(passr vt-pid -p)
+	user=$(echo "$res" | cut -d' ' -f2)
+	pass=$(echo "$res" | cut -d' ' -f3)
+fi
+
+url_encoded=$(echo "$url_encoded" | perl -pe 's/([^A-Za-z0-9])/sprintf("%%%02X", ord($1))/seg' | sed 's/%2E/./g; s/%0A//g')
+
+cookie_jar=$(mktemp /tmp/cas.XXXXXXX)
+headers=$(mktemp /tmp/cas.XXXXXXXX)
+cleanup () {
+	rm -f "$cookie_jar" "$headers"
+}
+trap cleanup EXIT
+rm -f $cookie_jar
+rm -f $headers
+
+# get id
+id=$(curl -skc $cookie_jar https://$host/login?service=$url_encoded | grep name=.lt | sed 's/.*value..//; s/\".*//')
+
+# submit, get ticket
+curl -skd "username=$user&password=$pass&lt=$id&_eventId=submit" -i -b $cookie_jar -c $cookie_jar https://$host/login?service=$url_encoded -D $headers -o /dev/null
+
+# get cookie
+# TODO: why does this not work?
+redir=$(grep Location $headers | sed 's/Location: //')
+cat $headers
+echo "REDIR $redir"
+curl -skb $cookie_jar -c $cookie_jar "$redir"
+
+# go, go
+curl -skb $cookie_jar "$url"
