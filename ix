@@ -1,0 +1,5 @@
+#!/bin/sh
+# Send to ix
+# by Evan Teitelman <teitelmanevan@gmail.com>
+
+curl -sF 'f:1=<-' http://ix.io | tee /dev/stderr | xclip
