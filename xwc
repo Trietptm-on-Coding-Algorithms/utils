@@ -1,0 +1,5 @@
+#!/usr/bin/perl -p
+
+$res = eval "sprintf \"$_\"";
+$n += (length $res) - 1;
+$_ = $n;
