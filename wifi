@@ -31,7 +31,7 @@ echo 'ctrl_interface=/var/run/wpa_supplicant' > $tmp
 wpa_passphrase "$essid" "$psk" >> $tmp
 
 # dhcp
-iwconfig $if essid "$essid"
+sudo iwconfig $if essid "$essid"
 sudo dhcpcd -f /dev/stdin $if <<EOF
 env wpa_supplicant_conf=$tmp
 
