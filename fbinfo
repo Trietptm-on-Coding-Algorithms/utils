@@ -1,0 +1,3 @@
+#!/bin/sh
+user=$1
+curl -s "http://graph.facebook.com/$user"
