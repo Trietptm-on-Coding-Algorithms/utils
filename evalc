@@ -1,0 +1,30 @@
+#!/bin/sh
+# Evaluate C (ugly but useful)
+
+tmp=$(mktemp)
+cleanup() { 
+	rm -f "$tmp"{,.out}
+}
+
+cat > "$tmp" <<EOF
+#include <stdio.h>
+#include <stdlib.h>
+EOF
+
+if [ "$1" = - ] ; then
+	cat >> $tmp
+else
+	echo "$1" >> $tmp
+	shift
+fi
+
+if ! grep -q 'main(' "$tmp" ; then
+	{
+	  echo 'int main(int argc, char **argv) {'
+	  cat "$tmp"
+	  echo ';}'
+	} | sponge "$tmp"
+fi
+
+gcc -x c -std=c99 -o "$tmp.out" "$tmp" "$@"
+"$tmp.out"
