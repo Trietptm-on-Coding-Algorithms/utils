@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/python3
 # Interactively determine a winner fairly without dependence on a third party
 #
 # usage: fair <our name> [names of other players...]
@@ -48,43 +48,69 @@
 #
 # by Evan Teitelman <teitelmanevan@gmail.com>
 
-declare -A evals
-declare -A vals
+import sys
+from random import SystemRandom
+from hashlib import sha256
+from base64 import b64encode, b64decode
 
-n=$#
+randbits = 96
 
-us=$1
-shift
+class Player:
+    def __init__(self, name):
+        self.name = name
+        self.hashed = b''
+        self.b64 = b''
+        self.val = 0
 
-if [[ $# == 0 ]] ; then
-	while read -rp 'player name: ' player ; do
-		players+=("$player")
-	done
-else
-	players=("$@")
-fi
+# make player list
+players = []
+if len(sys.argv) > 1:
+    players = list(map(Player, sys.argv[1:]))
+else:
+    print('your name first.')
+    print('leave line blank to stop.')
+    while True:
+        r = input('player name: ')
+        if r == '':
+            break
+        players.append(Player(r))
 
-# the most significant digit is not statistically random. only the lower digits matter though
-vals[$us]=$(od -lN8 /dev/urandom | sed '2d; s/[^ ]\+\s*//; s/ //g; s/-//g')
-echo -n "encrypted value (share this now): "
-echo ${vals[$us]} | openssl aes-256-cbc -pass pass:${vals[$us]} -a
+print('players:')
+i = 0
+for p in sorted(players, key=lambda x: x.name):
+    print('[+] ' + str(i) + ': ' + p.name)
+    i += 1
 
-# gather encrypted values
-for player in "${players[@]}" ; do
-	read -rp "encrypted value for $player: " val
-	evals[$player]=$val
-done
+# make our value
+players[0].val = SystemRandom().getrandbits(randbits)
+players[0].hashed = sha256(str(players[0].val).encode()).digest()
+players[0].b64 = b64encode(players[0].hashed).decode()
 
-# verify the encrypted values
-echo "secret value (share this now): ${vals[$us]}"
-for player in "${players[@]}" ; do
-	read -rp "value for $player: " val
-	if [[ $(echo ${evals[$player]} | openssl aes-256-cbc -pass pass:$val -a -d) != $val ]] ; then
-		echo "invalid value for $player!"
-	else
-		vals[$player]=$val
-	fi
-done
+print('hashed value (share this now): ' + players[0].b64)
 
-res=$({ echo -n '('; printf '%s+' ${vals[@]}; echo "0) % $n"; } | bc)
-echo "result: $res"
+# gather hashed vals
+for player in players[1:]:
+    r = input('hashed value for ' + player.name + ': ')
+    player.b64 = r
+    player.hashed = b64decode(player.b64)
+
+print('value (share this now): ' + str(players[0].val))
+
+# gather vals
+for player in players[1:]:
+    r = input('value for ' + player.name + ': ')
+    player.val = int(r)
+
+# verify vals
+for player in players[1:]:
+    hashed = sha256(str(player.val).encode()).digest()
+    if hashed != player.hashed:
+        print('[!] player ' + player.name + "'s value is invalid!")
+        sys.exit(1)
+    else:
+        print('[+] player ' + player.name + "'s value is valid.")
+
+# print result
+result = sum(p.val for p in players) % len(players)
+print('result: ' + str(result) + ' (' +
+      sorted(players, key=lambda x: x.name)[result].name +  ')')
