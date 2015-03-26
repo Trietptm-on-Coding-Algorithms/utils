@@ -1,0 +1,19 @@
+#!/bin/bash
+
+dir=~/notes/templates
+name=$1
+shift
+glob=("$dir"/${name}*)
+
+if [[ ${#glob[@]} != 1 || ! -r "$glob" ]]  ; then
+	exit 1
+fi
+
+if (( $# )) ; then
+	for arg ; do
+		(( n++ ))
+		sed "s/<ARG$n>/$arg/g"
+	done < "$glob"
+else
+	cat "$glob"
+fi
