@@ -1,18 +1,7 @@
 #!/bin/bash
-# Reverse hexdump anything with xxd
+# Reverse hexdump hex of any format with xxd
 
-# override with -r
-print_hex=false
-# override with filename
-f=/dev/stdin
-
-for arg ; do
-	case "$arg" in
-		-r) print_hex=true ;;
-		-*) xxd_args+=("$arg") ;;
-		*) f=$1; break ;;
-	esac
-done
+f=${1:-/dev/stdin}
 
 if [ ! -r "$f" ] ; then
 	echo >&2 "cannot read '$f'."
@@ -29,9 +18,4 @@ while read line ; do     # add line numbers
 	printf '%07x: %s\n' $n "$line"
 	let n+=16
 done |
-xxd -r |
-if $print_hex ; then
-	xxd "${xxd_args[@]}"
-else
-	cat
-fi
+xxd -r
