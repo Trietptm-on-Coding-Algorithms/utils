@@ -20,6 +20,7 @@ fi
 
 tr 'A-F' 'a-f' < "$f" |  # convert to lowercase hex
 sed 's/[^0-9a-f]//g' |   # remove non-hex
+tr -d '\n' |             # remove newlines
 fold -w 32 |             # split into lines
 sed 's/\(....\)/\1 /g' | # split into groups
 while read line ; do     # add line numbers
