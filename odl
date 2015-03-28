@@ -6,4 +6,5 @@ while (<>) {
 	chomp;
 	open my $od, '|od -c';
 	print $od $_;
+	print "\n";
 }
