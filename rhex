@@ -32,4 +32,6 @@ done |
 xxd -r |
 if $print_hex ; then
 	xxd "${xxd_args[@]}"
+else
+	cat
 fi
