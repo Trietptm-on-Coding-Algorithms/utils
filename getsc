@@ -1,0 +1,13 @@
+#!/bin/bash
+# Really sketchy shellcode extractor
+# TODO: really just write something more usable
+
+file=$1
+func=${2:-sc}
+objdump -d "$file" -j .text |
+sed -n "/^[0-9a-f]* <$func>/,/^$/p" |
+head -n-3  | # skip epilogue
+sed '1,3d' | # skip prologue
+sed 's/^[^:]*:\s*//; s/\s\+.*$//' |
+rhex |
+xxd -i | sed 's/0x/\\x/g; s/[^0-9a-fA-Fx\]//g'
