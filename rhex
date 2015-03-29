@@ -13,6 +13,7 @@ sed 's/[^0-9a-f]//g' |   # remove non-hex
 tr -d '\n' |             # remove newlines
 fold -w 32 |             # split into lines
 sed 's/\(....\)/\1 /g' | # split into groups
+awk '{ print }' |        # add trailing newline (fold is weird about that)
 while read line ; do     # add line numbers
 	[ -z "$n" ] && n=0
 	printf '%07x: %s\n' $n "$line"
