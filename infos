@@ -1,0 +1,4 @@
+#!/bin/sh
+# Show entire texinfo manual
+
+info --subnodes -o - "$@" | less -r
