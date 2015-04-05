@@ -1,0 +1,11 @@
+#!/usr/bin/perl -p
+# Convert hex numbers to little-endian C-style string representations
+# By Evan Teitelman
+
+s/^0x//;
+my $a = '';
+for my $b (/(..)/g) {
+	$b = "\\x$b";
+	$str = $b . $str;
+}
+$_ = "$str\n";
