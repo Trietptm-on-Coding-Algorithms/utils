@@ -2,8 +2,15 @@
 # Convert hex numbers to little-endian C-style string representations
 # By Evan Teitelman
 
-s/^0x//;
-my $a = '';
+# remove 0x
+s/0x//;
+# remove non-hex
+s/[^A-Fa-f0-9]//g;
+# pad to byte boundaries
+if (length($_) % 2 != 0) {
+	$_ = "0$_";
+}
+# string together bytes with \x
 for my $b (/(..)/g) {
 	$b = "\\x$b";
 	$str = $b . $str;
