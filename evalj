@@ -1,0 +1,46 @@
+#!/bin/bash
+# Evaluate Java (ugly but useful)
+
+tmp=$(mktemp /tmp/EvaljXXXXXX.java)
+class=$(basename "${tmp/.java/}")
+out=${tmp/.java/.class}
+
+cleanup() { 
+	rm -f "$tmp" "$class"
+}
+
+cat > "$tmp" <<EOF
+EOF
+
+if [ "$1" = - ] ; then
+	cat >> $tmp
+else
+	echo "$1" >> $tmp
+	shift
+fi
+
+if ! grep -q '^public class' "$tmp" ; then
+	make_class=true
+else
+	make_class=false
+fi
+
+if ! grep -q 'public static void main(String\[] args)' "$tmp" ; then
+	{
+		if $make_class ; then
+			echo "public class $class {"
+		fi
+		echo 'public static void main(String[] args) {'
+		cat "$tmp"
+		echo ';}'
+	} | sponge "$tmp"
+fi
+
+if $make_class ; then
+	echo '}' >> "$tmp"
+fi
+
+javac "$tmp"
+# XXX bleh
+cd /tmp
+java "$class"
