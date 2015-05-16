@@ -4,16 +4,19 @@
 
 sc=$1
 
-tcc -run - <<EOF
+echo "testing \"$sc\"..."
+
+#cat <<EOF
+gcc -x c - <<EOF
 #include <sys/mman.h>
 #include <string.h>
 #include <stdio.h>
 
-char sc[]= "$sc";
+char *sc= "$sc";
 
 int main(){
-	void * a = mmap(0, 4096, PROT_EXEC |PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
-	printf("allocated executable memory at: %p\n", a);
-	((void (*)(void)) memcpy(a, sc, sizeof(sc)))();
+	mprotect(sc, 4096, PROT_EXEC|PROT_READ);
+	(*(void(*)())sc)();
+	return 42;
 }
 EOF
