@@ -4,10 +4,21 @@
 
 file=$1
 func=${2:-sc}
+
+if [[ $file == *.c ]] ; then
+	tmp=$(mktemp -d)
+	tmpf=$tmp/${file%.c}
+	gcc -m32 "$file" -o "$tmpf"
+	file=$tmpf
+fi
+
 objdump -d "$file" -j .text |
 sed -n "/^[0-9a-f]* <$func>/,/^$/p" |
 head -n-3  | # skip epilogue
 sed '1,3d' | # skip prologue
-sed 's/^[^:]*:\s*//; s/\s\+.*$//' |
+sed 's/^[^:]*:\s*//; s/\s\s\+.*$//' |
 rhex |
-xxd -i | sed 's/0x/\\x/g; s/[^0-9a-fA-Fx\]//g'
+xxd -i | sed 's/0x/\\x/g; s/[^0-9a-fA-Fx\]//g' |
+tr -d '\n'
+
+rm -rf "$tmp"
