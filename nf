@@ -16,7 +16,7 @@ do_rename() {
 	file="$2"
 	pattern="$1"
 
-	old_name=$(basename "$file")
+	old_name=$(basename -- "$file")
 	new_name=$(sed "$pattern" <<< "$old_name")
 
 	if [[ $old_name = $new_name ]] ; then
