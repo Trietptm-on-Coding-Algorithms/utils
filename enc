@@ -4,7 +4,7 @@
 
 rel=$1
 shift
-abs=$(realpath "$rel")
-enc=$(dirname "$abs")/.$(basename $rel)
+abs=$(grealpath "$rel")
+enc=$(gdirname "$abs")/.$(gbasename $rel)
 
-mountpoint -q "$abs" || encfs "$enc" "$abs" "$@"
+gmountpoint -q "$abs" || encfs "$enc" "$abs" "$@"
