@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
 (
 while :; do
-	ssh -L 6697:localhost:63333 znc@server sleep 100000000000 > /dev/null
+	ssh -L 6697:localhost:63333 znc@server sleep 100000000000 > /dev/null 2> ~/.weechat/ssh.log
 	sleep 2
 done
 ) &
