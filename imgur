@@ -1,0 +1,3 @@
+#!/bin/sh
+
+curl -sF "image=@$1" -F "key=api-key" https://imgur.com/api/upload.xml
