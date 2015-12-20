@@ -1,0 +1,12 @@
+#!/bin/sh
+
+(
+while :; do
+	ssh -L 6697:localhost:63333 znc@server sleep 100000000000 > /dev/null
+	sleep 2
+done
+) &
+back=$!
+trap "kill $back" EXIT
+sleep 2
+weechat
