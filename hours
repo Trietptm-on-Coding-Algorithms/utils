@@ -1,0 +1,77 @@
+#!/usr/bin/python
+
+import sys
+import re
+from datetime import datetime
+
+# Returns minutes into day for string time
+def parse_time(time):
+	(hour, minute) = time.split(':')
+	return int(hour) * 60 + int(minute)
+
+# Makes string time from minutes
+def make_time(time):
+	hours = time / 60
+	minutes = time % 60
+	return '%s:%s' % (hours, minutes)
+
+if len(sys.argv) < 2:
+	file_name = '/dev/stdin'
+else:
+	file_name = sys.argv[1]
+
+with open(file_name) as f:
+	lines = f.readlines()
+
+for line in lines:
+	line = line.strip()
+
+	# Pass on comments
+	if line.startswith('#'):
+		print(line)
+		continue
+
+	ranges = line.split(' ')
+	day = ranges[0]
+	ranges = ranges[1:]
+
+	# Check day label
+	if not re.compile('^\w+:$').match(day):
+		print('bad range label: "%s"' % day)
+		sys.exit(1)
+
+	# Remove colon on day label
+	day = day[:-1]
+
+	total_time = 0
+	end_generated = False
+
+	# Iterate ranges
+	for r in ranges:
+		(start, end) = r.split('-')
+
+		# Check for start time
+		if start == '':
+			print('no start time for day %s!' % day)
+			sys.exit(1)
+
+		# Generate end time if there is none
+		if end == '':
+			end_generated = True
+			end = datetime.strftime(datetime.now(), '%H:%M')
+
+		# Parse times
+		start_time = parse_time(start)
+		end_time = parse_time(end)
+
+		# Check for start time past end time
+		if (end_time < start_time):
+			print('end time before start time for day %s!' % day)
+
+		total_time += end_time - start_time
+
+	string_total_time = make_time(total_time)
+	if end_generated:
+		print('%s: %s # End generated!' % (day, string_total_time))
+	else:
+		print('%s: %s' % (day, string_total_time))
