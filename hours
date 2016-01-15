@@ -13,7 +13,7 @@ def parse_time(time):
 def make_time(time):
 	hours = time / 60
 	minutes = time % 60
-	return '%s:%s' % (hours, minutes)
+	return '%d:%.2d' % (hours, minutes)
 
 if len(sys.argv) < 2:
 	file_name = '/dev/stdin'
@@ -23,11 +23,13 @@ else:
 with open(file_name) as f:
 	lines = f.readlines()
 
+running_time = 0
+
 for line in lines:
 	line = line.strip()
 
 	# Pass on comments
-	if line.startswith('#'):
+	if line.startswith('#') or len(line) == 0:
 		print(line)
 		continue
 
@@ -70,8 +72,11 @@ for line in lines:
 
 		total_time += end_time - start_time
 
+	running_time += total_time
 	string_total_time = make_time(total_time)
 	if end_generated:
 		print('%s: %s # End generated!' % (day, string_total_time))
 	else:
 		print('%s: %s' % (day, string_total_time))
+
+print('total: %s' % make_time(running_time))
