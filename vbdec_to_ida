@@ -1,0 +1,65 @@
+#!/usr/bin/python
+
+import fileinput
+import re
+
+class Func:
+	def __init__(self):
+		self.obj = ''
+		self.name = ''
+		self.mutated_name = None
+		self.addr = ''
+		self.access = 'Public'
+		self.front_type = 'Sub'
+		self.args = ''
+
+# Private Sub Form_Load() Address: 434AA0
+func_regex = re.compile('(Public|Private) (Sub|Function) ([^(]*)\(([^)]*)\) Address: (.*)')
+# Object: Form1
+obj_regex = re.compile('[^:]*: (.*)')
+
+# Collect functions
+last_obj = ''
+funcs = []
+names = []
+for line in fileinput.input():
+	match = func_regex.match(line)
+	if match != None:
+		func = Func()
+		func.obj = last_obj
+		func.access = match.group(1)
+		func.front_type = match.group(2)
+		func.name = match.group(3)
+		func.args = match.group(4)
+		func.addr = match.group(5)
+		funcs += [func]
+		names += [func.name]
+		continue
+
+	match = obj_regex.match(line)
+	if match != None:
+		last_obj = match.group(1)
+		continue
+
+# Find duplicates
+duplicate_names = []
+for name in names:
+	if names.count(name) >= 2:
+		if name not in duplicate_names:
+			duplicate_names += [name]
+
+# Mutate duplicate names
+for dup in duplicate_names:
+	for func in funcs:
+		if func.name == dup:
+			func.mutated_name = '_' + func.obj + '_' + func.name
+
+# Print IDC
+for func in funcs:
+	print('MakeCode(0x' + func.addr + ');')
+	print('MakeFunction(0x' + func.addr + ', BADADDR);')
+	if func.mutated_name == None:
+		name = func.name
+	else:
+		name = func.mutated_name
+	print('MakeName(0x' + func.addr + ', "' + name + '");')
