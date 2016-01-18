@@ -1,0 +1,74 @@
+#!/usr/bin/python
+
+import sys
+import subprocess
+import os
+import re
+
+class Lib:
+	def __init__(self):
+		self.name = ''
+		self.path = ''
+		self.comment = ''
+		self.children = []
+
+blacklist = ['/libSystem']
+
+def is_blacklisted(path):
+	for item in blacklist:
+		regex = re.compile('.*' + item)
+		if regex.match(path):
+			return True
+	return False
+
+def get_libs_path(path):
+	stream = os.popen("otool -L " + path)
+	data = stream.read()
+	stream.close()
+
+	lines = data.strip().split('\n')
+	regex = re.compile('^([^ ]*) ?(.*)')
+
+	for line in lines[1:]:
+		line = line.strip()
+		match = regex.match(line)
+		lib = Lib()
+		lib.path = match.group(1)
+		lib.comment = match.group(2)
+		# TODO: name
+		if lib.path != path:
+			yield lib
+
+def get_libs(lib, seen):
+	ret = []
+	for child in get_libs_path(lib.path):
+		if child.path in seen:
+			continue
+		seen += [child.path]
+		ret += [child]
+		ret += get_libs(child, seen)
+		lib.children += [child]
+	return ret
+
+def print_lib_tree(lib, level):
+	if is_blacklisted(lib.path):
+		return
+
+	print((' ' * (4 * level)) + lib.path)
+	for child in lib.children:
+		print_lib_tree(child, level + 1)
+
+if len(sys.argv) < 2:
+	exit(1)
+
+libs = []
+for lib in get_libs_path(sys.argv[1]):
+	libs += get_libs(lib, [])
+	print_lib_tree(lib, 0)
+
+lib_paths = [x.path for x in libs]
+libs = sorted(set(lib_paths))
+
+for lib in libs:
+	#print(lib)
+	pass
